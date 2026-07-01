@@ -55,6 +55,11 @@ Key files to create later:
 - `benefits_dental.md`
 - `first_90_days_plan.md`
 
+Current key notes:
+
+- `02_Synopsys_Work/synopsys_master_note.md`
+- `02_Synopsys_Work/onboarding_plan.md`
+- `02_Synopsys_Work/benefits_dental.md`
 ---
 
 ### 3. Investing
