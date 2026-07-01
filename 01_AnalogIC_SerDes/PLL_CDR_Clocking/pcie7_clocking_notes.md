@@ -17,200 +17,460 @@ status: "active"
 
 # PCIe 7.0 Clocking Notes
 
-## Purpose
+## 0. Status
 
-This note explains PCIe 7.0 clocking from the perspective of an analog / mixed-signal SerDes engineer preparing for PLL, CDR, LDO, ADC, and high-speed receiver work. The focus is not protocol minutiae. The focus is how the clock path determines the final timing margin at the transmitter launch point and receiver sampler.
+| Item | Value |
+|---|---|
+| Maturity | Sample note / interview preparation / design review primer |
+| Related role | Synopsys PCIe 7.0 Clocking / PLL / CDR / SerDes AMS role |
+| Last updated | 2026-07-01 |
+| Main audience | Analog / mixed-signal IC engineer working on high-speed SerDes |
+| Scope | Clocking, PLL, CDR, jitter, PAM4 timing, channel Nyquist, ADC-based RX, equalization, verification |
 
-Related notes: [[pll_phase_noise_jitter]], [[cdr_jitter_tolerance]], [[phase_noise_jitter]], [[pll_fundamentals]], [[cdr_fundamentals]], [[pam4_adc_based_rx]], [[ldo_psrr_notes]], [[serdes_power_integrity]], [[pcie7_overview]].
+这是一份面向工程准备的 self-contained note。它不复述官方 PCIe 7.0 electrical compliance mask，也不替代内部 design spec。任何涉及具体限值、test fixture、receiver tolerance、SSC mask、jitter tolerance mask、Tx/Rx compliance methodology 的地方，都应标记为：
 
-## Public PCIe 7.0 Facts
+TODO: verify against PCIe 7.0 spec
 
-As of 2026-07-01, public PCI-SIG announcements state that the final PCIe 7.0 specification was released on 2025-06-11. Public headline targets include 128.0 GT/s transfer rate, PAM4 signaling, up to 512 GB/s bidirectional raw bandwidth for a x16 link, improved power efficiency, low latency, high reliability, and backward compatibility.
+相关基础笔记包括 [[pll_phase_noise_jitter]]、[[cdr_jitter_tolerance]]、[[pam4_adc_based_rx]]、[[serdes_channel_equalization]]。
 
-For clocking calculations, do not multiply the 128.0 GT/s headline by two again. With PAM4, the public transfer-rate number is the bit-equivalent lane rate. The electrical symbol rate is half of that:
+## 1. One-Sentence Summary
 
-| Quantity | PCIe 7.0 value | Notes |
-|---|---:|---|
-| Bit-equivalent transfer rate | 128.0 GT/s | 128 Gb/s raw binary lane rate before protocol overhead, per lane, per direction |
-| PAM4 bits per symbol | 2 | Four levels encode two bits per symbol |
-| Electrical symbol rate | 64.0 GBd | \(128.0 / 2\) |
-| Symbol UI for sampler / CDR timing | 15.625 ps | \(1 / 64.0\text{ GBd}\) |
-| Bit-equivalent interval | 7.8125 ps | Useful for raw bit-rate arithmetic, not the PAM4 sample spacing |
-| Raw bandwidth, x16, one direction | 256 GB/s | \(128\text{ Gb/s} \cdot 16 / 8\) |
-| Raw bandwidth, x16, bidirectional | 512 GB/s | Public headline bandwidth |
+PCIe 7.0 的公开 headline 是 128 GT/s per lane，但因为它使用 PAM4，电气 symbol rate 是 64 Gbaud，真正用于 CDR sampling phase、PI step、horizontal eye margin 和 channel Nyquist 的 symbol UI 是 15.625 ps，而不是 7.8125 ps。
 
-If a calculation includes PCIe 6.0 / 7.0 FLIT-mode payload efficiency, \(242/256\), the payload number is lower: 15.125 GB/s per lane, 242 GB/s for x16 in one direction, and 484 GB/s bidirectional before any higher-layer traffic effects.
+## 2. Why This Topic Matters
 
-The exact electrical jitter masks, compliance methodology, receiver test assumptions, and implementation details are not reproduced here because those belong in the official member specification and company design documents.
+PCIe 7.0 clocking 的难点不是简单生成一个高速 clock，而是把 reference clock、PLL phase noise、serializer launch clock、clock distribution、CDR recovered clock、phase interpolator、sampler aperture、ADC clock 和 supply-induced jitter 全部映射到最终 eye margin。
 
-TODO: verify exact PCIe 7.0 electrical jitter, reference clock, SSC, receiver tolerance, and compliance masks against the official PCI-SIG member specification.
+对 analog / mixed-signal IC engineer 来说，最关键的问题是：
 
-## Clocking Is the SerDes Timing Spine
+$$
+\text{How much timing uncertainty reaches the TX launch edge or RX sampling instant?}
+$$
 
-In a PCIe 7.0 PHY, the clocking chain includes more than a single PLL. It includes the reference clock input, PLL, dividers, phase generators, clock buffers, phase interpolators, TX launch clock, RX sampling clock, CDR loop, equalization interaction, supply network, and post-layout routing.
+这个问题会同时影响：
+
+| Area | Why clocking matters |
+|---|---|
+| PLL | phase noise、spur、supply pushing、loop bandwidth 会变成 output timing uncertainty |
+| CDR | sampling phase 决定 receiver 在 symbol eye 的哪个位置判决 |
+| Jitter budget | UI 定义错误会让 jitter margin 估算错一倍 |
+| Channel | 64 Gbaud PAM4 的 Nyquist 是 32 GHz，决定 channel loss 和 equalizer burden |
+| ADC-based RX | aperture jitter 和 TI-ADC skew 会把 timing error 转换成 voltage error |
+| CTLE / FFE / DFE | equalization 改变 edge slope、ISI、data-dependent jitter 和 CDR phase detector behavior |
+| Verification | behavioral model、transistor simulation、post-layout extraction 和 compliance test 必须使用一致的 rate/UI definition |
+
+如果在面试中把 PCIe 7.0 的 128 GT/s 直接说成 128 Gbaud，然后得到 7.8125 ps symbol UI 和 64 GHz Nyquist，这是一个明显的 PAM4 概念错误。
+
+更深入地看，PCIe 7.0 clocking 同时跨越三个层次。第一个层次是 information rate，也就是每条 lane 每秒传多少 bit-equivalent information。第二个层次是 electrical waveform，也就是 channel 上真实变化的 PAM4 symbol rate、eye opening、ISI、reflection 和 noise。第三个层次是 implementation clocking，也就是 PLL、divider、serializer、PI、CDR 和 sampler 如何用有限相位精度、有限带宽和非理想 supply 去实现这个 waveform。
+
+很多设计错误来自把这三个层次压成一个数字。例如说 "PCIe 7.0 is 128G, so clock is 128 GHz" 就同时混淆了 bit-equivalent rate、symbol rate 和 implementation clock frequency。一个严谨的回答应该先拆开：public rate 是 128 GT/s，PAM4 每 symbol 2 bits，所以 electrical symbol rate 是 64 Gbaud；至于 PLL 输出频率，要看 full-rate、half-rate、quarter-rate、multi-phase serializer 和 CDR 架构。
+
+## 3. PCIe 7.0 Signaling Overview
+
+PCIe 7.0 的关键公开 signaling point 是：
+
+| Feature | High-level meaning |
+|---|---|
+| Per-lane headline rate | 128 GT/s |
+| Modulation | PAM4 |
+| Bits per PAM4 symbol | 2 bits/symbol |
+| Electrical symbol rate | 64 Gbaud |
+| Symbol UI | 15.625 ps |
+| Nyquist frequency | 32 GHz |
+| Main PHY implication | 更高 spectral efficiency，但 vertical margin 比 NRZ 小很多 |
+
+PCIe 传统上用 GT/s 表达 transfer rate。对 NRZ PCIe generation，1 transfer 通常可以直接理解为 1 bit-equivalent transfer，因此 GT/s、Gb/s、Gbaud 在直觉上容易混在一起。但 PCIe 6.0/7.0 使用 PAM4 后，必须把 bit-equivalent rate 和 electrical symbol rate 分开。
+
+PAM4 有四个 amplitude levels，例如可以抽象为：
+
+| PAM4 level | Example bits |
+|---:|---|
+| -3 | 00 |
+| -1 | 01 |
+| +1 | 11 |
+| +3 | 10 |
+
+实际 mapping、precoding、FEC、FLIT mode、scrambling、lane training 等细节不在本文展开。这里关心的是 clocking：receiver 每个 PAM4 symbol 做一次有效 symbol decision，因此 clock phase 的基本时间单位是 symbol UI。
+
+TODO: verify against PCIe 7.0 spec for exact coding, training, compliance, and electrical assumptions.
+
+从 analog waveform 角度，PAM4 的四个电平不是四个“独立数字值”那么简单。每个 symbol transition 都要经过 TX driver、package、PCB channel、connector、receiver termination 和 equalizer。channel 的 frequency-dependent loss 会把一个理想 rectangular symbol stream 变成带有 precursor/postcursor ISI 的连续时间波形。CDR 看到的不是抽象 bit stream，而是带 noise、ISI、crosstalk、supply modulation 和 equalizer residue 的 waveform。
+
+这也是为什么 PCIe 7.0 clocking 不能只讨论 PLL。PLL phase noise 只是一部分；真正决定 sample margin 的是 high-speed clock edge 到达 sampler 的时间误差，以及这个误差在 PAM4 三个 vertical eyes 上造成的 voltage error。
+
+## 4. GT/s vs Gb/s vs Gbaud vs UI
+
+这些术语在高速 SerDes 里经常被混用，但它们对应不同物理量。
+
+| Term | Unit | Meaning | PCIe 7.0 PAM4 example | Common trap |
+|---|---:|---|---:|---|
+| GT/s | transfers/s | PCIe headline transfer rate，通常是 bit-equivalent lane rate | 128 GT/s | 直接当成 electrical Gbaud |
+| Gb/s | bits/s | raw bit rate 或 payload bit rate，取决于上下文 | 128 Gb/s raw lane rate | 忘记 protocol overhead |
+| Gbaud | symbols/s | electrical symbol rate | 64 Gbaud | 对 PAM4 误写成 128 Gbaud |
+| UI | seconds | unit interval，可指 bit UI 或 symbol UI，必须说明 | 15.625 ps symbol UI | 不说明 UI 是 bit-equivalent 还是 symbol |
+| Bit-equivalent UI | seconds | $1/R_b$ | 7.8125 ps | 错拿去做 sampler spacing |
+| Nyquist frequency | Hz | symbol-rate channel 的 baseband Nyquist | 32 GHz | 错用 64 GHz |
+
+对 clocking 和 CDR 来说，推荐在文档中显式写成：
+
+$$
+UI_{sym} = 15.625\text{ ps}
+$$
+
+而不是只写 "UI = 7.8125 ps" 或 "UI = 15.625 ps"。如果上下文是 bit-rate arithmetic，可以写：
+
+$$
+UI_{bit,eq} = 7.8125\text{ ps}
+$$
+
+这两个数都存在，但用途不同。
+
+一个实用判断方法是问："这个数字描述的是 information throughput，还是描述 channel 上的 waveform spacing？" 如果是在算 bandwidth、x16 throughput 或 payload efficiency，可以使用 bit-equivalent rate。如果是在算 CDR sampling position、PI LSB、symbol-spaced equalizer tap、ADC sample placement 或 channel Nyquist，应该使用 symbol rate。
+
+还要注意，implementation clock frequency 可能小于 symbol rate。例如一个 quarter-rate architecture 可以用 16 GHz multi-phase clock 来服务 64 Gbaud symbol stream；一个 half-rate architecture 可能围绕 32 GHz clock phases 设计；某些 architecture 还可能用 edge interleaving、muxing 或 local phase generation。因此 "64 Gbaud" 不自动意味着 "PLL output is 64 GHz"。
+
+## 5. PAM4 Symbol Rate and UI Derivation
+
+对一个 $M$-level modulation，单个 symbol 能表达的 bit 数是：
+
+$$
+b_{sym} = \log_2(M)
+$$
+
+如果 raw bit rate 是 $R_b$，symbol rate 是：
+
+$$
+R_s = \frac{R_b}{\log_2(M)}
+$$
+
+对 PAM4：
+
+$$
+M = 4
+$$
+
+$$
+\log_2(4) = 2
+$$
+
+所以：
+
+$$
+R_s = \frac{R_b}{2}
+$$
+
+对 PCIe 7.0 headline 128 GT/s，可以把它作为 128 Gb/s bit-equivalent lane rate 来做 clocking conversion：
+
+$$
+R_s = \frac{128\text{ Gb/s}}{2} = 64\text{ Gbaud}
+$$
+
+PAM4 symbol UI 是：
+
+$$
+UI_{sym} = \frac{1}{R_s}
+$$
+
+代入：
+
+$$
+UI_{sym} = \frac{1}{64 \times 10^9} = 15.625\text{ ps}
+$$
+
+baseband Nyquist frequency 是 symbol rate 的一半：
+
+$$
+f_{Nyquist} = \frac{R_s}{2} = 32\text{ GHz}
+$$
+
+注意：
+
+$$
+UI_{bit,eq} = \frac{1}{128 \times 10^9} = 7.8125\text{ ps}
+$$
+
+这个 7.8125 ps 是 bit-equivalent interval，不是 PAM4 electrical symbol spacing。它可以用于 raw bit-rate arithmetic，但不能直接作为 CDR sampling phase 的 symbol UI。
+
+下面的 flow diagram 是最安全的推导路径。先从 headline bit-equivalent rate 出发，再经过 modulation bits/symbol，得到 symbol rate；从 symbol rate 得到 UI 和 Nyquist。不要从 128 GT/s 直接跳到 symbol UI。
 
 ```mermaid
-flowchart LR
-  REF[Reference clock] --> PLL[PLL / frequency synthesis]
-  PLL --> DIV[Dividers and multiphase generation]
-  DIV --> TXC[TX serializer launch clock]
-  DIV --> RXC[RX sampling clock phases]
-  RXC --> PI[Phase interpolator]
-  PI --> CDR[CDR loop]
-  CDR --> SMP[Sampler / ADC clock]
-  PWR[LDO, decap, supply routing] --> PLL
-  PWR --> DIV
-  PWR --> PI
-  PWR --> SMP
-  CH[Channel ISI and data jitter] --> CDR
+flowchart TD
+  A[PCIe 7.0 headline rate: 128 GT/s] --> B[Treat as bit-equivalent raw lane rate]
+  B --> C[R_b = 128 Gb/s]
+  C --> D[PAM4 has M = 4 levels]
+  D --> E[bits per symbol = log2(4) = 2]
+  E --> F[R_s = R_b / 2 = 64 Gbaud]
+  F --> G[Symbol UI = 1 / R_s = 15.625 ps]
+  F --> H[Nyquist = R_s / 2 = 32 GHz]
+  C --> I[Bit-equivalent UI = 1 / R_b = 7.8125 ps]
+  I --> J[Use for bit-rate arithmetic, not PAM4 sample spacing]
 ```
 
-The practical clocking question is:
+这张图也适合在 interview whiteboard 上画。它把候选人是否真的理解 PAM4 的关键点暴露得很清楚：PAM4 让 symbol rate 减半，但没有免费增加 vertical margin。
+
+## 6. Worked Example 1: 128 GT/s PCIe 7.0 UI and Nyquist
+
+假设分析对象是 PCIe 7.0 单 lane，headline rate 为 128 GT/s，使用 PAM4。
+
+### 6.1 Raw Bit Rate
+
+把 128 GT/s 作为 bit-equivalent lane rate：
 
 $$
-\text{How much timing uncertainty reaches the final sampler or TX launch edge?}
+R_b = 128 \times 10^9\text{ bit/s}
 $$
 
-At PCIe 7.0 speed, a clean-looking PLL number is not enough. The relevant number is the residual timing error at the actual decision point after clock distribution, CDR tracking, phase interpolation, supply noise, and layout parasitics.
-
-## Unit Interval and Why It Matters
-
-For NRZ links, the bit interval and symbol interval are the same. For PCIe 7.0 PAM4, they are not. The timing UI that matters to the TX launch point, CDR phase detector, sampler, PI step size, and horizontal eye margin is the PAM4 symbol interval:
+也就是：
 
 $$
-UI_{sym} = \frac{1}{R_{sym}}
+R_b = 128\text{ Gb/s}
 $$
 
-For PCIe 7.0:
+### 6.2 Bits per Symbol
+
+PAM4 有四个 amplitude levels：
 
 $$
-R_{bit,eq} = 128 \times 10^9\ \text{bit-equivalent transfers/s}
+b_{sym} = \log_2(4) = 2\text{ bits/symbol}
 $$
 
-$$
-R_{sym} = \frac{R_{bit,eq}}{2} = 64 \times 10^9\ \text{symbols/s}
-$$
+### 6.3 Symbol Rate
 
 $$
-UI_{sym} = \frac{1}{64 \times 10^9} = 15.625\ \text{ps}
-$$
-
-The bit-equivalent interval is still \(1/(128 \times 10^9) = 7.8125\ \text{ps}\), but using that value as the PAM4 sampling UI double-counts the effect of PAM4 and makes the timing budget look twice as tight as the symbol-spaced receiver actually sees.
-
-The central clocking fact is therefore the 15.625 ps symbol UI. A picosecond is not small in this system. A 100 fs RMS jitter contributor is:
-
-$$
-\frac{100\ \text{fs}}{15.625\ \text{ps}} = 0.0064\ UI_{sym}
-$$
-
-That is 0.64 percent of a PAM4 symbol UI before including clock distribution, CDR error, channel jitter, supply-induced jitter, sampler aperture uncertainty, and equalization residuals.
-
-### Worked Example: Timing Budget Consumption
-
-Assume a simplified RMS timing budget at the receiver sampler:
-
-| Contributor | RMS jitter |
-|---|---:|
-| PLL integrated jitter | 80 fs |
-| Clock distribution | 60 fs |
-| Phase interpolator noise | 50 fs |
-| Supply-induced clock jitter | 70 fs |
-| Sampler aperture uncertainty | 50 fs |
-
-If these are independent random contributors, combine by root-sum-square:
-
-$$
-\sigma_t = \sqrt{80^2 + 60^2 + 50^2 + 70^2 + 50^2}\ \text{fs}
+R_s = \frac{R_b}{b_{sym}}
 $$
 
 $$
-\sigma_t = 140\ \text{fs}
+R_s = \frac{128\text{ Gb/s}}{2} = 64\text{ Gbaud}
 $$
 
-Normalized to the PCIe 7.0 PAM4 symbol UI:
+### 6.4 Symbol UI
 
 $$
-\sigma_{UI} = \frac{140\ \text{fs}}{15.625\ \text{ps}} = 0.0090\ UI_{sym}
+UI_{sym} = \frac{1}{64 \times 10^9} = 15.625\text{ ps}
 $$
 
-This simplified calculation does not prove compliance. It teaches the discipline: specify where the jitter is measured, what bandwidth is used, which contributors are random, and which contributors are deterministic or correlated.
+这个数是 high-speed analog clocking 里最重要的时间尺度。CDR 的 phase detector、PI step、sampler aperture、ADC sampling edge、DFE decision timing 都围绕这个 symbol UI 工作。
 
-## PAM4 Makes Clocking Less Forgiving
+### 6.5 Bit-Equivalent UI
 
-PCIe 7.0 uses PAM4 in public descriptions. PAM4 sends two bits per symbol using four amplitude levels. That improves spectral efficiency, but it reduces vertical noise margin compared with NRZ.
+$$
+UI_{bit,eq} = \frac{1}{128 \times 10^9} = 7.8125\text{ ps}
+$$
 
-| Property | NRZ | PAM4 |
-|---|---|---|
-| Levels | 2 | 4 |
-| Bits per symbol | 1 | 2 |
-| Vertical eye openings | 1 | 3 |
-| Amplitude spacing for same full scale | Larger | About one-third |
-| Main benefit | Simpler margin | Higher data throughput |
-| Main analog cost | Higher baud for same bits/s | More sensitive to noise, linearity, ISI, and timing |
+这个数只表示 bit-equivalent interval。如果一段文字说 "128 GT/s means UI is 7.8125 ps"，必须追问它说的是 bit-equivalent UI 还是 PAM4 symbol UI。
 
-Clock jitter closes the eye horizontally. PAM4 already has less vertical spacing. In practice, horizontal and vertical impairments interact because a sample taken at the wrong time lands on a different part of an ISI-distorted waveform, creating amplitude error.
+### 6.6 Nyquist Frequency
 
-For a local waveform slope, sampling timing error creates voltage error:
+对 64 Gbaud PAM4 baseband channel：
+
+$$
+f_{Nyquist} = \frac{R_s}{2} = \frac{64\text{ Gbaud}}{2} = 32\text{ GHz}
+$$
+
+这意味着 channel、package、connector、PCB trace、vias、termination、CTLE 和 FFE/DFE 的主要 high-frequency burden 是围绕 32 GHz Nyquist 展开的。实际需要更高频率的模型，因为 transition shape、equalizer behavior、jitter、reflection 和 nonlinear effects 不会在 Nyquist 处突然停止。
+
+### 6.7 x16 Raw Bandwidth
+
+单 lane 单方向 raw byte rate：
+
+$$
+\frac{128\text{ Gb/s}}{8} = 16\text{ GB/s}
+$$
+
+x16 单方向 raw bandwidth：
+
+$$
+16\text{ GB/s} \times 16 = 256\text{ GB/s}
+$$
+
+x16 bidirectional raw bandwidth：
+
+$$
+256\text{ GB/s} \times 2 = 512\text{ GB/s}
+$$
+
+如果考虑 FLIT mode 的 $242/256$ payload efficiency：
+
+$$
+16\text{ GB/s} \times \frac{242}{256} = 15.125\text{ GB/s/lane}
+$$
+
+$$
+15.125\text{ GB/s} \times 16 = 242\text{ GB/s}
+$$
+
+$$
+242\text{ GB/s} \times 2 = 484\text{ GB/s bidirectional}
+$$
+
+TODO: verify against PCIe 7.0 spec for exact payload accounting and overhead definitions.
+
+## 7. NRZ vs PAM4 Comparison
+
+| Property | NRZ | PAM4 | Engineering consequence |
+|---|---|---|---|
+| Levels | 2 | 4 | PAM4 needs multiple thresholds |
+| Bits per symbol | 1 | 2 | PAM4 halves symbol rate for same bit rate |
+| Symbol rate for 128 Gb/s | 128 Gbaud | 64 Gbaud | PAM4 reduces bandwidth demand |
+| Symbol UI for 128 Gb/s | 7.8125 ps | 15.625 ps | PAM4 timing UI is longer than NRZ at same bit rate |
+| Vertical eyes | 1 | 3 | PAM4 has smaller vertical eye openings |
+| Ideal level spacing for same swing | Full swing eye | About one-third spacing per adjacent level | PAM4 is more sensitive to noise and linearity |
+| Equalization | Required at high speed | More delicate | PAM4 needs amplitude accuracy and timing accuracy |
+| CDR | Binary edge/timing information | Multi-level waveform and symbol decisions | CDR can be biased by ISI and level-dependent transition density |
+| ADC-based RX | Optional in some architectures | More attractive | DSP equalization and soft decisions become valuable |
+
+PAM4 is not "easier because the UI is longer" in a simple sense. It trades horizontal bandwidth pressure for vertical margin pressure. Even though PCIe 7.0 PAM4 has 15.625 ps symbol UI, each eye has much less amplitude margin than an NRZ eye at the same full-scale swing.
+
+Sampling time error converts into voltage error through local waveform slope:
 
 $$
 \Delta V \approx \frac{dV}{dt}\Delta t
 $$
 
-This is why clocking cannot be separated from equalization. The same timing error is more damaging when the waveform slope is high or the equalizer has not fully removed ISI.
+For PAM4，$\Delta V$ consumes a smaller vertical eye. Therefore the same timing error can be more damaging than the UI-only number suggests.
 
-## Clocking Blocks and Their Failure Modes
+### 7.1 Worked Example 2: NRZ 128 Gb/s vs PAM4 128 Gb/s
 
-### Reference Clock Input
+假设目标 raw bit rate 都是 128 Gb/s。比较 NRZ 和 PAM4 的 first-order rate conversion：
 
-The reference clock sets the low-frequency timing foundation. In a PLL, reference noise inside the loop bandwidth can transfer to the output. Reference spurs, spread-spectrum clocking, input buffer noise, and board-level coupling can all matter.
+| Quantity | NRZ at 128 Gb/s | PAM4 at 128 Gb/s |
+|---|---:|---:|
+| Modulation levels | 2 | 4 |
+| Bits per symbol | 1 | 2 |
+| Symbol rate | 128 Gbaud | 64 Gbaud |
+| Symbol UI | 7.8125 ps | 15.625 ps |
+| Baseband Nyquist | 64 GHz | 32 GHz |
+| Ideal adjacent level spacing for same full swing | Large | About one-third |
 
-### PLL
-
-The PLL multiplies the reference to high-speed clock phases. In a charge-pump PLL or digital PLL, output phase noise usually includes reference noise, PFD / charge pump noise, divider noise, VCO noise, supply noise, and buffer noise.
-
-The simplified transfer idea is:
+NRZ:
 
 $$
-\Phi_{out}(s) \approx H_{ref}(s)\Phi_{ref}(s) + H_{vco}(s)\Phi_{vco}(s)
+R_{s,NRZ} = \frac{128\text{ Gb/s}}{\log_2(2)} = 128\text{ Gbaud}
 $$
 
-Inside loop bandwidth, reference and in-loop noise matter strongly. Outside loop bandwidth, VCO noise tends to dominate.
+$$
+UI_{NRZ} = \frac{1}{128\times10^9} = 7.8125\text{ ps}
+$$
 
-### Clock Distribution
+$$
+f_{Nyquist,NRZ} = \frac{128\text{ Gbaud}}{2} = 64\text{ GHz}
+$$
 
-Clock buffers, dividers, duty-cycle correctors, and routing can add jitter after the PLL. This matters because the PLL output pin is not where the PHY makes decisions. The final load is the TX serializer, RX sampler, ADC, or phase detector.
+PAM4:
 
-Delay sensitivity to supply noise is often approximated as:
+$$
+R_{s,PAM4} = \frac{128\text{ Gb/s}}{\log_2(4)} = 64\text{ Gbaud}
+$$
+
+$$
+UI_{PAM4} = \frac{1}{64\times10^9} = 15.625\text{ ps}
+$$
+
+$$
+f_{Nyquist,PAM4} = \frac{64\text{ Gbaud}}{2} = 32\text{ GHz}
+$$
+
+这个例子说明 PAM4 的主要价值是 spectral efficiency：同样 128 Gb/s raw rate，PAM4 的 symbol rate 和 Nyquist frequency 都是 NRZ 的一半。但这不是无代价的。相同 full-scale voltage swing 下，PAM4 的相邻 level spacing 约为 NRZ eye opening 的三分之一，因此 thermal noise、offset、linearity、threshold error、ISI residue 和 timing-induced voltage error 都更敏感。
+
+从 analog design 角度，NRZ 的主要压力偏向 extremely high bandwidth 和 very small UI；PAM4 的压力则更均衡地分布在 bandwidth、linearity、noise、jitter、equalization 和 calibration 上。PCIe 7.0 使用 PAM4 后，clocking engineer 仍然要关心 sub-ps jitter，但不能把 timing budget 和 amplitude budget 分开看。
+
+## 8. Clocking Architecture
+
+PCIe 7.0 PHY clocking is a chain, not a single PLL number. A realistic architecture includes reference clock input、PLL、clock dividers、multi-phase generation、serializer clock、local clock distribution、CDR、phase interpolator、recovered clock、sampler/ADC clock。
+
+```mermaid
+flowchart LR
+  REF[REFCLK input] --> RBUF[Reference buffer]
+  RBUF --> PLL[PLL / frequency synthesis]
+  PLL --> DIV[Dividers and multi-phase clocks]
+  DIV --> TXSER[TX serializer launch clock]
+  DIV --> RXPH[RX phase generation]
+  RXPH --> PI[Phase interpolator]
+  CH[Channel + package + PCB] --> RXAFE[RX AFE / CTLE]
+  RXAFE --> EQ[FFE / DFE / DSP]
+  EQ --> PD[CDR phase detector]
+  PD --> CDR[CDR loop filter]
+  CDR --> PI
+  PI --> SMP[Sampler / ADC clock]
+  SMP --> EQ
+  PWR[Supply / LDO / decap] --> PLL
+  PWR --> DIV
+  PWR --> PI
+  PWR --> SMP
+```
+
+### 8.1 Reference Clock
+
+REFCLK 通常是低频 clock source，用于提供 frequency reference。它不是 high-speed serial data clock 本身。REFCLK noise 在 PLL loop bandwidth 内可能传递到 output；REFCLK spur、SSC、board coupling 和 input buffer noise 都可能进入 high-speed clock path。
+
+在系统设计里，REFCLK 的重要性经常被低估，因为它的 nominal frequency 远低于 64 Gbaud symbol rate。但 PLL 是一个 phase-domain system：低频 reference phase error 会通过 loop transfer function 传到 output phase。对于 close-in phase noise、reference spur、spread-spectrum modulation 和 board-level coupling，真正的问题不是 "REFCLK frequency is low"，而是 "PLL loop 对这些相位扰动的传递函数是多少"。
+
+需要关注：
+
+| Concern | Engineering question |
+|---|---|
+| REFCLK phase noise | PLL loop bandwidth 内会传多少到输出？ |
+| REFCLK spur | 会不会变成 deterministic jitter 或 periodic jitter？ |
+| SSC | CDR 能否 track low-frequency modulation？ |
+| Input buffer | buffer additive jitter 是否已经计入？ |
+
+TODO: verify against PCIe 7.0 spec for exact REFCLK and SSC requirements.
+
+### 8.2 PLL
+
+PLL 负责把 reference 转换成 high-speed clock phases。PLL output 可以是 full-rate、half-rate、quarter-rate 或其它架构相关 frequency，不一定等于 64 GHz 或 128 GHz。实际 serializer 可能用 multi-phase clocks、muxing、edge combining、fractional dividers 或 forwarded internal clocks。
+
+PLL phase noise 的简化表达：
+
+$$
+\Phi_{out}(s) \approx H_{ref}(s)\Phi_{ref}(s) + H_{vco}(s)\Phi_{vco}(s) + \Phi_{add}(s)
+$$
+
+其中 $\Phi_{add}(s)$ 包括 PFD/CP noise、divider noise、DSM noise、buffer noise、supply-induced noise 等。
+
+对 PCIe 7.0 preparation，PLL frequency planning 至少要回答三个问题。第一，PLL 输出 clock domain 如何映射到 64 Gbaud symbol stream？例如 16 GHz quarter-rate clock 需要多少相位，phase spacing 如何保证，duty-cycle error 如何影响 serializer。第二，PLL phase noise 在 CDR 能 track 的 frequency range 内如何被处理？TX launch jitter 和 RX local sampling jitter 的意义不同。第三，PLL 之外的 divider、phase generator、clock buffer 和 PI 是否把原本干净的 PLL output 变差。
+
+一个好的 PLL answer 不会只说 "make jitter low"。它会说：specify phase-noise mask or integrated jitter band, separate reference/VCO/divider/buffer/supply contributors, verify across PVT and extracted loading, and translate the final clock edge uncertainty to fraction of 15.625 ps symbol UI.
+
+### 8.3 Serializer Clock
+
+TX serializer launch clock 决定 bit-equivalent data stream 或 PAM4 symbol stream 的 launch timing。它的 deterministic jitter、duty-cycle distortion、multi-phase mismatch 和 supply sensitivity 会直接转成 TX eye closure。
+
+对 PAM4 TX，还要考虑：
+
+| Effect | Why it matters |
+|---|---|
+| Clock-to-DAC timing skew | 不同 level transition 的 timing mismatch 会形成 data-dependent jitter |
+| Driver segment mismatch | PAM4 level linearity 和 timing 交织 |
+| Pre-emphasis timing | FFE tap timing error 会改变 channel input waveform |
+| Supply coupling | 同时影响 clock edge 和 output amplitude |
+
+如果 TX 使用 multi-phase clock，phase spacing error 会表现为 periodic deterministic jitter。如果 PAM4 level generation 使用多个 current segments 或 DAC-like driver，clock skew 还会和 amplitude mismatch 交织：某些 transition 可能比其它 transition 更早或更晚，形成 level-dependent jitter。对 compliance 和 link margin 来说，这类 jitter 不能简单当成 independent random jitter RSS。
+
+### 8.4 Local Clock Distribution
+
+PLL output 到 serializer 或 sampler 之间的 clock tree 是高风险路径。clock buffer additive jitter、supply-induced delay modulation、routing mismatch、duty-cycle distortion、crosstalk 和 substrate coupling 都可能在 PLL 之后引入，因此不会出现在 standalone PLL phase-noise plot 里。
+
+clock buffer delay 对 supply 的一阶敏感性可以写成：
 
 $$
 \Delta t_d \approx K_{d,VDD}\Delta V_{DD}
 $$
 
-where \(K_{d,VDD}\) is the clock path delay sensitivity.
-
-### Phase Interpolator
-
-Many CDRs use phase interpolation to place the sampling clock between available clock phases. PI nonlinearity, mismatch, quantization, control noise, and supply sensitivity create timing error.
-
-If a PI has \(N\) equally spaced steps over one UI, the nominal LSB is:
+如果某段 clock tree 的 delay sensitivity 是 $1\text{ ps}/10\text{ mV}$，而 local supply ripple 是 $1\text{ mV}$ peak，那么 clock edge 会有约 $100\text{ fs}$ peak movement。相对 PCIe 7.0 PAM4 symbol UI：
 
 $$
-t_{LSB} = \frac{UI}{N}
+\frac{100\text{ fs}}{15.625\text{ ps}} = 0.0064 UI_{sym}
 $$
 
-For \(N = 64\) at PCIe 7.0, using the PAM4 symbol UI:
+这看起来小，但它可能是 periodic、correlated 或 data-dependent 的，不能总是和 random jitter 做 RSS。clock distribution 的 signoff 必须包含 extracted parasitics 和 realistic switching activity。
 
-$$
-t_{LSB} = \frac{15.625\ \text{ps}}{64} = 244.1\ \text{fs}
-$$
+### 8.5 CDR and Sampling Phase
 
-Even one PI LSB is a meaningful timing quantity.
+RX CDR 不是简单恢复一个理想 clock。它通过 phase detector 从 data transitions 或 sampled waveform 中估计 phase error，再调节 PI/DCO/sampling phase。CDR loop bandwidth 决定哪些 jitter 被 track，哪些变成 residual sampling error。
 
-### CDR
-
-The CDR decides where the receiver samples incoming data. It tracks some input phase movement and rejects other movement. It also generates its own jitter.
-
-For a first-order mental model:
+一阶直觉模型：
 
 $$
 H_{track}(s) = \frac{\omega_c}{s + \omega_c}
@@ -220,210 +480,493 @@ $$
 H_{error}(s) = 1 - H_{track}(s) = \frac{s}{s + \omega_c}
 $$
 
-Low-frequency input phase variation is mostly tracked. High-frequency input phase variation tends to become residual sampling error.
+low-frequency phase variation 倾向被 CDR track；high-frequency variation 倾向变成 residual timing error。实际 high-order loop、bang-bang PD、Alexander PD、ADC/DSP-based timing recovery 会更复杂。
 
-## Jitter Taxonomy
+recovered clock 也不是“从线缆中取出来的干净 clock”。它是本地 oscillator/PI/DCO 在 CDR loop 控制下生成的 sampling phase。输入 data jitter、phase detector noise、loop quantization、PI INL/DNL、sampler metastability 和 equalizer adaptation 都会影响 recovered phase。因此讨论 recovered clock 必须同时说明 loop bandwidth、phase detector type、equalization state 和 jitter transfer function。
 
-| Jitter type | Typical source | Why it matters |
+## 9. Jitter and Phase Noise Implications
+
+### 9.1 Jitter Types
+
+| Jitter type | Typical source | How to treat |
 |---|---|---|
-| Random jitter | VCO thermal noise, buffer noise, sampler noise | Sets statistical BER tail |
-| Deterministic jitter | duty-cycle distortion, crosstalk, periodic supply ripple | Often bounded but can be large |
-| Data-dependent jitter | channel ISI, unequal transitions | Interacts with equalization and CDR phase detector |
-| Periodic jitter | spurs, switching regulators, digital activity | Creates narrowband stress, can fail tolerance tests |
-| Supply-induced jitter | VCO pushing, buffer delay modulation, PI delay modulation | Connects LDO / power integrity to timing margin |
-| Quantization jitter | finite PI or digitally controlled oscillator step | Limits fine phase placement |
+| Random jitter | VCO thermal noise, buffer noise, sampler noise | RMS, BER tail, RSS if independent |
+| Deterministic jitter | duty-cycle distortion, mismatch, crosstalk | bounded or peak-to-peak |
+| Data-dependent jitter | ISI, unequal transitions, PAM4 level dependence | channel/equalizer dependent |
+| Periodic jitter | spurs, switching regulators, digital clocks | narrowband stress, mask/jitter tolerance concern |
+| Supply-induced jitter | VCO pushing, buffer delay modulation, PI delay modulation | supply injection and PSRR co-sim |
+| Quantization jitter | PI step, DCO step, digital loop resolution | phase granularity and limit cycles |
 
-Do not add all jitter terms blindly. Random independent terms can often be RSS-combined. Correlated or deterministic terms need different treatment, often peak-to-peak, bounded, or bathtub / BER-based analysis.
+不要把所有 jitter 直接 RSS。只有 independent Gaussian-like random terms 才适合简单 RSS。correlated jitter、bounded deterministic jitter、data-dependent jitter 应该用 separate budget 或 bathtub/BER analysis。
 
-## Phase Noise to RMS Jitter
+### 9.2 Phase Noise to RMS Jitter
 
-Single-sideband phase noise \(L(f)\) is commonly integrated to estimate RMS timing jitter:
+single-sideband phase noise $L(f)$ 到 RMS timing jitter 的常用关系是：
 
 $$
 \sigma_t = \frac{1}{2\pi f_0}\sqrt{2\int_{f_1}^{f_2}10^{L(f)/10}df}
 $$
 
-Every meaningful integrated jitter number must include:
+其中：
+
+| Symbol | Meaning |
+|---|---|
+| $f_0$ | carrier / clock frequency |
+| $f_1, f_2$ | integration bandwidth |
+| $L(f)$ | single-sideband phase noise in dBc/Hz |
+| $\sigma_t$ | RMS timing jitter |
+
+任何 meaningful jitter number 都必须说明：
 
 | Required detail | Example |
 |---|---|
-| Carrier / output frequency | 16 GHz |
-| Integration band | 10 kHz to 100 MHz |
-| Measurement point | PLL output, PI output, sampler clock |
-| PVT and supply | TT, 25 C, nominal VDD |
-| RMS or peak-to-peak | RMS |
-| Noise sources included | PLL-only, extracted clock tree, supply injection |
+| Measurement point | PLL output, clock-tree output, PI output, sampler clock |
+| Frequency | 16 GHz carrier, 32 GHz clock, architecture-dependent |
+| Integration band | 10 kHz to 100 MHz, or spec-defined band |
+| Conditions | PVT, supply, activity, extracted layout |
+| Included sources | PLL-only, or PLL + divider + clock tree + PI + supply |
+| RMS vs peak-to-peak | 80 fs RMS is not same as 80 fs p-p |
 
-Bad statement: "PLL jitter is 80 fs."
+TODO: verify against PCIe 7.0 spec for official jitter integration bands and compliance definitions.
 
-Good statement: "The extracted RX sampler clock has 120 fs RMS integrated jitter from 10 kHz to 100 MHz at TT, nominal supply, including PLL, divider, PI, and clock distribution noise."
+从 engineering signoff 角度，phase noise plot 只是起点。要把它用于 link margin，需要决定 integration band，并明确这个 band 和 CDR loop 的关系。例如 TX launch jitter 可能直接影响 transmitted data edge，而 RX local oscillator noise 在 CDR bandwidth 内外的 effect 不同：一部分可能被 loop correction 抑制，一部分可能直接出现在 sampling edge。官方 compliance 对这些带宽和测试方法有严格定义时，必须以 spec 为准。
 
-## Supply Noise to Clock Jitter
+### 9.3 UI Definition Changes the Budget
 
-Supply noise reaches timing margin through several paths:
+假设 sampler clock total random jitter 是 140 fs RMS。
+
+如果错误使用 7.8125 ps 作为 PAM4 symbol UI：
+
+$$
+\frac{140\text{ fs}}{7.8125\text{ ps}} = 0.0179 UI
+$$
+
+如果正确使用 15.625 ps symbol UI：
+
+$$
+\frac{140\text{ fs}}{15.625\text{ ps}} = 0.0090 UI_{sym}
+$$
+
+二者相差 2x。错误 UI 会直接影响 jitter budget、PI LSB interpretation、CDR margin discussion 和 interview answer。
+
+### 9.4 Worked Example 3: Jitter Budget Interpretation Using 15.625 ps UI
+
+假设 RX sampling clock 的 independent RMS contributors 为：
+
+| Contributor | RMS jitter |
+|---|---:|
+| PLL integrated jitter | 80 fs |
+| Divider and multi-phase generation | 45 fs |
+| Clock distribution | 60 fs |
+| Phase interpolator | 50 fs |
+| Supply-induced timing noise | 70 fs |
+| Sampler aperture uncertainty | 50 fs |
+
+RSS:
+
+$$
+\sigma_t =
+\sqrt{80^2 + 45^2 + 60^2 + 50^2 + 70^2 + 50^2}\text{ fs}
+$$
+
+$$
+\sigma_t = 146.4\text{ fs}
+$$
+
+归一化到 PCIe 7.0 PAM4 symbol UI：
+
+$$
+\sigma_{UI} = \frac{146.4\text{ fs}}{15.625\text{ ps}} = 0.00937 UI_{sym}
+$$
+
+这个计算不能证明 compliance。它的价值是建立 discipline：必须说明 measurement point、bandwidth、random/deterministic classification 和 correlation。
+
+进一步解释这个 0.00937 UI。它表示 one-sigma RMS timing uncertainty 约占 symbol UI 的 0.94%。如果把 random jitter extrapolate 到 very low BER，peak-equivalent margin 会乘上一个和 BER 目标有关的 sigma factor；如果还有 deterministic jitter，不能把它简单地吸收到 RMS 里。比如 146 fs RMS random jitter 加上 300 fs bounded deterministic jitter，其 margin interpretation 和单纯 330 fs RMS 完全不同。
+
+另一个关键点是 PAM4 的 vertical penalty。即使 horizontal jitter 只占 1% UI，它通过 local slope 造成的 voltage error 可能接近某个 PAM4 eye 的可用 vertical margin。因此 jitter budget 最后应进入 link-level eye/bathtub 或 statistical analysis，而不是停留在 fs 和 UI 的换算。
+
+## 10. CDR Implications
+
+CDR 的核心任务是把 sampling phase 放在 symbol eye 的合适位置。对于 PCIe 7.0 PAM4，它工作在 64 Gbaud symbol timing 上，而不是 128 Gbaud timing 上。
+
+在 NRZ 中，很多 CDR intuition 来自 transition zero crossing 和 binary decision。但 PAM4 的 transition 有多种幅度：outer transition、inner transition、one-level transition、two-level transition、three-level transition 的 slope 和 probability 都不同。phase detector 如果没有处理好 level dependence，可能会被某些 transition type bias。ADC/DSP-based receiver 可以用更多信息估计 timing error，但也引入 quantization、latency 和 digital loop stability 问题。
+
+### 10.1 PAM4 CDR Timing
+
+PAM4 receiver 每个 symbol 有一个 amplitude decision。理想情况下 sampling instant 位于 symbol eye 的水平中心；但实际中它会被以下因素移动：
+
+| Source | Effect on CDR |
+|---|---|
+| Channel ISI | transition zero-crossing 或 eye center 被 skew |
+| CTLE peaking | 改变 edge slope 和 noise enhancement |
+| FFE tap setting | 改变 precursor/postcursor ISI |
+| DFE error propagation | wrong decision 会影响后续 correction |
+| PAM4 level dependence | 不同 transition amplitude 和 slope 不同 |
+| Supply noise | PI/sampler delay modulation |
+| Loop bandwidth | 决定 jitter transfer / jitter tolerance |
+
+### 10.2 PI Resolution Example
+
+如果 phase interpolator 在一个 symbol UI 内有 64 steps：
+
+$$
+t_{LSB} = \frac{UI_{sym}}{64}
+$$
+
+$$
+t_{LSB} = \frac{15.625\text{ ps}}{64} = 244.1\text{ fs}
+$$
+
+如果系统使用 128 steps：
+
+$$
+t_{LSB} = \frac{15.625\text{ ps}}{128} = 122.1\text{ fs}
+$$
+
+注意 122.1 fs 对应的是 128 steps per PAM4 symbol UI，或者错误地用 7.8125 ps / 64 得到的结果。必须写清楚 PI step 是基于 symbol UI 还是 bit-equivalent UI。
+
+### 10.3 CDR Loop Tradeoff
+
+CDR bandwidth 过宽：
+
+- 会 track 更多 input jitter，可能把 channel jitter 带进 sampling clock。
+- 会引入更多 internal loop noise。
+- bang-bang CDR 可能出现 limit cycle 或 pattern-dependent behavior。
+
+CDR bandwidth 过窄：
+
+- 可能无法 track frequency offset、wander、SSC 或 slow thermal/supply drift。
+- sampling phase 可能偏离 eye center。
+- jitter tolerance 可能不满足要求。
+
+面试中可以这样回答：CDR bandwidth 是 jitter transfer、jitter tolerance、jitter generation 和 equalizer interaction 的折中，不是越大越好，也不是越小越好。
+
+## 11. Channel and Nyquist Implications
+
+64 Gbaud PAM4 的 baseband Nyquist frequency 是：
+
+$$
+f_{Nyquist} = \frac{64\text{ Gbaud}}{2} = 32\text{ GHz}
+$$
+
+这不是说 channel 只需要到 32 GHz。实际 channel modeling 通常需要覆盖更高频率，因为 transitions、reflections、package resonance、crosstalk 和 equalizer response 都会影响 time-domain waveform。
+
+Nyquist frequency 的正确用途是建立 first-order bandwidth target。对 symbol-spaced equalizer 来说，32 GHz 是 64 Gbaud PAM4 waveform 的基本 spectral anchor。对 analog front-end 来说，CTLE 需要在接近 Nyquist 的区域补偿 insertion loss，但 peaking 会同时放大 noise 和 crosstalk。对 TX FFE 来说，pre-emphasis 可以帮助 channel loss，但会消耗 swing、power 和 linearity margin。对 DFE 来说，它主要处理 postcursor ISI，但错误 decision 会导致 error propagation，PAM4 三个 thresholds 让这个问题更敏感。
+
+### 11.1 Why 32 GHz Matters
+
+Nyquist frequency 是理解 loss budget 和 equalization burden 的 first-order anchor：
+
+| Item | Why 32 GHz matters |
+|---|---|
+| Package | bump、escape routing、via、substrate loss 在高频恶化 |
+| PCB | insertion loss、return loss、via stub、connector resonance |
+| CTLE | 需要补偿 high-frequency loss，但会 boost noise |
+| TX FFE | 预补偿 channel loss，同时受 swing 和 power 限制 |
+| RX FFE | digital/analog post-cursor correction，受 noise enhancement 限制 |
+| DFE | 去除 postcursor ISI，但依赖正确 decisions |
+| CDR | phase detector 看到的是 equalized waveform，不是 ideal data |
+
+一个常见工程流程是先用 channel S-parameters 估算 32 GHz 附近 loss，再选择 TX FFE preset、CTLE peaking 和 RX equalizer complexity。然后把 equalized waveform 送入 CDR/timing recovery model，观察 timing bias、data-dependent jitter 和 residual ISI。这个流程必须闭环，因为 equalizer setting 会改变 CDR 看到的 slope，而 CDR sampling phase 又会改变 equalizer adaptation 的 error signal。
+
+### 11.2 Equalization and Timing Coupling
 
 ```mermaid
 flowchart TD
-  S[Supply ripple / LDO noise] --> VCO[VCO supply pushing]
-  S --> BUF[Clock buffer delay modulation]
-  S --> PI[PI delay / interpolation error]
-  S --> SMP[Sampler aperture / comparator delay]
-  VCO --> PH[Phase modulation]
-  BUF --> EDGE[Clock edge movement]
-  PI --> EDGE
-  SMP --> ERR[Sample timing and threshold error]
-  PH --> JIT[Sampling jitter]
-  EDGE --> JIT
-  ERR --> MARGIN[Eye margin loss]
-  JIT --> MARGIN
+  TX[TX FFE / driver] --> CH[Package + PCB channel]
+  CH --> CTLE[RX CTLE]
+  CTLE --> ADC[Sampler or ADC]
+  ADC --> DSP[FFE / DFE / DSP]
+  DSP --> CDR[Timing recovery / CDR]
+  CDR --> CLK[Sampling phase]
+  CLK --> ADC
+  DSP --> ADAPT[Equalizer adaptation]
+  ADAPT --> CTLE
+  ADAPT --> DSP
 ```
 
-For oscillator supply pushing:
+equalization 和 clocking 是闭环耦合的：
+
+- CTLE 改变 edge slope，因此改变 timing error 到 voltage error 的转换。
+- FFE 改变 precursor/postcursor ISI，因此改变 data-dependent jitter。
+- DFE 依赖 previous decisions，timing error 会提高 wrong decision probability。
+- CDR phase detector 看到的是 equalized signal，equalizer setting 会影响 phase error estimate。
+
+## 12. ADC-Based RX Implications
+
+PCIe 7.0 PAM4 可以使用 slicer-based 或 ADC/DSP-heavy receiver architecture。对 ADC-based RX 来说，sampling clock 是 signal path 的核心性能限制之一。
+
+ADC-based RX 的直觉是“先把 waveform 数字化，再让 DSP 处理复杂 equalization”。但这并不意味着 analog clocking 可以放松。ADC 采样瞬间的 aperture jitter、clock duty-cycle error、interleaving skew 和 sampling network bandwidth 会在数字化之前损坏信号。DSP 只能处理已经采到的 samples；如果 sample time 错了，它看到的就是错误 amplitude。
+
+### 12.1 Aperture Jitter
+
+ADC aperture jitter 会把输入斜率转换成电压噪声：
 
 $$
-K_{VDD} = \frac{\Delta f}{\Delta V_{DD}}
+\sigma_v \approx \left|\frac{dV}{dt}\right|\sigma_t
 $$
 
-If supply ripple \(v_n(t)\) modulates frequency, the phase error is:
-
-$$
-\phi_n(t) = 2\pi \int K_{VDD}v_n(t)dt
-$$
-
-For a sinusoidal supply ripple \(v_n(t)=A\sin(2\pi f_m t)\):
-
-$$
-\phi_{pk} = \frac{K_{VDD}A}{f_m}
-$$
-
-and timing jitter peak is:
-
-$$
-t_{pk} = \frac{\phi_{pk}}{2\pi f_0}
-$$
-
-### Worked Example: LDO PSRR to VCO Spur
-
-Assume:
-
-| Parameter | Value |
-|---|---:|
-| External ripple | 10 mV peak |
-| LDO PSRR at ripple frequency | 40 dB |
-| Residual VCO supply ripple | 100 uV peak |
-| VCO supply pushing | 20 MHz/V |
-| Ripple frequency | 1 MHz |
-| Clock frequency | 16 GHz |
-
-Residual ripple:
-
-$$
-A = \frac{10\ \text{mV}}{10^{40/20}} = 100\ \mu\text{V}
-$$
-
-Frequency deviation:
-
-$$
-\Delta f = 20 \times 10^6 \frac{\text{Hz}}{\text{V}} \cdot 100 \times 10^{-6}\text{V} = 2\ \text{kHz}
-$$
-
-Phase modulation peak:
-
-$$
-\phi_{pk} = \frac{\Delta f}{f_m} = \frac{2\ \text{kHz}}{1\ \text{MHz}} = 0.002\ \text{rad}
-$$
-
-Timing jitter peak:
-
-$$
-t_{pk} = \frac{0.002}{2\pi \cdot 16\ \text{GHz}} = 19.9\ \text{fs}
-$$
-
-This example is intentionally simplified. Real analysis must use the supply noise spectrum, PLL transfer functions, AM-to-PM conversion, clock tree sensitivity, and spur compliance limits.
-
-## Clocking and Equalization Interaction
-
-At high speeds, the receiver clock and equalizer are coupled in behavior:
-
-| Block | What it tries to correct | Clocking interaction |
-|---|---|---|
-| CTLE | channel high-frequency loss | changes edge slope seen by CDR |
-| FFE | precursor / postcursor ISI | changes data-dependent jitter |
-| DFE | postcursor ISI after decisions | wrong timing causes wrong decisions, which corrupt adaptation |
-| ADC | samples waveform for DSP | sampling jitter becomes voltage error |
-| CDR | places sampling phase | phase detector depends on equalized waveform |
-
-If CDR sees unequalized data, ISI can bias timing. If equalization adapts using poorly timed samples, the equalizer may converge to a suboptimal state. For PAM4, this is more delicate because symbol decisions have three eyes and multiple thresholds.
-
-## Design Implications
-
-### PLL
-
-PLL phase noise must be specified by integration band and output frequency. The PLL bandwidth should be chosen by balancing reference noise, VCO noise, lock time, spur behavior, and CDR requirements. For PCIe 7.0, PLL design must be verified with supply noise and post-layout clock loading, not only ideal schematic phase noise.
-
-### CDR
-
-CDR loop bandwidth determines which input jitter is tracked and which becomes residual sampling error. Too much bandwidth can pass jitter and internal noise. Too little bandwidth can fail to track low-frequency wander, SSC, or frequency offset. See [[cdr_jitter_tolerance]].
-
-### SerDes TX
-
-TX clock jitter directly modulates launch timing. Duty-cycle distortion and multiphase mismatch can create deterministic jitter. If TX jitter is correlated across lanes or with supply activity, it may show up as periodic or bounded jitter rather than purely random jitter.
-
-### SerDes RX
-
-RX sampling clock quality determines horizontal eye margin. In ADC-based receivers, jitter converts to amplitude noise through \(\Delta V \approx (dV/dt)\Delta t\). In slicer-based receivers, jitter changes the probability of sampling near transitions and interacts with CDR phase detector decisions.
-
-### ADC
-
-ADC aperture jitter limits high-frequency SNDR:
+对 sinusoidal input，aperture jitter 限制的 SNR 是：
 
 $$
 SNR_{jitter} \approx -20\log_{10}(2\pi f_{in}\sigma_t)
 $$
 
-For ADC-based SerDes, clocking is an ADC performance limiter and a link margin limiter at the same time. See [[pam4_adc_based_rx]].
+如果 $\sigma_t = 150\text{ fs}$，且 $f_{in}=16\text{ GHz}$：
 
-### LDO and Power Integrity
+$$
+2\pi f_{in}\sigma_t
+= 2\pi \cdot 16\times10^9 \cdot 150\times10^{-15}
+= 0.0151
+$$
 
-LDO PSRR, output noise, load transient behavior, and supply routing are clocking design parameters. The question is not only "is the LDO stable?" but "how much of its residual noise becomes clock jitter, ADC reference error, or threshold movement?"
+$$
+SNR_{jitter} \approx -20\log_{10}(0.0151) = 36.4\text{ dB}
+$$
 
-### Verification
+这个例子不是 PCIe compliance calculation，只是说明 aperture jitter 在 tens of GHz waveform content 下很快变成 hard limit。
 
-Clocking verification should include phase noise, integrated jitter, transient jitter, extracted clock-tree simulation, supply ripple injection, CDR jitter tolerance, jitter transfer, jitter generation, eye / bathtub analysis, and correlation to link-level simulations.
+在 PAM4 SerDes 中，这个 SNR 公式只是 sinusoidal approximation。真实 waveform 有 ISI、非正弦 spectrum 和 equalizer shaping，但公式给出一个重要直觉：输入频率越高、采样 jitter 越大，jitter-induced noise 越严重。对 32 GHz Nyquist 附近的 content，aperture jitter 会非常快地吃掉 PAM4 vertical margin。
 
-## Common Mistakes
+### 12.2 TI-ADC Timing Skew
 
-1. Quoting integrated jitter without integration bandwidth.
-2. Treating PLL output jitter as the same thing as sampler clock jitter.
-3. RSS-combining deterministic and correlated jitter as if all sources were independent Gaussian noise.
-4. Ignoring clock distribution after the PLL.
-5. Ignoring LDO noise and PSRR at the frequencies where the VCO or clock buffers are sensitive.
-6. Forgetting that PAM4 timing error also creates vertical error through ISI and finite waveform slope.
-7. Discussing CDR without specifying bandwidth, phase detector type, and equalization interaction.
-8. Assuming official PCIe electrical limits from public marketing numbers.
+Time-interleaved ADC 使用多个 sub-ADC 交错采样。每个 sub-ADC 的 timing skew 会产生 spur 和 distortion。对 $N$-way TI-ADC，如果 sub-ADC sampling instant 误差为 $\Delta t_i$，则它等效为 periodic sampling time modulation。
 
-## Interview Q&A
+关键问题：
 
-### Why is PCIe 7.0 clocking difficult?
+| Concern | Effect |
+|---|---|
+| Static skew | 产生 pattern-like distortion 或 spurs |
+| Dynamic skew | 变成 jitter/noise |
+| Clock distribution mismatch | 限制 calibration floor |
+| Supply-induced skew | 与 digital activity 相关，可能 data-dependent |
+| Calibration resolution | 决定 residual timing error |
 
-PCIe 7.0 reaches a 128 GT/s bit-equivalent lane rate. Because it uses PAM4, the electrical symbol rate is 64 GBd and the sampler-facing symbol UI is 15.625 ps. PLL phase noise, CDR error, PI quantization, clock buffer delay modulation, supply-induced jitter, and sampler aperture uncertainty all consume that margin. PAM4 also reduces vertical margin, so timing and amplitude impairments interact.
+相关笔记：[[ti_sar_mismatch_calibration]]、[[pam4_adc_based_rx]]。
 
-### What is the most important jitter number?
+TI-ADC skew 的工程难点在于它既有 static mismatch，也有 dynamic modulation。static skew 可以通过 foreground 或 background calibration 降低；dynamic skew 可能来自 supply noise、clock buffer delay modulation、substrate coupling 或 temperature gradient。后者更难校准，因为它随 activity 和 operating condition 变化。对 PCIe 7.0 这类高速 PAM4 receiver，TI skew budget 最好直接折算成 equivalent sampling jitter 和 voltage error，再进入 link margin model。
 
-The most important number is the timing uncertainty at the actual TX launch point or RX sampling point, with a stated bandwidth and conditions. PLL output jitter is useful, but it is not sufficient if clock distribution, PI, CDR, and supply effects add significant error.
+### 12.3 Digital Equalization
 
-### How does LDO design connect to PCIe 7.0 clocking?
+ADC-based RX 的优势是可以用 DSP 做 FFE/DFE、timing recovery、offset/gain calibration、threshold adaptation 和 soft information processing。但它把 clocking 问题转移成：
 
-Finite LDO PSRR and LDO output noise leave residual supply noise on sensitive clock blocks. That noise can modulate VCO frequency, clock buffer delay, PI delay, sampler aperture, and ADC reference. The result can be phase noise, periodic jitter, eye closure, or degraded ADC SNDR.
+- ADC sample clock phase noise。
+- sampling aperture uncertainty。
+- TI skew calibration。
+- DSP timing recovery loop stability。
+- quantization noise 和 thermal noise 的联合 budget。
+- clock/data/supply coupling 的 behavioral model accuracy。
 
-### How would you debug excess jitter in a PCIe 7.0 PHY?
+## 13. Common Mistakes
 
-Separate the problem by measurement point and spectrum. Check PLL phase noise and spurs, clock tree supply sensitivity, PI linearity, CDR bandwidth, supply ripple correlation, lane-to-lane coupling, and post-layout parasitics. Then classify the jitter as random, deterministic, periodic, or data-dependent before choosing a fix.
+1. Treating 128 GT/s as 128 Gbaud。
+2. Using 7.8125 ps as the PCIe 7.0 PAM4 symbol UI。
+3. Confusing bit-equivalent UI and symbol UI。
+4. Using 64 GHz as the Nyquist frequency for PCIe 7.0 PAM4 instead of 32 GHz。
+5. Ignoring PAM4 amplitude margin loss and only celebrating the longer symbol UI。
+6. Mixing data rate and clock frequency, for example assuming PLL must output exactly 64 GHz or 128 GHz。
+7. Assuming REFCLK directly equals high-speed data clock。
+8. Ignoring CDR loop bandwidth, jitter transfer, jitter tolerance, and jitter generation。
+9. Quoting "80 fs jitter" without integration bandwidth, measurement point, PVT, or included noise sources。
+10. RSS-combining deterministic jitter, correlated supply jitter, and random jitter as if all were independent Gaussian noise。
+11. Treating PLL output jitter as identical to sampler clock jitter after clock tree、PI、CDR 和 layout。
+12. Forgetting that PAM4 timing error also creates vertical error through $\Delta V \approx (dV/dt)\Delta t$。
+13. Designing CTLE/FFE/DFE as if clocking were fixed and independent。
+14. Building a behavioral model with 128 Gbaud sampling assumptions for a 64 Gbaud PAM4 link。
+15. Assuming public headline bandwidth equals usable application payload bandwidth without overhead.
 
-### What should you ask when given "100 fs jitter"?
+## 14. How to Answer in Interview
 
-Ask where it is measured, whether it is RMS or peak-to-peak, what integration bandwidth was used, what clock frequency and PVT corner apply, whether clock tree and supply noise are included, and whether it is correlated with data or supply activity.
+面试回答要避免堆术语。最有效的方式是先给结论，再给推导，再说明工程后果。下面是几个 polished English answers，可以直接用于 Synopsys-style PCIe 7.0 clocking / PLL / CDR interview。
 
-## Sources and Verification Notes
+### 14.1 Polished English Answers
 
-Public PCIe 7.0 facts in this note are based on PCI-SIG public announcements available as of 2026-07-01. The PAM4 clocking calculations in this note use 128 GT/s as the bit-equivalent lane rate and 64 GBd as the electrical symbol rate. Detailed electrical limits remain TODO: verify against the official PCI-SIG member specification and internal Synopsys documentation.
+**Question: What is the key clocking fact for PCIe 7.0?**
+
+PCIe 7.0 is advertised at 128 GT/s per lane, but with PAM4 that is a bit-equivalent rate. Since PAM4 carries two bits per symbol, the electrical symbol rate is 64 Gbaud. Therefore the symbol UI used for CDR sampling, PI resolution, and horizontal eye margin is 15.625 ps, while 7.8125 ps is only the bit-equivalent interval.
+
+**Question: What is the Nyquist frequency and why does it matter?**
+
+For a 64 Gbaud PAM4 waveform, the baseband Nyquist frequency is 32 GHz. That number anchors the channel loss, CTLE peaking, TX FFE, RX equalization, package and PCB modeling. In practice I would still model beyond 32 GHz because transitions, reflections, crosstalk, and equalizer response affect the time-domain eye.
+
+**Question: How would you connect PLL phase noise to link margin?**
+
+I would not stop at PLL integrated jitter. I would specify the integration band and measurement point, propagate the clock through dividers, phase generation, buffers, PI, and local distribution, include supply-induced jitter and CDR residual phase error, and then normalize the final sampler timing uncertainty to the 15.625 ps PAM4 symbol UI.
+
+**Question: Why is PAM4 harder even though the symbol UI is longer?**
+
+PAM4 halves the symbol rate for the same bit rate, which helps bandwidth, but it reduces vertical level spacing. Timing error becomes voltage error through the waveform slope, so jitter, ISI, equalization error, noise, and linearity all interact. The design is not just a horizontal timing problem.
+
+**Question: How would you discuss CDR bandwidth?**
+
+CDR bandwidth sets the tradeoff between tracking low-frequency phase movement and rejecting high-frequency jitter and internal noise. A wider loop can track wander and SSC better, but it may pass more jitter. A narrower loop filters more jitter but may fail tolerance or tracking requirements. The answer depends on jitter transfer, jitter tolerance, jitter generation, and the equalized PAM4 waveform.
+
+### 14.2 Interview Q&A
+
+### Q1. What does 128 GT/s mean for PCIe 7.0?
+
+It is the headline per-lane bit-equivalent transfer rate. For PAM4 clocking calculations, treat it as 128 Gb/s raw bit-equivalent lane rate, then divide by 2 bits/symbol to get 64 Gbaud.
+
+### Q2. Why is PCIe 7.0 not 128 Gbaud?
+
+Because PCIe 7.0 uses PAM4. PAM4 carries 2 bits per symbol, so the electrical symbol rate is:
+
+$$
+R_s = \frac{128\text{ Gb/s}}{2} = 64\text{ Gbaud}
+$$
+
+### Q3. What is the PAM4 symbol UI?
+
+$$
+UI_{sym} = \frac{1}{64\times10^9} = 15.625\text{ ps}
+$$
+
+This is the UI relevant to sampler phase, CDR timing, PI step size, and horizontal symbol eye margin.
+
+### Q4. What is 7.8125 ps then?
+
+It is the bit-equivalent interval:
+
+$$
+UI_{bit,eq} = \frac{1}{128\times10^9} = 7.8125\text{ ps}
+$$
+
+It is useful for raw bit-rate arithmetic, but it is not the PAM4 symbol spacing.
+
+### Q5. What is PCIe 7.0 PAM4 Nyquist frequency?
+
+For 64 Gbaud PAM4:
+
+$$
+f_{Nyquist} = \frac{64\text{ Gbaud}}{2} = 32\text{ GHz}
+$$
+
+### Q6. Does PAM4 make clocking easier because UI is longer?
+
+Not really. PAM4 reduces symbol rate for a given bit rate, but vertical eye margin is much smaller. Timing error converts to voltage error through waveform slope, so horizontal and vertical margins are coupled.
+
+### Q7. What is the most important jitter number?
+
+The most important number is timing uncertainty at the actual TX launch edge or RX sampling instant, with measurement point、integration bandwidth、PVT、supply condition and included noise sources specified.
+
+### Q8. Why is PLL output jitter not enough?
+
+Because jitter can be added after the PLL by dividers、clock buffers、phase interpolators、local routing、sampler aperture、supply noise and CDR loop dynamics. The sampler clock is what matters for RX margin.
+
+### Q9. How do you convert phase noise to RMS jitter?
+
+Use integrated phase noise:
+
+$$
+\sigma_t = \frac{1}{2\pi f_0}\sqrt{2\int_{f_1}^{f_2}10^{L(f)/10}df}
+$$
+
+Then state $f_0$、integration band and measurement point.
+
+### Q10. How does CDR bandwidth affect jitter?
+
+Low-frequency input phase variation tends to be tracked; high-frequency variation tends to become residual sampling error. Wider bandwidth can track more wander but may pass more jitter/noise; narrower bandwidth may improve filtering but hurt tolerance to low-frequency movement.
+
+### Q11. How does PAM4 affect CDR?
+
+PAM4 has multiple levels and smaller vertical eyes. ISI、level-dependent transitions、CTLE/FFE/DFE settings and threshold errors can bias the timing estimate. CDR cannot be designed independently from equalization.
+
+### Q12. What should you say if someone asks "What clock frequency does PCIe 7.0 need?"
+
+Do not answer with a single number without architecture. The symbol rate is 64 Gbaud, but PLL output frequency may be full-rate、half-rate、quarter-rate or multi-phase depending on serializer/CDR architecture. Clarify the clock domain.
+
+### Q13. Why does 32 GHz Nyquist matter for analog design?
+
+It anchors channel loss、package/PCB modeling、CTLE peaking、TX FFE strength、RX equalization and jitter-to-voltage conversion. But models usually need bandwidth beyond 32 GHz.
+
+### Q14. What matters for ADC-based RX?
+
+Sampling clock phase noise、aperture jitter、TI-ADC skew、clock distribution mismatch、calibration residuals and DSP timing recovery. Timing errors become voltage errors before digital equalization can fix them.
+
+### Q15. What would you ask before accepting a "100 fs jitter" claim?
+
+Where is it measured? RMS or peak-to-peak? What integration bandwidth? What carrier frequency? Which PVT and supply? Does it include clock tree, PI, CDR, sampler, and supply noise? Is it random, deterministic, or correlated?
+
+### Q16. How would you debug excessive RX timing margin loss?
+
+Separate by measurement point and spectrum: PLL phase noise/spurs, clock tree additive jitter, PI nonlinearity, CDR bandwidth, supply ripple sensitivity, sampler aperture, equalizer settings, channel ISI and data-dependent jitter. Then classify jitter before choosing a fix.
+
+## 15. Design Checklist
+
+### 15.1 Rate and Timing Definitions
+
+- [ ] State whether 128 GT/s is being used as bit-equivalent lane rate.
+- [ ] Use $R_s = 64\text{ Gbaud}$ for PCIe 7.0 PAM4 symbol timing.
+- [ ] Use $UI_{sym}=15.625\text{ ps}$ for sampler/CDR/PI timing.
+- [ ] Use $UI_{bit,eq}=7.8125\text{ ps}$ only for bit-equivalent arithmetic.
+- [ ] Use $f_{Nyquist}=32\text{ GHz}$ for baseband channel anchor.
+- [ ] Mark official compliance assumptions with TODO: verify against PCIe 7.0 spec.
+
+### 15.2 PLL Preparation
+
+- [ ] Identify PLL architecture: LC PLL, ring PLL, digital PLL, fractional/integer-N, injection-locked, or other.
+- [ ] Specify output frequency and how it maps to 64 Gbaud symbol timing.
+- [ ] Separate reference noise, VCO noise, divider noise, PFD/CP noise, DSM noise and buffer noise.
+- [ ] Define phase-noise integration band and measurement point.
+- [ ] Simulate supply pushing and spur sensitivity.
+- [ ] Include extracted clock loading and clock distribution.
+- [ ] Explain loop bandwidth tradeoff between reference noise、VCO noise、spur、lock time and downstream CDR needs.
+
+### 15.3 CDR Preparation
+
+- [ ] Explain jitter transfer、jitter tolerance and jitter generation.
+- [ ] State CDR loop bandwidth relative to expected wander、SSC and high-frequency jitter.
+- [ ] Model phase detector type and PAM4/equalization interaction.
+- [ ] Include PI resolution, INL/DNL, supply sensitivity and quantization noise.
+- [ ] Check lock acquisition、tracking range、frequency offset and pattern dependence.
+- [ ] Use symbol UI, not bit-equivalent UI, for phase step calculations.
+
+### 15.4 Jitter Budget
+
+- [ ] Create separate buckets for random、deterministic、data-dependent、periodic and supply-induced jitter.
+- [ ] RSS only independent random contributors.
+- [ ] Normalize jitter to $UI_{sym}=15.625\text{ ps}$.
+- [ ] Track measurement point from PLL output to final sampler clock.
+- [ ] Include CDR residual error, not just input jitter.
+- [ ] Include supply and layout parasitics.
+
+### 15.5 Channel and Equalization
+
+- [ ] Use 32 GHz Nyquist as the first-order channel anchor.
+- [ ] Model channel beyond Nyquist for waveform integrity.
+- [ ] Include package、PCB、connector、vias、return loss and crosstalk.
+- [ ] Co-simulate CTLE/FFE/DFE with CDR behavior.
+- [ ] Evaluate PAM4 vertical eye, not only horizontal UI.
+- [ ] Check data-dependent jitter caused by residual ISI.
+
+### 15.6 ADC-Based RX
+
+- [ ] Budget aperture jitter as voltage noise.
+- [ ] Budget TI-ADC static and dynamic timing skew.
+- [ ] Include sampling clock distribution mismatch.
+- [ ] Model quantization noise、thermal noise and jitter-induced noise together.
+- [ ] Verify DSP timing recovery and equalizer adaptation with realistic clock noise.
+- [ ] Connect ADC clock quality to link-level BER or margin metrics.
+
+### 15.7 Verification
+
+- [ ] Run phase noise and transient jitter simulations.
+- [ ] Run extracted clock-tree simulations.
+- [ ] Run supply ripple injection on PLL、clock buffers、PI and sampler.
+- [ ] Verify CDR jitter transfer/tolerance/generation.
+- [ ] Run behavioral link simulations with correct 64 Gbaud PAM4 assumptions.
+- [ ] Check bathtub/BER/margin with random and deterministic jitter separated.
+- [ ] Confirm every official mask/limit with TODO: verify against PCIe 7.0 spec before design signoff.
+
+## 16. Related Notes
+
+- [[pll_phase_noise_jitter]]
+- [[cdr_jitter_tolerance]]
+- [[pam4_adc_based_rx]]
+- [[ti_sar_mismatch_calibration]]
+- [[serdes_channel_equalization]]
+- [[pcie7_gtps_vs_gbaud_ui]]
+- [[phase_noise_jitter]]
+- [[pll_fundamentals]]
+- [[cdr_fundamentals]]
+- [[serdes_power_integrity]]
