@@ -455,3 +455,6 @@ Focus:
 ## Last Updated
 
 2026-07-01
+## Active Study Plans
+
+- `Study_Plans/synopsys_4_week_prep_plan.md`
