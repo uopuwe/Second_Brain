@@ -22,6 +22,14 @@ tags:
 
 # CTLE FFE DFE Notes
 
+## 中文补充翻译
+
+这篇笔记总结高速 SerDes 中三类常见 equalization：CTLE、FFE 和 DFE。它们的共同目标是补偿 channel loss 和 ISI，但作用位置、优缺点和对 noise / timing 的影响不同。
+
+CTLE 位于接收端模拟前端，通过高频 peaking 补偿 channel 高频损耗，但会同时放大 noise 和 crosstalk。FFE 通常在 TX 或 DSP 中使用，通过前后 tap 改变 symbol waveform，减小 precursor / postcursor ISI，但会消耗 swing、power 和线性度。DFE 使用已判决的历史 symbol 去消除 postcursor ISI，不像 CTLE 那样直接放大输入噪声，但有 decision error propagation 风险。
+
+Equalization 和 CDR 不能分开看。equalizer 会改变 CDR 看到的 waveform slope、transition density、ISI residue 和 timing error estimate；CDR sampling phase 又会影响 equalizer adaptation 的误差信号。PAM4 下这种耦合更强，因为 vertical margin 更小、threshold 更多。
+
 ## Purpose
 
 This note summarizes CTLE, FFE, and DFE from the perspective of high-speed SerDes equalization.

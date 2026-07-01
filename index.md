@@ -1,5 +1,13 @@
 # Tony Second Brain
 
+## 中文补充翻译
+
+这是一个个人 Second Brain，用来长期整理来自 ChatGPT 对话、工作笔记、投资分析、健康记录和生活事务管理的知识。它的目标不是逐字保存每一次聊天，而是提炼可以复用的知识、决策、行动项和参考笔记。
+
+主要目录按用途划分：`01_AnalogIC_SerDes` 用于模拟 IC、SerDes、PCIe 7.0、PLL/CDR/clocking、ADC-based receiver、LDO/bandgap、面试准备和论文学习；`02_Synopsys_Work` 用于 Synopsys 入职、薪酬、福利、联系人、职业策略和 onboarding；其他目录分别用于投资、加拿大生活、健康医疗和杂项事务。
+
+当前优先级是围绕 Synopsys PCIe 7.0 clocking / LDO / SerDes 方向建立可持续复习体系：技术笔记要能支持面试、入职前准备、设计讨论和后续项目 onboarding。
+
 ## Purpose
 
 This is my personal Second Brain for organizing long-term knowledge from ChatGPT conversations, work notes, investment analysis, health records, and life administration.

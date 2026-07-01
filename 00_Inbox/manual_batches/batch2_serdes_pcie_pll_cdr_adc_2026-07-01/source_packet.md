@@ -1,5 +1,13 @@
 # Batch 2 Source Packet: SerDes / PCIe / PLL / CDR / ADC
 
+## 中文补充翻译
+
+这个 source packet 是在正式 ChatGPT data export 可用之前，根据已有对话上下文手动重建的一批 SerDes / PCIe / PLL / CDR / ADC 相关材料。它不是完整历史记录，只是用于把已知内容临时合并进 Second Brain 的桥接文件。
+
+合并规则是：保留有用技术知识；不确定或不完整的信息标记为待确认；不能编造 Synopsys 内部细节；除非明确确认，否则不要声称具体内部架构。正式笔记应以这个 packet 为基础，但后续需要用官方导出和真实工作文档校验。
+
+主要主题包括 Synopsys role preparation、SerDes career transition、PCIe 7.0 clocking、PLL phase noise / jitter、CDR、equalization、ADC-based PAM4 RX、TI-SAR calibration、LDO / power integrity，以及如何把这些内容映射到正式技术笔记和面试准备。
+
 ## Batch Info
 
 Date: 2026-07-01

@@ -15,6 +15,14 @@ status: "active"
 
 # Synopsys Benefits and Dental Questions
 
+## 中文补充翻译
+
+这篇笔记用于整理 Synopsys 入职福利和牙科保险相关问题。重点是确认保险从什么时候生效、牙科项目覆盖范围、年度或单项报销额度、家属是否覆盖、claim 流程，以及在入职前后看牙是否会影响报销。
+
+和 HR 或福利供应商沟通时，核心问题包括：coverage start date、dental basic / major / orthodontic coverage、deductible、co-pay、annual maximum、waiting period、pre-authorization、family coverage 和 claim submission process。和牙科诊所沟通时，要确认治疗项目代码、预估费用、是否能直接向保险提交 claim，以及是否建议先做 pre-determination。
+
+这类内容涉及真实福利政策，应以 Synopsys 官方 benefits 文档和保险供应商答复为准。
+
 ## Purpose
 
 Track benefit and dental insurance questions before and after joining Synopsys.

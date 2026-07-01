@@ -24,6 +24,14 @@ tags:
 
 # Bandgap and Reference Notes
 
+## 中文补充翻译
+
+这篇笔记总结 bandgap reference 和 reference distribution。Bandgap 的基本思想是把 CTAT 的 `VBE` 和 PTAT 的 `Delta VBE` 加权相加，得到一阶温度系数较小的参考电压。实际设计还要处理 curvature error、process variation、trim、startup、noise、PSRR、line regulation、load regulation、buffering 和 layout mismatch。
+
+在 SerDes 系统中，reference 不只是低速 bias 电压。它会影响 LDO 输出、PLL bias、VCO tuning、clock buffer delay、ADC reference、PAM4 threshold、RX front-end bias 和 calibration baseline。reference noise 或 supply sensitivity 可能变成 amplitude error、timing jitter 或 threshold drift。
+
+设计时要重点检查温度系数、绝对精度、trim range、startup 是否可靠、noise 是否进入敏感 block、PSRR 是否覆盖 relevant frequency、reference buffer 是否稳定、distribution routing 是否隔离，以及 post-layout mismatch / parasitic 是否改变精度和噪声。
+
 ## Purpose
 
 This note summarizes bandgap and reference design from the perspective of analog IC design and SerDes power integrity.

@@ -22,6 +22,14 @@ tags:
 
 # Synopsys 4-Week Preparation Plan
 
+## 中文补充翻译
+
+这份四周准备计划围绕 Synopsys PCIe 7.0 clocking / LDO / SerDes 方向展开。目标不是泛泛复习所有模拟 IC 主题，而是在入职前建立一套能用于技术讨论、onboarding、面试复盘和后续项目学习的核心知识框架。
+
+第 1 周聚焦 PCIe 7.0 和 SerDes architecture：理解 128 GT/s、PAM4、SerDes TX/channel/RX、equalization、CDR 和 PHY-level signal chain。第 2 周聚焦 PLL / CDR / clocking：理解 phase noise、jitter、PLL loop bandwidth、CDR jitter transfer/tolerance/generation，以及 PCIe 7.0 timing budget。第 3 周聚焦 LDO / bandgap / power：把 stability、PSRR、reference noise、supply-induced jitter 和 power integrity 连接起来。第 4 周聚焦 ADC-based PAM4 RX 和技术故事：理解 ADC、TI-SAR mismatch calibration、aperture jitter、DSP equalization，并把过往项目经验整理成 Synopsys 相关回答。
+
+计划中的英文 deliverables、weekly checks 和 onboarding questions 保留原样，方便直接作为行动清单使用。
+
 ## Purpose
 
 This is a focused 4-week technical preparation plan before joining Synopsys as Analog Design, Senior Staff Engineer.

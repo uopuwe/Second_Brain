@@ -15,6 +15,14 @@ status: "active"
 
 # Synopsys Master Note
 
+## 中文补充翻译
+
+这篇笔记是 Synopsys 相关信息的总入口，用来集中记录职位状态、工作地点、入职时间、薪酬、联系人、角色方向、准备主题、福利问题和长期职业策略。
+
+当前角色方向的核心是 PCIe 7.0 clocking / PLL / CDR / SerDes AMS，以及和 LDO、power integrity、ADC-based receiver 相关的扩展能力。第一年应优先建立对项目架构、内部流程、设计指标和验证方法的理解；之后再逐步向更完整的 SerDes / ADC-based receiver 系统能力扩展。
+
+这份总笔记不是技术细节展开，而是把工作相关的事实、待确认问题和准备路线集中到一个地方，方便后续链接到更深入的技术笔记。
+
 ## Current Status
 
 Accepted and signed written offer from Synopsys Canada.

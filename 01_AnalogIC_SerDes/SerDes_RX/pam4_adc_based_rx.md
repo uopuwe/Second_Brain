@@ -17,6 +17,14 @@ status: "active"
 
 # PAM4 ADC-Based Receiver
 
+## 中文补充翻译
+
+这篇笔记说明为什么 PAM4 receiver 会使用 ADC-based 架构。PAM4 有四个电平和三个眼图，vertical margin 比 NRZ 小得多；在高速 lossy channel 下，单纯依赖模拟 slicer 和固定 equalization 会很困难。ADC-based RX 先采样波形，再用 DSP 做 FFE/DFE、timing recovery support、threshold adaptation、calibration 和 soft decision。
+
+这种架构的优势是数字域可编程、可校准、适合复杂 equalization，也更容易处理 channel variation 和 PAM4 多电平信息。代价是 ADC 需要足够高的 sampling rate、resolution、ENOB 和低 aperture jitter；time-interleaved ADC 还会带来 offset/gain/skew/bandwidth mismatch 和校准负担。
+
+对 PCIe 7.0 / SerDes，ADC-based RX 的关键不是“ADC 越强越好”，而是 ADC、PLL/CDR、clock distribution、LDO supply、AFE、CTLE、DSP equalizer 和 link-level BER 必须一起预算。采样 timing error 会直接变成电压误差，DSP 无法完全修复采样前已经损坏的信息。
+
 ## Purpose
 
 This note explains PAM4 ADC-based SerDes receivers and connects the architecture to PLL jitter, CDR timing, time-interleaved ADC calibration, LDO noise, and PCIe 7.0-class verification. It is written for analog / mixed-signal interview preparation and early technical onboarding.
@@ -320,4 +328,3 @@ The receiver estimates timing error from sampled and often equalized data, filte
 ### What would you verify before trusting an ADC-based RX model?
 
 I would verify ADC nonidealities, jitter injection, CDR loop dynamics, equalizer adaptation, TI calibration convergence, supply/reference noise sensitivity, stressed-channel performance, and correlation between block metrics and link margin.
-

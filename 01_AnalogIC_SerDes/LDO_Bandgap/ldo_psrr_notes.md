@@ -22,6 +22,14 @@ tags:
 
 # LDO PSRR Notes
 
+## 中文补充翻译
+
+这篇笔记从 analog IC 和 SerDes power integrity 角度解释 LDO PSRR。PSRR 描述输入 supply ripple 被 LDO 抑制后，有多少会出现在 regulated output。PSRR 越高，传到负载的 ripple 越小，但 PSRR 是频率相关的 transfer function，不是一个固定 DC 数字。
+
+在 SerDes 中，LDO 输出 ripple 可能扰动 PLL/VCO、clock buffer、CDR、RX front-end、ADC、reference 和 bias。低频 PSRR 主要依赖 loop gain 和 reference；中频受 loop bandwidth、error amplifier、pass device 和 compensation 影响；高频时 loop gain 下降，寄生 feedthrough、package、decap 和 layout path 往往决定真实抑制能力。
+
+设计 review 中要问：PSRR 在哪个频率测量、负载电流是多少、是否接近 dropout、输出电容和 decap 如何、reference noise 是否被包含、是否有 PSRR peaking、以及 supply ripple 如何转换为 jitter 或 amplitude error。
+
 ## Purpose
 
 This note summarizes LDO PSRR from the perspective of analog IC design and SerDes power integrity.

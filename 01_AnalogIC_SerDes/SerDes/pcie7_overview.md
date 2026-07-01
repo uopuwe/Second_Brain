@@ -21,6 +21,14 @@ tags:
 
 # PCIe 7.0 Overview
 
+## 中文补充翻译
+
+这篇笔记概览 PCIe 7.0 对 SerDes PHY 的意义。PCIe 7.0 的公开 headline 是 128 GT/s per lane，并使用 PAM4。因为 PAM4 每个 symbol 承载 2 bits，电气 symbol rate 是 64 Gbaud，symbol UI 是 15.625 ps，baseband Nyquist 是 32 GHz。不能把 128 GT/s 直接当作 128 Gbaud。
+
+PCIe 7.0 的难点不只是更高数据率，还包括 PAM4 vertical margin 变小、channel loss 更严重、equalization 更复杂、CDR 更容易受 ISI 和 jitter 影响、power noise 更容易转化成 amplitude / timing error。PLL phase noise、clock buffer jitter、PI resolution、LDO PSRR、ADC aperture jitter 和 package/PCB channel 都会影响最终 link margin。
+
+这篇笔记适合作为 PCIe 7.0 入门总览：先理解 GT/s、Gb/s、Gbaud、UI、PAM4 和 PHY signal chain，再深入 PLL/CDR、LDO、equalization 和 ADC-based receiver。
+
 ## Purpose
 
 This note summarizes PCIe 7.0 from the perspective of analog / mixed-signal SerDes preparation.

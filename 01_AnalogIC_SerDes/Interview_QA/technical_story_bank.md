@@ -21,6 +21,14 @@ tags:
 
 # Technical Story Bank
 
+## 中文补充翻译
+
+这篇笔记用于把过往项目经验整理成 Synopsys 相关的技术故事。目标不是背诵经历，而是把 LDO stability、PSRR、bandgap/reference、PLL/clocking、ADC calibration、automation / verification productivity 等经历转化为面试和 onboarding 中可讲清楚的工程案例。
+
+一个好的技术故事应该包含：问题背景、设计约束、观察到的失败现象、分析路径、关键 tradeoff、采取的修改、验证结果和学到的经验。对 Synopsys 角色，要特别强调这些经验如何迁移到 PCIe 7.0 clocking、SerDes power integrity、PAM4 ADC-based RX 或 AMS verification。
+
+故事要避免只说“我做过某个 block”。更有价值的是说明你如何定位问题、如何用仿真和 measurement 验证假设、如何处理 PVT / layout / supply / noise / stability，以及如何把复杂问题拆成可执行的 debug plan。
+
 ## Purpose
 
 This note is a working bank of technical stories for interviews, onboarding conversations, and future career discussions.

@@ -1,5 +1,13 @@
 # Processed Batch 2: SerDes / PCIe / PLL / CDR / ADC
 
+## 中文补充翻译
+
+这篇文件记录 Batch 2 的处理结果：把 SerDes、PCIe、PLL、CDR、ADC、LDO 和 Synopsys 准备相关内容，从手动整理的 source packet 合并到正式 Second Brain 笔记中。
+
+提取出的核心主题包括：PCIe 7.0 应作为 128 GT/s PAM4 SerDes PHY 问题学习；PLL phase noise 会变成 timing jitter；CDR 需要从 jitter transfer / tolerance / generation 理解；CTLE、FFE、DFE 与 CDR 相互耦合；ADC-based PAM4 RX 连接 sampling jitter、TI-ADC mismatch、DSP equalization 和 PAM4 decision margin；LDO 应作为 SerDes power integrity 的一部分，而不是孤立 regulator。
+
+文件中的 open questions 主要是待入职后确认的 Synopsys 内部架构、clocking block、PLL/CDR 架构、jitter target、equalization flow、RX 是否 ADC-based、LDO power domain 和 signoff 仿真流程。
+
 Date processed: 2026-07-01
 
 ## Source Packet Used

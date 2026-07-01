@@ -22,6 +22,14 @@ tags:
 
 # Core SerDes Papers
 
+## 中文补充翻译
+
+这篇笔记用于规划 SerDes 相关论文和资料阅读。重点不是盲目收集论文，而是跟踪对 PCIe 7.0 / PAM4 / PLL / CDR / ADC-based RX / power integrity 真正有帮助的主题、指标和设计思路。
+
+阅读 SerDes 论文时，应重点关注数据率、调制方式、UI、Nyquist、channel loss、equalization 架构、PLL/CDR jitter、power、area、process node、BER / bathtub / eye margin、测试条件和 measurement setup。不同论文之间的指标不能直接横向比较，必须确认测试条件、channel、package、supply、temperature 和是否包含实际 silicon measurement。
+
+这份笔记的作用是建立阅读模板：读论文时先抓 architecture 和关键 tradeoff，再看哪些指标与 Synopsys PCIe 7.0 clocking、LDO、ADC receiver 或验证流程相关。
+
 ## Purpose
 
 This note tracks core SerDes papers, books, and reading themes for long-term preparation.
@@ -283,4 +291,3 @@ Headline data rates, unverified marketing claims, missing test conditions, and c
 ## Last Updated
 
 2026-07-01
-

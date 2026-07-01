@@ -23,6 +23,14 @@ tags:
 
 # SerDes Power Integrity
 
+## 中文补充翻译
+
+这篇笔记说明 SerDes power integrity 为什么会直接影响 link margin。高速 SerDes 中，供电噪声不只是“电源质量”问题，它会通过两条主要路径伤害系统：一是变成 amplitude error，影响 RX front-end、ADC、reference、threshold 和 driver swing；二是变成 timing error，影响 PLL、VCO、clock buffer、PI、sampler 和 CDR。
+
+在 PCIe 7.0 / PAM4 下，vertical eye margin 更小，timing UI 也很紧，因此同样的 supply ripple 比低速 NRZ 系统更危险。LDO 的作用是隔离外部 supply noise、提供局部低噪声供电、降低 block 间耦合，但 LDO 本身的 output noise、PSRR peaking、load transient、stability、dropout 和 layout parasitic 都可能成为问题。
+
+这篇笔记的核心思路是把 supply noise 映射到实际 SerDes 错误：PLL jitter、clock buffer delay modulation、RX threshold error、ADC reference / aperture error、bandgap noise 和 correlated lane jitter。设计和验证时必须从 LDO-level、block-level 和 system-level 三层一起检查。
+
 ## Purpose
 
 This note explains how power integrity affects high-speed SerDes performance.

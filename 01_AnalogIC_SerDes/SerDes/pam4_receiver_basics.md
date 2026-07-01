@@ -21,6 +21,14 @@ tags:
 
 # PAM4 Receiver Basics
 
+## 中文补充翻译
+
+这篇笔记解释 PAM4 receiver 的基本概念。PAM4 使用四个电平，每个 symbol 传 2 bits，因此在相同 bit rate 下可以把 symbol rate 降为 NRZ 的一半，但代价是 vertical eye margin 大幅缩小，需要更高线性度、更准确 threshold、更好的 equalization 和更谨慎的 jitter 控制。
+
+PAM4 RX 通常包含 AFE、CTLE、sampler 或 ADC、threshold / slicer、FFE/DFE/DSP、CDR 和 adaptation loop。由于有三个 eye 和多个 decision threshold，offset、gain error、ISI、noise、jitter 和 level-dependent behavior 都比 NRZ 更敏感。
+
+对 PCIe 7.0 这类高速链路，PAM4 的核心 tradeoff 是用 vertical margin 换 bandwidth。不能只说 symbol UI 变长而认为 clocking 更容易；timing error 会通过 `dV/dt` 变成 voltage error，并消耗已经很小的 PAM4 eye margin。
+
 ## Purpose
 
 This note summarizes the basics of a PAM4 receiver for high-speed SerDes preparation.

@@ -22,6 +22,14 @@ tags:
 
 # SerDes Architecture Overview
 
+## 中文补充翻译
+
+这篇笔记概览 SerDes PHY 的系统架构。SerDes 的核心任务是把并行低速数据转换成高速串行信号发送出去，再在接收端从有损 channel 中恢复数据、时钟和符号判决。
+
+典型链路包括 TX serializer、driver、FFE/pre-emphasis、package/PCB/channel、RX termination、CTLE、sampler/ADC、DFE/DSP、CDR 和 clocking。每个模块都不是孤立的：channel loss 会决定 equalization 需求，equalizer 会改变 CDR 看到的边沿和误差信号，PLL/CDR jitter 会影响 sampling margin，LDO/power noise 会同时造成 amplitude error 和 timing error。
+
+对 PCIe 7.0 / PAM4 来说，SerDes 架构重点在于带宽、线性度、jitter、vertical margin、equalization、power integrity 和 verification 的联合 tradeoff。面试或 design review 中要能从完整 signal chain 解释问题，而不是只讲单个 block。
+
 ## Purpose
 
 This note gives a system-level map of a modern high-speed SerDes PHY.

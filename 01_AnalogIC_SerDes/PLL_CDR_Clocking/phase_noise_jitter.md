@@ -21,6 +21,14 @@ tags:
 
 # Phase Noise and Jitter
 
+## 中文补充翻译
+
+这篇笔记解释 phase noise 和 jitter 的关系。Phase noise 是频域中载波附近的相位扰动，通常用 dBc/Hz 随 offset frequency 表示；jitter 是时域中 clock edge 的时间不确定性。两者通过 `Delta t = Delta phi / (2*pi*f0)` 连接。
+
+SerDes 真正关心的是采样边沿或发射边沿到达时间是否正确。把 phase noise 在相关 offset bandwidth 上积分，可以得到 RMS phase error，再转换成 RMS timing jitter。这个 jitter 会造成 horizontal eye closure；在 PAM4 中，还会通过 waveform slope 转化成 voltage error，进一步消耗 vertical margin。
+
+任何 jitter 数字都必须说明 integration bandwidth、carrier frequency、测量点、RMS/peak-to-peak 定义、PVT、supply 条件和包含哪些噪声源。random jitter、deterministic jitter、periodic jitter、data-dependent jitter 和 correlated supply jitter 不能简单混在一个 RSS 数字里。
+
 ## Purpose
 
 This note summarizes phase noise and jitter from the perspective of PLL / CDR / SerDes clocking preparation.

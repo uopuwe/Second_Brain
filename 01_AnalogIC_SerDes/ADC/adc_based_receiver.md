@@ -22,6 +22,14 @@ tags:
 
 # ADC-Based Receiver
 
+## 中文补充翻译
+
+这篇笔记说明 ADC-based receiver 在高速 PAM4 SerDes 中的作用：先把接收到的模拟波形数字化，再由 DSP 完成 equalization、timing recovery support、calibration 和 symbol decision。它用更强的数字处理能力换取模拟前端的一部分简化，但代价是 ADC 性能、采样时钟质量、功耗、面积和校准复杂度。
+
+ADC-based RX 的关键问题包括 front-end bandwidth、sampling rate、ADC resolution、ENOB、SNDR、aperture jitter、time-interleaving、offset/gain/timing/bandwidth mismatch。对 PAM4 来说，ADC 不只是“看清电平”，还要在小 vertical margin、ISI、noise、jitter 和 equalizer residue 下提供足够可靠的数字样本。
+
+在 PCIe 7.0 / 高速 SerDes 语境下，ADC-based RX 和 PLL/CDR 强耦合：采样 jitter 会通过波形斜率变成 voltage error，TI-ADC skew 会产生 spur 或失真，DSP equalization 和 CDR adaptation 会相互影响。验证时不能只看 ADC 静态指标，还要把 clocking、channel、equalization、BER 和 link margin 一起建模。
+
 ## Purpose
 
 This note summarizes ADC-based receiver architecture for high-speed PAM4 SerDes.

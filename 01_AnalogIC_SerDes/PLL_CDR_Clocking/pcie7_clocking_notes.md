@@ -17,6 +17,14 @@ status: "active"
 
 # PCIe 7.0 Clocking Notes
 
+## 中文补充翻译
+
+这篇笔记的核心结论是：PCIe 7.0 的公开速率是 128 GT/s per lane，但由于使用 PAM4，每个 symbol 携带 2 bits，所以电气 symbol rate 是 64 Gbaud，PAM4 symbol UI 是 15.625 ps，baseband Nyquist 是 32 GHz。`7.8125 ps` 是 bit-equivalent interval，不应直接拿来做 PAM4 CDR sampling phase 或 symbol eye margin。
+
+PCIe 7.0 clocking 的难点不是简单生成一个高速 clock，而是把 REFCLK、PLL phase noise、serializer launch clock、clock distribution、CDR recovered clock、PI、sampler aperture、ADC clock 和 supply-induced jitter 全部映射到最终 eye margin。任何 jitter budget 都必须说明 measurement point、integration bandwidth、jitter type、PVT 和 UI 定义。
+
+PAM4 通过降低 symbol rate 减轻带宽压力，但代价是 vertical margin 变小。timing error 会通过 `Delta V ~= dV/dt * Delta t` 转化为 voltage error，因此 PLL/CDR、channel、equalization、ADC aperture jitter、TI-ADC skew 和 LDO/power integrity 都要联合考虑。
+
 ## 0. Status
 
 | Item | Value |
@@ -49,15 +57,15 @@ $$
 
 这个问题会同时影响：
 
-| Area | Why clocking matters |
-|---|---|
-| PLL | phase noise、spur、supply pushing、loop bandwidth 会变成 output timing uncertainty |
-| CDR | sampling phase 决定 receiver 在 symbol eye 的哪个位置判决 |
-| Jitter budget | UI 定义错误会让 jitter margin 估算错一倍 |
-| Channel | 64 Gbaud PAM4 的 Nyquist 是 32 GHz，决定 channel loss 和 equalizer burden |
-| ADC-based RX | aperture jitter 和 TI-ADC skew 会把 timing error 转换成 voltage error |
-| CTLE / FFE / DFE | equalization 改变 edge slope、ISI、data-dependent jitter 和 CDR phase detector behavior |
-| Verification | behavioral model、transistor simulation、post-layout extraction 和 compliance test 必须使用一致的 rate/UI definition |
+| Area             | Why clocking matters                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| PLL              | phase noise、spur、supply pushing、loop bandwidth 会变成 output timing uncertainty                               |
+| CDR              | sampling phase 决定 receiver 在 symbol eye 的哪个位置判决                                                            |
+| Jitter budget    | UI 定义错误会让 jitter margin 估算错一倍                                                                              |
+| Channel          | 64 Gbaud PAM4 的 Nyquist 是 32 GHz，决定 channel loss 和 equalizer burden                                        |
+| ADC-based RX     | aperture jitter 和 TI-ADC skew 会把 timing error 转换成 voltage error                                            |
+| CTLE / FFE / DFE | equalization 改变 edge slope、ISI、data-dependent jitter 和 CDR phase detector behavior                         |
+| Verification     | behavioral model、transistor simulation、post-layout extraction 和 compliance test 必须使用一致的 rate/UI definition |
 
 如果在面试中把 PCIe 7.0 的 128 GT/s 直接说成 128 Gbaud，然后得到 7.8125 ps symbol UI 和 64 GHz Nyquist，这是一个明显的 PAM4 概念错误。
 

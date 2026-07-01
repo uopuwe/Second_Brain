@@ -21,6 +21,14 @@ tags:
 
 # Sampling Jitter in ADCs
 
+## 中文补充翻译
+
+这篇笔记解释 ADC sampling jitter 为什么会限制高速输入下的 SNDR。采样瞬间如果有时间误差，输入波形会因为局部斜率被采在错误电压上，因此 timing error 会转化为 voltage error。
+
+核心关系是：输入频率越高、波形斜率越大、采样 jitter 越大，jitter-induced noise 越严重。常用近似公式是 `SNR_jitter = -20log10(2*pi*f_in*sigma_t)`，它说明在 GHz 到 tens of GHz 的 SerDes / PAM4 receiver 中，即使几十到几百 fs 的 jitter 也可能成为硬限制。
+
+这类 jitter 不一定能靠数字校准消除。随机 aperture jitter 是采样瞬间的不确定性，DSP 只能处理已经采错的样本。TI-ADC 的静态 skew 可以校准，动态 skew、supply-induced skew 和 clock distribution mismatch 则需要通过 clocking、layout、supply isolation 和 calibration 一起控制。
+
 ## Purpose
 
 This note summarizes how sampling jitter affects ADC performance, especially in ADC-based SerDes receivers.

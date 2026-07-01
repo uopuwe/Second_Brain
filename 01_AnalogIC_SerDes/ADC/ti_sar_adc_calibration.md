@@ -21,6 +21,14 @@ tags:
 
 # TI-SAR ADC Calibration
 
+## 中文补充翻译
+
+这篇笔记总结 time-interleaved SAR ADC 的 mismatch 和 calibration。TI-SAR ADC 用多个较低速 SAR 通道交错采样来实现更高总采样率，但每个子 ADC 的 offset、gain、timing skew 和 bandwidth mismatch 都会在输出中形成 spur、distortion 或 noise floor。
+
+Offset mismatch 会造成通道间固定偏移；gain mismatch 会让不同 sub-ADC 对同一输入的幅度响应不同；timing skew 会在高频输入下把时间误差转成电压误差，通常最难处理；bandwidth mismatch 会导致频率相关误差。foreground calibration 适合启动或空闲时校准，background calibration 则在正常工作中持续追踪漂移，但设计更复杂。
+
+对 PCIe 7.0 / PAM4 ADC-based RX 来说，TI-SAR calibration 不只是 ADC 内部问题。采样时钟、PLL jitter、CDR phase、LDO noise、reference stability 和 DSP equalization 都会影响最终 link margin。
+
 ## Purpose
 
 This note summarizes time-interleaved SAR ADC calibration topics relevant to ADC-based SerDes receivers.

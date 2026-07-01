@@ -23,6 +23,14 @@ tags:
 
 # LDO Stability Notes
 
+## 中文补充翻译
+
+这篇笔记解释 LDO stability 对 SerDes 供电的重要性。LDO 是反馈系统，必须在不同 load current、output capacitor、ESR、PVT、dropout、layout parasitic 和 load transient 条件下保持足够 phase margin / gain margin。一个在典型条件下稳定的 LDO，可能在 light load、heavy load、低温、高温、不同 decap 或 post-layout 下变得边缘稳定。
+
+LDO 的主要 pole / zero 来自 output pole、pass device gate pole、error amplifier、load capacitance、ESR zero、Miller compensation 和 feedforward path。稳定性和 PSRR、output noise、transient response 是耦合的：提高 bandwidth 可能改善 transient 和低频 PSRR，但也可能带来 peaking 或噪声问题；过度补偿可以稳定但响应变慢。
+
+对 SerDes 来说，LDO 不稳定或有 ringing 会直接变成 PLL supply modulation、clock buffer delay jitter、RX front-end disturbance 或 ADC/reference error。因此稳定性仿真不能只看一个 AC loop gain corner，要覆盖 PVT、load、cap、dropout、startup、transient 和 post-layout。
+
 ## Purpose
 
 This note summarizes LDO stability from the perspective of analog IC design and SerDes power integrity.

@@ -17,6 +17,14 @@ status: "active"
 
 # CDR Jitter Tolerance
 
+## 中文补充翻译
+
+这篇笔记解释 CDR jitter tolerance：receiver 在维持目标 BER 的前提下，能承受多少输入 jitter。它通常是随 jitter frequency 变化的曲线，而不是一个单一数字。
+
+CDR 会跟踪低频相位变化，但对高频 jitter 的跟踪能力有限。低频 jitter 如果在 CDR bandwidth 内，可能被 recovered clock 跟随；高频 jitter 往往变成 residual sampling error，直接消耗 eye margin。jitter transfer 描述输入 jitter 如何传到 recovered clock 或 output，jitter generation 描述 CDR 自己产生多少 jitter。
+
+PAM4 下 jitter tolerance 更敏感，因为 vertical eye 小、threshold 多、ISI 和 equalization residue 会影响 phase detector。验证 CDR robust 时，应同时看 sinusoidal jitter tolerance、random jitter、periodic jitter、data-dependent jitter、equalizer setting、PI resolution、supply noise 和 link-level BER。
+
 ## Purpose
 
 This note explains CDR jitter tolerance, jitter transfer, and jitter generation for high-speed SerDes receivers, with emphasis on PCIe 7.0-class PAM4 links. The goal is to connect CDR loop behavior to PLL noise, equalization, ADC sampling, jitter compliance, and practical verification.
@@ -313,4 +321,3 @@ Equalization changes the waveform slope and ISI seen by the timing detector. If 
 ### How would you verify CDR robustness?
 
 I would run jitter tolerance sweeps across frequency, jitter transfer, jitter generation, SSC tracking, acquisition under stressed channels, equalizer interaction, supply noise injection, PVT, and Monte Carlo. I would inspect both loop metrics and final BER / eye margin.
-

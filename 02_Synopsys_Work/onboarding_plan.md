@@ -15,6 +15,14 @@ status: "active"
 
 # Synopsys Onboarding Plan
 
+## 中文补充翻译
+
+这份 onboarding 计划的目标，是在加入 Synopsys 前后围绕 PCIe 7.0 clocking 和 LDO 建立清晰的准备路径。重点不是被动适应入职流程，而是尽快理解团队、项目、文档、工具和当前设计压力，并在早期就能对团队产生实际帮助。
+
+入职前应重点复习 PCIe 7.0、SerDes 架构、PLL/CDR/clocking、jitter / phase noise、PAM4、LDO stability、LDO PSRR、bandgap reference 和 ADC-based receiver。第一周主要确认团队结构、工具账号、项目现状和直接职责；前 30/60/90 天逐步从读文档、跑仿真、理解 block ownership，过渡到能独立承担小范围设计或验证任务。
+
+这篇笔记里的英文问题清单可以保留原样，因为它们适合直接用于和 manager、mentor、HR 或 benefits provider 沟通。
+
 ## Goal
 
 Prepare for joining Synopsys as Analog Design, Senior Staff Engineer, with a first-year focus on PCIe 7.0 clocking and LDO.

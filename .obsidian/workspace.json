@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "c2c09a75fd99375a",
+        "id": "5b8581738acf2741",
         "type": "tabs",
         "children": [
           {
-            "id": "5d158fae5c55aa37",
+            "id": "a11c0bd3afa09d2b",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -164,13 +164,24 @@
               "icon": "lucide-list",
               "title": "Outline of pll_fundamentals"
             }
+          },
+          {
+            "id": "c896299ecc911f58",
+            "type": "leaf",
+            "state": {
+              "type": "file-properties",
+              "state": {
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md"
+              },
+              "icon": "lucide-info",
+              "title": "File properties for pll_fundamentals"
+            }
           }
         ]
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -183,15 +194,19 @@
       "bases:Create new base": false
     }
   },
-  "active": "5d158fae5c55aa37",
+  "active": "a11c0bd3afa09d2b",
   "lastOpenFiles": [
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "03_Investing/investing_master_note.md",
     "01_AnalogIC_SerDes/SerDes_RX/pam4_adc_based_rx.md",
     "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
     "01_AnalogIC_SerDes/ADC_TI_SAR",
-    "01_AnalogIC_SerDes/SerDes_RX",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md"
+    "01_AnalogIC_SerDes/SerDes_RX"
   ]
 }

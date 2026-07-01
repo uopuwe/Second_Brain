@@ -22,6 +22,14 @@ tags:
 
 # Analog IC / SerDes Master Index
 
+## 中文补充翻译
+
+这篇笔记是 Analog IC / SerDes 知识库的总索引，用来组织 PCIe 7.0、SerDes architecture、PLL/CDR/clocking、phase noise / jitter、PAM4 receiver、ADC-based RX、LDO/bandgap/power integrity、面试问答、论文阅读和学习计划。
+
+当前职业方向是围绕 Synopsys PCIe 7.0 Clocking / PLL / CDR / SerDes AMS 角色建立系统知识。短期重点是 clocking、PLL、CDR、jitter、PAM4 和 LDO；中期要把 ADC-based receiver、equalization、power integrity 和 verification 串成完整链路视角。
+
+这份索引的作用不是重复每篇技术笔记，而是说明每个知识域为什么重要、应先读哪些文件、哪些问题还需要继续追踪，以及如何把已有 LDO/ADC/analog 经验转化为 SerDes 团队可用的能力。
+
 ## Purpose
 
 This is the central technical index for my Analog IC, SerDes, PCIe 7.0, PLL / CDR, ADC, LDO, and interview preparation notes.

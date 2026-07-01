@@ -1,5 +1,11 @@
 # Current Focus
 
+## 中文补充翻译
+
+当前主线是为 Synopsys PCIe 7.0 clocking / PLL / CDR / LDO 方向做准备。近期重点应放在能直接支撑入职和技术讨论的笔记：PCIe 7.0 clocking、PLL phase noise / jitter、CDR fundamentals、LDO PSRR / stability、SerDes power integrity、PAM4 ADC-based RX。
+
+输出目标不是只读材料，而是形成可复用的解释、公式、设计 checklist、面试问答和 open questions。每天复习时应把“读懂概念”和“能在 design review 中解释影响”连接起来。
+
 ## Current Main Goal
 
 Prepare for Synopsys onboarding with focus on PCIe 7.0 clocking, PLL / CDR, LDO, and SerDes architecture.

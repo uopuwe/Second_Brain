@@ -22,6 +22,14 @@ tags:
 
 # CDR Fundamentals
 
+## 中文补充翻译
+
+这篇笔记解释 CDR 的基本作用：receiver 不能假设本地 clock 天然对准数据眼图中心，必须从接收到的数据或 equalized waveform 中恢复 sampling phase。CDR 通过 phase detector、loop filter、VCO 或 PI、sampler 形成闭环，让采样点跟随数据相位。
+
+PLL 生成本地频率参考，CDR 则解决接收数据的相位对准问题。CDR 的核心指标包括 jitter transfer、jitter tolerance 和 jitter generation。bandwidth 越宽，越能跟踪低频 wander / SSC / frequency offset，但也可能传递更多 input jitter 和 phase detector noise；bandwidth 越窄，滤波更强，但可能跟不上慢变化。
+
+在 PAM4 和 ADC-based receiver 中，CDR 更复杂，因为 phase detector 看到的是多电平、带 ISI、noise 和 equalizer residue 的波形。equalization 会影响 CDR 判断，CDR phase 又会影响 equalizer adaptation，因此两者必须联合仿真和验证。
+
 ## Purpose
 
 This note summarizes CDR fundamentals from the perspective of high-speed SerDes / PCIe 7.0 clocking preparation.

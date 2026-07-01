@@ -21,6 +21,14 @@ tags:
 
 # PLL Fundamentals
 
+## 中文补充翻译
+
+这篇笔记解释 PLL 的基本结构和 SerDes 中的作用。PLL 的目标是从 reference clock 生成频率更高、相位受控的本地 clock，典型 charge-pump PLL 包含 PFD、charge pump、loop filter、VCO 和 divider。PLL 不是单个 block，而是一个反馈系统。
+
+核心 tradeoff 包括 loop bandwidth、stability、lock time、phase noise、reference spur、VCO tuning range、KVCO、divider noise、charge pump mismatch、supply sensitivity 和 clock distribution。更宽 bandwidth 可以压低部分 VCO close-in noise 并加快 lock，但会传递更多 reference / PFD / CP noise，也可能增加 spur 和 stability 风险；更窄 bandwidth 可以滤掉 reference noise，但会留下更多 VCO noise。
+
+在 SerDes 中，PLL 输出最终会影响 TX launch clock、RX local clock、CDR phase interpolator、sampler 或 ADC。设计 review 中不能只问“PLL jitter 是多少”，还要问 carrier frequency、integration bandwidth、measurement point、clock tree、PI、supply noise 和 CDR interaction。
+
 ## Purpose
 
 This note summarizes PLL fundamentals from the perspective of high-speed SerDes / PCIe 7.0 clocking preparation.

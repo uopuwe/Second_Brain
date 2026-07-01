@@ -17,6 +17,14 @@ status: "active"
 
 # TI-SAR Mismatch Calibration
 
+## 中文补充翻译
+
+这篇笔记更系统地整理 TI-SAR ADC mismatch calibration。time-interleaving 通过多个 SAR ADC 并行轮流采样来提高总采样率，但会引入通道间不一致。主要 mismatch 包括 offset、gain、timing skew 和 bandwidth mismatch，其中 timing skew 在高频 SerDes 输入下尤其敏感。
+
+数学上，通道 mismatch 会表现为周期性误差，因此常常产生 spur。offset mismatch 主要表现为固定偏移 spur；gain mismatch 让不同通道的幅度比例不同；timing skew 近似产生 `dV/dt * delta_t` 的电压误差；bandwidth mismatch 则让通道响应随频率不同而变化。
+
+校准方法分为 foreground 和 background。foreground 简单、可控，但需要训练或停机；background 可以持续追踪 PVT 和 aging，但容易和真实数据、equalization、CDR adaptation 相互耦合。对 PAM4 ADC-based RX，校准目标最终应映射到 eye margin、BER、spur、SNDR 和 link robustness。
+
 ## Purpose
 
 This note explains mismatch and calibration in time-interleaved SAR ADCs for high-speed SerDes receivers. It is aimed at someone preparing for ADC / SerDes / PCIe 7.0 mixed-signal work where ADC sampling, clocking, LDO noise, and DSP calibration all interact.
@@ -381,4 +389,3 @@ LDO noise and finite PSRR can disturb ADC references, comparator delay, sampling
 ### How would you verify calibration?
 
 I would check spectral spurs, SNDR, ENOB, PAM4 eye margin, BER impact, convergence time, coefficient stability, PVT drift tracking, supply noise sensitivity, and interaction with CDR/equalizer loops.
-

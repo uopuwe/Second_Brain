@@ -22,6 +22,14 @@ tags:
 
 # Synopsys Relevant Q&A
 
+## 中文补充翻译
+
+这篇笔记把 Synopsys 相关的面试/入职问答集中起来，重点覆盖 PCIe 7.0 SerDes、PLL/CDR、LDO/power、ADC/PAM4，以及如何把已有 analog / LDO / ADC / automation 经验连接到新角色。
+
+回答这类问题时，最重要的是先给清晰结论，再说明工程影响。比如讨论 PCIe 7.0 时，要说明 PAM4、64 Gbaud、15.625 ps symbol UI、32 GHz Nyquist、jitter/equalization/power coupling；讨论 PLL/CDR 时，要说明 phase noise 到 jitter、CDR bandwidth、jitter transfer/tolerance/generation；讨论 LDO 时，要说明 supply noise 如何变成 jitter 或 amplitude error。
+
+这些英文 Q&A 可以保留，因为它们适合直接用于面试口头回答。中文补充的作用是帮助复习时先抓住每类回答背后的技术逻辑。
+
 ## Purpose
 
 This note collects technical Q&A most relevant to Synopsys Analog Design / SerDes / PCIe 7.0 preparation.
