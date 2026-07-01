@@ -25,7 +25,21 @@ Related notes: [[pll_phase_noise_jitter]], [[cdr_jitter_tolerance]], [[phase_noi
 
 ## Public PCIe 7.0 Facts
 
-As of 2026-07-01, public PCI-SIG announcements state that the final PCIe 7.0 specification was released on 2025-06-11. Public headline targets include 128.0 GT/s transfer rate, PAM4 signaling, up to 512 GB/s bidirectional bandwidth for a x16 link, improved power efficiency, low latency, high reliability, and backward compatibility.
+As of 2026-07-01, public PCI-SIG announcements state that the final PCIe 7.0 specification was released on 2025-06-11. Public headline targets include 128.0 GT/s transfer rate, PAM4 signaling, up to 512 GB/s bidirectional raw bandwidth for a x16 link, improved power efficiency, low latency, high reliability, and backward compatibility.
+
+For clocking calculations, do not multiply the 128.0 GT/s headline by two again. With PAM4, the public transfer-rate number is the bit-equivalent lane rate. The electrical symbol rate is half of that:
+
+| Quantity | PCIe 7.0 value | Notes |
+|---|---:|---|
+| Bit-equivalent transfer rate | 128.0 GT/s | 128 Gb/s raw binary lane rate before protocol overhead, per lane, per direction |
+| PAM4 bits per symbol | 2 | Four levels encode two bits per symbol |
+| Electrical symbol rate | 64.0 GBd | \(128.0 / 2\) |
+| Symbol UI for sampler / CDR timing | 15.625 ps | \(1 / 64.0\text{ GBd}\) |
+| Bit-equivalent interval | 7.8125 ps | Useful for raw bit-rate arithmetic, not the PAM4 sample spacing |
+| Raw bandwidth, x16, one direction | 256 GB/s | \(128\text{ Gb/s} \cdot 16 / 8\) |
+| Raw bandwidth, x16, bidirectional | 512 GB/s | Public headline bandwidth |
+
+If a calculation includes PCIe 6.0 / 7.0 FLIT-mode payload efficiency, \(242/256\), the payload number is lower: 15.125 GB/s per lane, 242 GB/s for x16 in one direction, and 484 GB/s bidirectional before any higher-layer traffic effects.
 
 The exact electrical jitter masks, compliance methodology, receiver test assumptions, and implementation details are not reproduced here because those belong in the official member specification and company design documents.
 
@@ -61,29 +75,35 @@ At PCIe 7.0 speed, a clean-looking PLL number is not enough. The relevant number
 
 ## Unit Interval and Why It Matters
 
-The unit interval is the time represented by one transfer interval:
+For NRZ links, the bit interval and symbol interval are the same. For PCIe 7.0 PAM4, they are not. The timing UI that matters to the TX launch point, CDR phase detector, sampler, PI step size, and horizontal eye margin is the PAM4 symbol interval:
 
 $$
-UI = \frac{1}{R}
+UI_{sym} = \frac{1}{R_{sym}}
 $$
 
 For PCIe 7.0:
 
 $$
-R = 128 \times 10^9\ \text{transfers/s}
+R_{bit,eq} = 128 \times 10^9\ \text{bit-equivalent transfers/s}
 $$
 
 $$
-UI = \frac{1}{128 \times 10^9} = 7.8125\ \text{ps}
+R_{sym} = \frac{R_{bit,eq}}{2} = 64 \times 10^9\ \text{symbols/s}
 $$
 
-This is the central timing fact. A picosecond is not small in a 7.8125 ps UI system. A 100 fs RMS jitter contributor is:
-
 $$
-\frac{100\ \text{fs}}{7.8125\ \text{ps}} = 0.0128\ UI
+UI_{sym} = \frac{1}{64 \times 10^9} = 15.625\ \text{ps}
 $$
 
-That is 1.28 percent of a UI before including clock distribution, CDR error, channel jitter, supply-induced jitter, sampler aperture uncertainty, and equalization residuals.
+The bit-equivalent interval is still \(1/(128 \times 10^9) = 7.8125\ \text{ps}\), but using that value as the PAM4 sampling UI double-counts the effect of PAM4 and makes the timing budget look twice as tight as the symbol-spaced receiver actually sees.
+
+The central clocking fact is therefore the 15.625 ps symbol UI. A picosecond is not small in this system. A 100 fs RMS jitter contributor is:
+
+$$
+\frac{100\ \text{fs}}{15.625\ \text{ps}} = 0.0064\ UI_{sym}
+$$
+
+That is 0.64 percent of a PAM4 symbol UI before including clock distribution, CDR error, channel jitter, supply-induced jitter, sampler aperture uncertainty, and equalization residuals.
 
 ### Worked Example: Timing Budget Consumption
 
@@ -107,10 +127,10 @@ $$
 \sigma_t = 140\ \text{fs}
 $$
 
-Normalized to PCIe 7.0 UI:
+Normalized to the PCIe 7.0 PAM4 symbol UI:
 
 $$
-\sigma_{UI} = \frac{140\ \text{fs}}{7.8125\ \text{ps}} = 0.0179\ UI
+\sigma_{UI} = \frac{140\ \text{fs}}{15.625\ \text{ps}} = 0.0090\ UI_{sym}
 $$
 
 This simplified calculation does not prove compliance. It teaches the discipline: specify where the jitter is measured, what bandwidth is used, which contributors are random, and which contributors are deterministic or correlated.
@@ -178,10 +198,10 @@ $$
 t_{LSB} = \frac{UI}{N}
 $$
 
-For \(N = 64\) at PCIe 7.0:
+For \(N = 64\) at PCIe 7.0, using the PAM4 symbol UI:
 
 $$
-t_{LSB} = \frac{7.8125\ \text{ps}}{64} = 122.1\ \text{fs}
+t_{LSB} = \frac{15.625\ \text{ps}}{64} = 244.1\ \text{fs}
 $$
 
 Even one PI LSB is a meaningful timing quantity.
@@ -386,7 +406,7 @@ Clocking verification should include phase noise, integrated jitter, transient j
 
 ### Why is PCIe 7.0 clocking difficult?
 
-PCIe 7.0 reaches 128 GT/s, so one UI is only 7.8125 ps. PLL phase noise, CDR error, PI quantization, clock buffer delay modulation, supply-induced jitter, and sampler aperture uncertainty all consume that margin. PAM4 also reduces vertical margin, so timing and amplitude impairments interact.
+PCIe 7.0 reaches a 128 GT/s bit-equivalent lane rate. Because it uses PAM4, the electrical symbol rate is 64 GBd and the sampler-facing symbol UI is 15.625 ps. PLL phase noise, CDR error, PI quantization, clock buffer delay modulation, supply-induced jitter, and sampler aperture uncertainty all consume that margin. PAM4 also reduces vertical margin, so timing and amplitude impairments interact.
 
 ### What is the most important jitter number?
 
@@ -406,5 +426,4 @@ Ask where it is measured, whether it is RMS or peak-to-peak, what integration ba
 
 ## Sources and Verification Notes
 
-Public PCIe 7.0 facts in this note are based on PCI-SIG public announcements available as of 2026-07-01. Detailed electrical limits remain TODO: verify against the official PCI-SIG member specification and internal Synopsys documentation.
-
+Public PCIe 7.0 facts in this note are based on PCI-SIG public announcements available as of 2026-07-01. The PAM4 clocking calculations in this note use 128 GT/s as the bit-equivalent lane rate and 64 GBd as the electrical symbol rate. Detailed electrical limits remain TODO: verify against the official PCI-SIG member specification and internal Synopsys documentation.
