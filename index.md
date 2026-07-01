@@ -69,6 +69,14 @@ Active technical notes:
 - `01_AnalogIC_SerDes/Interview_QA/synopsys_relevant_qa.md`
 - `01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md`
 
+Processed source packets:
+
+- `00_Inbox/processed_by_chatgpt/batch2_serdes_pcie_pll_cdr_adc_2026-07-01.md`
+
+Manual source packets:
+
+- `00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+
 ---
 
 ### 2. Synopsys Work

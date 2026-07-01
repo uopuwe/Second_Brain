@@ -247,7 +247,57 @@ Open data to fill:
 
 ---
 
-## 8. SerDes / PCIe 7.0 Relevance
+## 8. Story 6: Automation / Verification Productivity
+
+Draft angle:
+
+```text
+I used scripting or automation to make repeated analog verification more reliable across PVT, Monte Carlo, layout extraction, or measurement post-processing.
+```
+
+Technical points:
+
+* reusable simulation setup
+* corner and Monte Carlo sweep control
+* automatic measurement extraction
+* waveform / log parsing
+* regression comparison
+* repeatable plots and summary tables
+* reducing manual error in signoff-style checks
+
+SerDes connection:
+
+```text
+High-speed IP requires many repeated checks: jitter, phase noise, PSRR, stability, supply-noise sensitivity, eye margin, BER-related metrics, calibration convergence, and post-layout corners. Automation makes those checks repeatable and helps catch corner-specific failures earlier.
+```
+
+Synopsys relevance:
+
+```text
+For onboarding, automation is a productivity bridge. Even before knowing every internal architecture detail, I can help by making simulations, measurements, and comparison flows more systematic after learning the approved internal flow. Specific internal signoff flow remains 待确认.
+```
+
+Open data to fill:
+
+* exact script / flow examples safe to discuss
+* measurable time saved
+* bug or corner case found through automation
+* how results were reviewed with designers
+
+---
+
+## 9. Batch 2 Story Mapping
+
+Use these concise story directions when preparing 2-minute answers:
+
+* LDO story: PSRR, stability, transient behavior, PVT, and layout sensitivity; connect residual supply noise to PLL jitter or RX / ADC margin.
+* ADC story: SAR or TI-SAR accuracy, offset / gain / skew mismatch, sampling jitter, and calibration; connect ADC quality to PAM4 level decisions.
+* PLL / DCO story: loop bandwidth, phase noise, jitter, spur, PVT, and supply noise; connect clock quality to TX launch and RX sampling margin.
+* Automation story: repeated simulations, corner coverage, measurement extraction, and comparison discipline; connect repeatability to high-speed IP signoff readiness.
+
+---
+
+## 10. SerDes / PCIe 7.0 Relevance
 
 These stories should connect prior analog IC experience to SerDes system impact:
 
@@ -271,7 +321,7 @@ My background is not separate from SerDes. It supports the clocking, power, refe
 
 ---
 
-## 9. Synopsys Preparation Relevance
+## 11. Synopsys Preparation Relevance
 
 For Synopsys onboarding and future discussions, prepare stories that show:
 
@@ -285,7 +335,7 @@ Do not invent Synopsys internal details. Use open questions until verified.
 
 ---
 
-## 10. Interview Explanation
+## 12. Interview Explanation
 
 Short explanation:
 
@@ -295,7 +345,7 @@ My strongest technical stories are around LDO, reference, PLL / clocking, ADC, a
 
 ---
 
-## 11. Common Interview Questions
+## 13. Common Interview Questions
 
 ## Q1: Tell me about a difficult analog design problem.
 
@@ -313,20 +363,30 @@ PAM4 receivers need accurate amplitude information, and ADC-based RX depends on 
 
 PCIe 7.0 PHY architecture, clocking hierarchy, LDO supply domains, signoff simulations, and team ownership boundaries.
 
+## Q5: How would your automation experience help in a SerDes team?
+
+By making repeated PVT, Monte Carlo, post-layout, jitter, PSRR, and transient checks more reproducible. In high-speed IP, small setup differences can hide or exaggerate failures, so clean measurement automation helps designers compare corners and revisions consistently. The exact internal flow is 待确认 until onboarding.
+
 ---
 
-## 12. Open Questions
+## 14. Open Questions
 
 * Which exact project details are safe to discuss externally?
 * Which stories have the strongest quantified evidence?
 * Which stories best match Synopsys first-year work?
 * Which stories should be shortened into 2-minute versions?
 * Which stories need diagrams?
-* Which Synopsys onboarding questions should be attached to each story?
+* 待确认: Which Synopsys onboarding questions should be attached to each story?
 
 ---
 
-## 13. Related Notes
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+
+---
+
+## 15. Related Notes
 
 * `synopsys_relevant_qa.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
@@ -340,7 +400,7 @@ PCIe 7.0 PHY architecture, clocking hierarchy, LDO supply domains, signoff simul
 
 ---
 
-## 14. Next Actions
+## 16. Next Actions
 
 1. Fill each story with one concrete prior project example.
 2. Create 2-minute and 5-minute versions of each story.
@@ -352,4 +412,3 @@ PCIe 7.0 PHY architecture, clocking hierarchy, LDO supply domains, signoff simul
 ## Last Updated
 
 2026-07-01
-

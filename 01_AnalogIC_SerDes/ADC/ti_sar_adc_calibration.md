@@ -228,6 +228,12 @@ For Synopsys preparation:
 * connect LDO / reference noise to calibration stability
 * mark actual internal calibration architecture as unknown
 
+Batch 2 emphasis:
+
+* Prior discussion included 4-way, 8-way, and 16-way TI-SAR examples; treat exact project details and any Synopsys usage as `待确认`.
+* Offset and gain mismatch mainly create slice-dependent amplitude errors; timing skew creates slope-dependent error and becomes more harmful as input frequency rises.
+* Background calibration can track drift during operation, but it must not destabilize receiver equalization, CDR, or decision-directed adaptation.
+
 ---
 
 ## 10. Interview Explanation
@@ -272,15 +278,21 @@ Calibration running during normal operation to track drift without stopping the 
 
 ## 12. Open Questions
 
-* Does the relevant Synopsys receiver use a time-interleaved ADC?
-* If yes, is it SAR, flash, pipeline, or another architecture?
-* How many interleaved slices are used?
-* Which mismatch sources dominate?
-* What calibration is foreground vs background?
-* How is timing skew detected?
-* How is calibration stability verified?
-* How does calibration interact with equalization and CDR?
-* What supply and reference noise limits are needed for calibration accuracy?
+* 待确认: Does the relevant Synopsys receiver use a time-interleaved ADC?
+* 待确认: If yes, is it SAR, flash, pipeline, or another architecture?
+* 待确认: How many interleaved slices are used?
+* 待确认: Which mismatch sources dominate?
+* 待确认: What calibration is foreground vs background?
+* 待确认: How is timing skew detected?
+* 待确认: How is calibration stability verified?
+* 待确认: How does calibration interact with equalization and CDR?
+* 待确认: What supply and reference noise limits are needed for calibration accuracy?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -309,4 +321,3 @@ Calibration running during normal operation to track drift without stopping the 
 ## Last Updated
 
 2026-07-01
-

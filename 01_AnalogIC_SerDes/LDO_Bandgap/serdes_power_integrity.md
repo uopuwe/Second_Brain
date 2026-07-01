@@ -807,16 +807,22 @@ My LDO experience is directly relevant to SerDes because local regulators are no
 
 ## 20. Open Questions
 
-* Which Synopsys PCIe 7.0 blocks use local LDOs?
-* Are PLL and clock buffers powered by dedicated regulators?
-* What PSRR requirement is used for the PLL supply?
-* What output noise budget is allocated to each LDO?
-* How is supply-induced jitter simulated?
-* Are supply ripple injection simulations part of signoff?
-* How is decap planned between analog and digital regions?
-* How much supply isolation exists between PLL, RX, TX, and DSP?
-* What are the most common silicon issues related to SerDes power integrity?
-* How does Synopsys model package / board supply noise?
+* 待确认: Which Synopsys PCIe 7.0 blocks use local LDOs?
+* 待确认: Are PLL and clock buffers powered by dedicated regulators?
+* 待确认: What PSRR requirement is used for the PLL supply?
+* 待确认: What output noise budget is allocated to each LDO?
+* 待确认: How is supply-induced jitter simulated?
+* 待确认: Are supply ripple injection simulations part of signoff?
+* 待确认: How is decap planned between analog and digital regions?
+* 待确认: How much supply isolation exists between PLL, RX, TX, and DSP?
+* 待确认: What are the most common silicon issues related to SerDes power integrity?
+* 待确认: How does Synopsys model package / board supply noise?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 

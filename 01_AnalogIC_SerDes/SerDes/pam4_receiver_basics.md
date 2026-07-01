@@ -222,7 +222,7 @@ This makes PAM4 RX topics directly relevant:
 * stronger power integrity requirements
 * possible ADC-based RX tradeoffs
 
-The exact PCIe 7.0 implementation details used by Synopsys are unknown until internal documentation is available.
+待确认: The exact PCIe 7.0 implementation details used by Synopsys are unknown until internal documentation is available.
 
 ---
 
@@ -237,6 +237,12 @@ Useful focus:
 * connect PLL / CDR jitter to eye closure
 * connect LDO / reference noise to vertical margin
 * understand why ADC-based RX is attractive for high-speed PAM4
+
+Batch 2 emphasis:
+
+* PAM4 should be studied through both amplitude margin and timing margin.
+* ADC-based RX is useful long-term because it exposes amplitude information for DSP equalization and adaptation, but it increases clock jitter, reference noise, power, and calibration pressure.
+* CTLE / FFE / DFE settings affect the waveform used by CDR, so receiver margin cannot be separated cleanly into independent equalization and timing problems.
 
 ---
 
@@ -282,13 +288,19 @@ It captures amplitude information digitally and enables flexible DSP equalizatio
 
 ## 12. Open Questions
 
-* Is the relevant Synopsys PCIe 7.0 receiver slicer-based or ADC-based?
-* What PAM4 decision / threshold architecture is used?
-* What equalization blocks are in the analog front-end?
-* How is timing recovery performed?
-* How are thresholds calibrated?
-* How is vertical margin measured internally?
-* How is PAM4 receiver margin connected to LDO and reference specs?
+* 待确认: Is the relevant Synopsys PCIe 7.0 receiver slicer-based or ADC-based?
+* 待确认: What PAM4 decision / threshold architecture is used?
+* 待确认: What equalization blocks are in the analog front-end?
+* 待确认: How is timing recovery performed?
+* 待确认: How are thresholds calibrated?
+* 待确认: How is vertical margin measured internally?
+* 待确认: How is PAM4 receiver margin connected to LDO and reference specs?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -317,4 +329,3 @@ It captures amplitude information digitally and enables flexible DSP equalizatio
 ## Last Updated
 
 2026-07-01
-

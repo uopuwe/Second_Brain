@@ -248,7 +248,13 @@ For Synopsys preparation, this note is the map that connects detailed notes:
 * ADC notes explain possible PAM4 RX architecture.
 * Equalization notes explain channel compensation.
 
-Unknown internal implementation details should remain open questions until onboarding.
+Unknown internal implementation details should remain `待确认` until onboarding.
+
+Batch 2 emphasis:
+
+* Use this note as the top-level map linking PCIe 7.0 clocking, PLL jitter, CDR behavior, CTLE / FFE / DFE, ADC-based PAM4 RX, and LDO power integrity.
+* Frame the career transition as moving from block-level analog ownership toward SerDes IP system thinking.
+* Treat LDO, PLL, ADC, and automation experience as credible bridges into high-speed PHY work when each story is tied to eye margin, BER, jitter, or calibration robustness.
 
 ---
 
@@ -294,13 +300,19 @@ LDO noise and finite PSRR can disturb PLL, CDR, RX front-end, ADC, and reference
 
 ## 12. Open Questions
 
-* Which SerDes blocks will I directly work on at Synopsys?
-* How is the PCIe 7.0 PHY partitioned between analog, mixed-signal, and digital teams?
-* Is the receiver slicer-based or ADC-based?
-* What equalization architecture is used?
-* What CDR architecture is used?
-* Which blocks have dedicated LDOs?
-* What documents should I read first after joining?
+* 待确认: Which SerDes blocks will I directly work on at Synopsys?
+* 待确认: How is the PCIe 7.0 PHY partitioned between analog, mixed-signal, and digital teams?
+* 待确认: Is the receiver slicer-based or ADC-based?
+* 待确认: What equalization architecture is used?
+* 待确认: What CDR architecture is used?
+* 待确认: Which blocks have dedicated LDOs?
+* 待确认: What documents should I read first after joining?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -330,4 +342,3 @@ LDO noise and finite PSRR can disturb PLL, CDR, RX front-end, ADC, and reference
 ## Last Updated
 
 2026-07-01
-

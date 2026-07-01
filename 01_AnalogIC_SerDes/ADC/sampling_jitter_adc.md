@@ -198,6 +198,12 @@ Useful preparation focus:
 * understand why high input frequency makes jitter worse
 * avoid claiming actual Synopsys ADC jitter budgets before seeing internal data
 
+Batch 2 emphasis:
+
+* Sampling jitter is the direct bridge between PCIe 7.0 clocking / PLL phase noise and ADC-based PAM4 receiver performance.
+* Static TI-ADC skew may be calibrated, but random aperture jitter becomes noise-like sample error and cannot be fully removed after conversion.
+* Always connect a sampling-jitter number to input frequency, clock path, integration bandwidth, and receiver margin target.
+
 ---
 
 ## 9. Interview Explanation
@@ -242,13 +248,19 @@ Not fully. Static timing skew may be calibrated, but random jitter is a noise pr
 
 ## 11. Open Questions
 
-* What sampling jitter budget is used for Synopsys PCIe 7.0 RX?
-* What clock phase noise integration range is relevant for ADC-based RX?
-* Which clock path dominates sampling jitter?
-* How much jitter comes from PLL vs clock distribution vs supply noise?
-* How is supply-induced ADC jitter simulated?
-* What SNDR or EVM target is required for PAM4 receiver margin?
-* How does CDR loop behavior affect sampling jitter interpretation?
+* 待确认: What sampling jitter budget is used for Synopsys PCIe 7.0 RX?
+* 待确认: What clock phase noise integration range is relevant for ADC-based RX?
+* 待确认: Which clock path dominates sampling jitter?
+* 待确认: How much jitter comes from PLL vs clock distribution vs supply noise?
+* 待确认: How is supply-induced ADC jitter simulated?
+* 待确认: What SNDR or EVM target is required for PAM4 receiver margin?
+* 待确认: How does CDR loop behavior affect sampling jitter interpretation?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -277,4 +289,3 @@ Not fully. Static timing skew may be calibrated, but random jitter is a noise pr
 ## Last Updated
 
 2026-07-01
-

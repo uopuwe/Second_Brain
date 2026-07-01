@@ -353,7 +353,7 @@ Disadvantages:
 * per-lane VCO may consume area and power
 * tuning range and calibration may be needed
 
-In modern multi-lane SerDes, shared PLL plus per-lane PI-based CDR is common, but architecture depends on design goals.
+In modern multi-lane SerDes, shared PLL plus per-lane PI-based CDR is common, but the actual Synopsys architecture is 待确认.
 
 ---
 
@@ -1020,18 +1020,24 @@ My previous PLL, ADC, and LDO experience connects naturally to CDR and SerDes cl
 
 ## 29. Open Questions
 
-* What CDR architecture is used in Synopsys PCIe 7.0 IP?
-* Is the CDR baud-rate or oversampling?
-* Is it bang-bang, linear, or DSP-based?
-* Does it use a phase interpolator or local VCO?
-* What is the target CDR loop bandwidth?
-* How is jitter tolerance verified?
-* How is jitter transfer specified?
-* How does CDR interact with CTLE / DFE / FFE?
-* How does the architecture handle PAM4 timing recovery?
-* How does supply-induced jitter enter the CDR path?
-* What acquisition sequence is used during link training?
-* What are the most common CDR-related debug issues?
+* 待确认: What CDR architecture is used in Synopsys PCIe 7.0 IP?
+* 待确认: Is the CDR baud-rate or oversampling?
+* 待确认: Is it bang-bang, linear, or DSP-based?
+* 待确认: Does it use a phase interpolator or local VCO?
+* 待确认: What is the target CDR loop bandwidth?
+* 待确认: How is jitter tolerance verified?
+* 待确认: How is jitter transfer specified?
+* 待确认: How does CDR interact with CTLE / DFE / FFE?
+* 待确认: How does the architecture handle PAM4 timing recovery?
+* 待确认: How does supply-induced jitter enter the CDR path?
+* 待确认: What acquisition sequence is used during link training?
+* 待确认: What are the most common CDR-related debug issues?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 

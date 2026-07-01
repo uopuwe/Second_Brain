@@ -194,6 +194,12 @@ Useful preparation focus:
 
 Unknown internal details should stay in open questions.
 
+Batch 2 emphasis:
+
+* The long-term target is understanding 112G / 224G-class ADC-based PAM4 RX, even if first-year Synopsys work is more likely PCIe 7.0 clocking / LDO.
+* ADC-based RX should be explained as a full chain: PAM4 waveform, sampling clock, ADC conversion, DSP equalization / adaptation, timing recovery, and symbol decisions.
+* Standalone ADC metrics matter only insofar as they preserve receiver margin after equalization and CDR behavior.
+
 ---
 
 ## 9. Interview Explanation
@@ -238,14 +244,20 @@ It creates sample amplitude error, reducing SNDR and receiver margin.
 
 ## 11. Open Questions
 
-* Is the relevant Synopsys PCIe 7.0 RX ADC-based?
-* What ADC architecture is used if ADC-based RX is present?
-* Is the ADC time-interleaved?
-* What resolution and sample rate are required?
-* How are offset, gain, skew, and bandwidth mismatch calibrated?
-* How is sampling jitter budget allocated?
-* How is ADC SNDR linked to PAM4 link margin?
-* How are LDO and reference noise requirements derived?
+* 待确认: Is the relevant Synopsys PCIe 7.0 RX ADC-based?
+* 待确认: What ADC architecture is used if ADC-based RX is present?
+* 待确认: Is the ADC time-interleaved?
+* 待确认: What resolution and sample rate are required?
+* 待确认: How are offset, gain, skew, and bandwidth mismatch calibrated?
+* 待确认: How is sampling jitter budget allocated?
+* 待确认: How is ADC SNDR linked to PAM4 link margin?
+* 待确认: How are LDO and reference noise requirements derived?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -275,4 +287,3 @@ It creates sample amplitude error, reducing SNDR and receiver margin.
 ## Last Updated
 
 2026-07-01
-

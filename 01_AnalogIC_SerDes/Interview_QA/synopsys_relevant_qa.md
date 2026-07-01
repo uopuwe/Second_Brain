@@ -165,7 +165,58 @@ That is the practical engineering bridge between analog block design and SerDes 
 
 ---
 
-## 8. Synopsys Preparation Relevance
+## 8. Practical Onboarding Questions
+
+Use these after joining, not as assumptions before seeing internal material.
+
+## Clocking / PLL / CDR
+
+* 待确认: What is the PCIe 7.0 clocking hierarchy and which block will I own?
+* 待确认: Which PLL / clock distribution jitter metrics are used in reviews?
+* 待确认: What phase noise integration bandwidth and measurement point should I use?
+* 待确认: How are CDR jitter transfer, tolerance, and generation verified?
+* 待确认: Which simulations are signoff-critical for clocking?
+
+## Equalization / RX
+
+* 待确认: How are CTLE, FFE, DFE, and CDR adaptation sequenced during link training?
+* 待确认: Is the relevant RX path slicer-based, ADC-based, or architecture-dependent?
+* 待确认: What margin metrics are preferred for PAM4 RX review?
+
+## LDO / Power
+
+* 待确认: Which supplies are most sensitive for jitter or receiver margin?
+* 待确认: What PSRR, output noise, transient, and stability checks are required for each LDO?
+* 待确认: How is supply-induced jitter or RX amplitude error simulated?
+
+## Flow / Productivity
+
+* 待确认: What internal scripts, regression flows, and result formats should I use?
+* 待确认: Which previous design or testbench is the best model for my first task?
+
+---
+
+## 9. Interview-Ready Answer Patterns
+
+## Q15: How would you approach onboarding into PCIe 7.0 clocking?
+
+I would first understand the approved clocking hierarchy, frequency plan, ownership boundaries, and jitter metrics. Then I would map the PLL, clock distribution, CDR, and supply domains to the link margin requirements. I would avoid guessing internal architecture and mark open items as 待确认 until I read internal documents or review with the team.
+
+## Q16: How would you connect LDO work to PCIe 7.0 clocking?
+
+I would translate regulator metrics into timing impact. Finite PSRR and LDO output noise can modulate VCO frequency, clock buffer delay, phase interpolator delay, or sampler timing. The result is supply-induced jitter and eye closure, so the LDO should be reviewed together with the jitter budget and sensitive supply domains.
+
+## Q17: How would you discuss ADC experience if the first work is clocking or LDO?
+
+I would use ADC experience to show mixed-signal sampling awareness. ADC-based PAM4 RX depends on accurate sample timing, low reference noise, and calibration of offset, gain, and timing skew. Even if the first task is clocking or LDO, those blocks support ADC / RX margin through sampling jitter and amplitude accuracy.
+
+## Q18: How would automation help in this role?
+
+High-speed IP has many repeated corner, PVT, Monte Carlo, post-layout, jitter, PSRR, transient, and calibration checks. Automation helps keep measurements consistent across revisions and makes review data easier to compare. I would first learn the internal flow, then improve repeatability within that flow.
+
+---
+
+## 10. Synopsys Preparation Relevance
 
 Use this note for:
 
@@ -174,11 +225,11 @@ Use this note for:
 * preparing questions for the team
 * connecting prior experience to expected PCIe 7.0 clocking and LDO work
 
-Do not state internal Synopsys architecture unless it has been confirmed from approved internal sources.
+Do not state internal Synopsys architecture unless it has been confirmed from approved internal sources. Use `待确认` for internal architecture, internal jitter targets, internal CDR architecture, internal clocking implementation, and internal signoff flow.
 
 ---
 
-## 9. Interview Explanation
+## 11. Interview Explanation
 
 One useful framing:
 
@@ -188,7 +239,7 @@ My preparation focus is to connect analog block design to PCIe 7.0 SerDes perfor
 
 ---
 
-## 10. Common Interview Questions
+## 12. Common Interview Questions
 
 Common themes to practice:
 
@@ -205,18 +256,24 @@ Common themes to practice:
 
 ---
 
-## 11. Open Questions
+## 13. Open Questions
 
 * Which technical questions are most likely for the actual Synopsys team?
-* Which internal documents should define the correct architecture vocabulary?
-* What are the team's preferred jitter metrics?
+* 待确认: Which internal documents should define the correct architecture vocabulary?
+* 待确认: What are the team's preferred jitter metrics?
 * How much detail should be known before onboarding versus learned after joining?
 * Which answers need diagrams?
 * Which answers should be expanded into standalone notes?
 
 ---
 
-## 12. Related Notes
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+
+---
+
+## 14. Related Notes
 
 * `technical_story_bank.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
@@ -231,7 +288,7 @@ Common themes to practice:
 
 ---
 
-## 13. Next Actions
+## 15. Next Actions
 
 1. Convert the strongest Q&A into flashcards.
 2. Add diagrams for PLL, CDR, LDO, and ADC-based RX.
@@ -243,4 +300,3 @@ Common themes to practice:
 ## Last Updated
 
 2026-07-01
-

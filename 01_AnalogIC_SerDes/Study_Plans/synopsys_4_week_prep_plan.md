@@ -37,6 +37,18 @@ The goal is not to master every SerDes topic in 4 weeks. The goal is to build a 
 
 ---
 
+## Batch 2 Focus Update
+
+The manual Batch 2 packet reinforces these priorities:
+
+* Put PCIe 7.0 clocking first: PLL phase noise, integrated jitter, clock distribution, CDR behavior, and supply-induced jitter.
+* Treat LDO preparation as SerDes power integrity: PSRR, output noise, stability, load transient, and supply-to-jitter conversion.
+* Keep ADC-based PAM4 RX as the long-term bridge: TI-SAR mismatch, timing skew, sampling jitter, and DSP equalization.
+* Prepare technical stories around LDO, ADC, PLL / DCO, and automation.
+* Mark Synopsys internal architecture, jitter targets, CDR architecture, clocking implementation, and signoff flow as `待确认` until internal sources are available.
+
+---
+
 ## Main Preparation Goals
 
 By the end of this 4-week plan, I should be able to:
@@ -515,31 +527,37 @@ Use these gradually after joining.
 
 ## Architecture Questions
 
-* What is the top-level PCIe 7.0 PHY architecture?
-* Which blocks are owned by the local team?
-* How are clocking, LDO, and analog IP responsibilities divided?
-* What is the most timing-sensitive or noise-sensitive block?
+* 待确认: What is the top-level PCIe 7.0 PHY architecture?
+* 待确认: Which blocks are owned by the local team?
+* 待确认: How are clocking, LDO, and analog IP responsibilities divided?
+* 待确认: What is the most timing-sensitive or noise-sensitive block?
 
 ## Clocking Questions
 
-* What clocking architecture is used?
-* What are the dominant jitter contributors?
-* How is jitter budget allocated?
-* Which simulations are considered signoff-critical?
+* 待确认: What clocking architecture is used?
+* 待确认: What are the dominant jitter contributors?
+* 待确认: How is jitter budget allocated?
+* 待确认: Which simulations are considered signoff-critical?
 
 ## LDO / Power Questions
 
-* Which blocks are powered by local LDOs?
-* What are the PSRR and noise requirements?
-* How is supply noise modeled?
-* What are the key stability corners?
+* 待确认: Which blocks are powered by local LDOs?
+* 待确认: What are the PSRR and noise requirements?
+* 待确认: How is supply noise modeled?
+* 待确认: What are the key stability corners?
 
 ## Career / Learning Questions
 
-* Which internal documents should I read first?
-* Which previous design should I study?
-* Who are the key technical experts for clocking / SerDes?
-* What should I be able to own after 90 days?
+* 待确认: Which internal documents should I read first?
+* 待确认: Which previous design should I study?
+* 待确认: Who are the key technical experts for clocking / SerDes?
+* 待确认: What should I be able to own after 90 days?
+
+---
+
+# Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 

@@ -670,16 +670,22 @@ The second one sounds like an engineer wrote it. The first one sounds like a mar
 
 ## 18. Open Questions
 
-* What integration bandwidth does Synopsys use for PCIe 7.0 clocking jitter?
-* What PLL architecture is used in the relevant IP?
-* What is the target RMS jitter budget?
-* Which jitter contributors dominate in the actual design?
-* How much supply-induced jitter comes from LDO residual ripple?
-* Which clock paths are most sensitive to buffer delay modulation?
-* How is CDR jitter tolerance verified?
-* What compliance tests are used for PCIe 7.0 jitter?
-* How are phase noise and transient jitter correlated in the internal flow?
-* Which simulation benches should I learn first after joining?
+* 待确认: What integration bandwidth does Synopsys use for PCIe 7.0 clocking jitter?
+* 待确认: What PLL architecture is used in the relevant IP?
+* 待确认: What is the target RMS jitter budget?
+* 待确认: Which jitter contributors dominate in the actual design?
+* 待确认: How much supply-induced jitter comes from LDO residual ripple?
+* 待确认: Which clock paths are most sensitive to buffer delay modulation?
+* 待确认: How is CDR jitter tolerance verified?
+* 待确认: What compliance tests are used for PCIe 7.0 jitter?
+* 待确认: How are phase noise and transient jitter correlated in the internal flow?
+* 待确认: Which simulation benches should I learn first after joining?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 

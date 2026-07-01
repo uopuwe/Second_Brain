@@ -394,14 +394,14 @@ For my Synopsys preparation, I should focus on PCIe 7.0 not only as a protocol s
 
 ## 13. Open Questions
 
-* What exact PCIe 7.0 clocking architecture is used in the Synopsys IP?
-* Is the RX slicer-based or ADC-based?
-* What are the main jitter contributors?
-* What is the LDO noise / PSRR requirement?
-* Which blocks are powered by local regulators?
-* How is equalization partitioned between analog and digital?
-* What simulation benches are most important for signoff?
-* What documents should I read first after joining?
+* 待确认: What exact PCIe 7.0 clocking architecture is used in the Synopsys IP?
+* 待确认: Is the RX slicer-based or ADC-based?
+* 待确认: What are the main jitter contributors?
+* 待确认: What is the LDO noise / PSRR requirement?
+* 待确认: Which blocks are powered by local regulators?
+* 待确认: How is equalization partitioned between analog and digital?
+* 待确认: What simulation benches are most important for signoff?
+* 待确认: What documents should I read first after joining?
 
 ---
 
@@ -433,6 +433,12 @@ Primary source to verify public PCIe 7.0 facts:
 
 * PCI-SIG PCIe 7.0 official release and specification pages
 * PCI-SIG FAQ for PCIe 7.0 bandwidth and PAM4 summary
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 

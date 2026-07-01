@@ -242,7 +242,13 @@ Useful focus:
 * understand why PAM4 adaptation is more sensitive than NRZ
 * ask informed questions about the actual equalization partitioning
 
-The actual Synopsys architecture should be treated as unknown until onboarding.
+The actual Synopsys architecture should be treated as `待确认` until onboarding.
+
+Batch 2 emphasis:
+
+* CTLE is analog front-end equalization; FFE may be TX-side or RX-side; DFE cancels postcursor ISI using previous decisions.
+* DFE improves postcursor ISI without the same high-frequency noise boost as CTLE, but PAM4 decisions and error propagation make adaptation more delicate.
+* Equalization and CDR adaptation sequence matters because equalizer settings affect phase detector behavior, and CDR phase affects the samples used by DFE / FFE adaptation.
 
 ---
 
@@ -292,14 +298,20 @@ Equalization shapes the transitions used for phase detection. Poor equalization 
 
 ## 11. Open Questions
 
-* What CTLE architecture is used in the relevant Synopsys PHY?
-* How much equalization is TX vs RX?
-* Is RX FFE analog, digital, or DSP-based?
-* How many DFE taps are used?
-* How are PAM4 DFE decisions represented?
-* What adaptation sequence is used during link training?
-* How does CDR interact with equalization adaptation?
-* What equalization metrics are used for signoff?
+* 待确认: What CTLE architecture is used in the relevant Synopsys PHY?
+* 待确认: How much equalization is TX vs RX?
+* 待确认: Is RX FFE analog, digital, or DSP-based?
+* 待确认: How many DFE taps are used?
+* 待确认: How are PAM4 DFE decisions represented?
+* 待确认: What adaptation sequence is used during link training?
+* 待确认: How does CDR interact with equalization adaptation?
+* 待确认: What equalization metrics are used for signoff?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
@@ -328,4 +340,3 @@ Equalization shapes the transitions used for phase detection. Poor equalization 
 ## Last Updated
 
 2026-07-01
-

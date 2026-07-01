@@ -427,9 +427,9 @@ Focus:
 
 ## Open Technical Questions
 
-* What exact PCIe 7.0 clocking blocks will I work on at Synopsys?
-* How much CDR architecture exposure will I get?
-* Will my first-year work connect directly to SerDes receiver architecture?
+* 待确认: What exact PCIe 7.0 clocking blocks will I work on at Synopsys?
+* 待确认: How much CDR architecture exposure will I get?
+* 待确认: Will my first-year work connect directly to SerDes receiver architecture?
 * Which PLL / CDR topics should be mastered before start date?
 * Which ADC-based receiver papers are most relevant to 112G / 224G PAM4?
 * How should I connect my LDO experience to SerDes IP value?
@@ -476,6 +476,14 @@ Focus:
 ## Active Papers / Books / References Notes
 
 - `Papers_Books/core_serdes_papers.md`
+
+## Source Conversations / Source Packets
+
+- `../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+
+## Processed Batch Summaries
+
+- `../00_Inbox/processed_by_chatgpt/batch2_serdes_pcie_pll_cdr_adc_2026-07-01.md`
 ---
 ## Related Notes
 

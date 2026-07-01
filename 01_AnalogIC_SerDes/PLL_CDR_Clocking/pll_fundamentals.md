@@ -838,16 +838,22 @@ My PLL and clocking experience is relevant to SerDes because high-speed links de
 
 ## 23. Open Questions
 
-* What PLL architecture is used in Synopsys PCIe 7.0 IP?
-* What output clock frequencies are generated?
-* What loop bandwidth is targeted?
-* What integrated jitter budget is required?
-* What phase noise integration range is used?
-* What is the dominant noise contributor?
-* How is supply-induced jitter simulated?
-* How are reference spurs verified?
-* How is clock distributed across lanes?
-* How does the PLL interact with CDR in the actual architecture?
+* 待确认: What PLL architecture is used in Synopsys PCIe 7.0 IP?
+* 待确认: What output clock frequencies are generated?
+* 待确认: What loop bandwidth is targeted?
+* 待确认: What integrated jitter budget is required?
+* 待确认: What phase noise integration range is used?
+* 待确认: What is the dominant noise contributor?
+* 待确认: How is supply-induced jitter simulated?
+* 待确认: How are reference spurs verified?
+* 待确认: How is clock distributed across lanes?
+* 待确认: How does the PLL interact with CDR in the actual architecture?
+
+---
+
+## Source Conversations / Source Packets
+
+* `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
 
 ---
 
