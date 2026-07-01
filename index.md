@@ -32,6 +32,19 @@ Key files to create later:
 - `interview_qa_master.md`
 - `pci_express_7_clocking.md`
 
+Current key notes:
+
+- `01_AnalogIC_SerDes/analog_ic_serdes_master_index.md`
+
+Main technical areas:
+
+- `01_AnalogIC_SerDes/SerDes/`
+- `01_AnalogIC_SerDes/PLL_CDR_Clocking/`
+- `01_AnalogIC_SerDes/ADC/`
+- `01_AnalogIC_SerDes/LDO_Bandgap/`
+- `01_AnalogIC_SerDes/Interview_QA/`
+- `01_AnalogIC_SerDes/Papers_Books/`
+- `01_AnalogIC_SerDes/Study_Plans/`
 ---
 
 ### 2. Synopsys Work
