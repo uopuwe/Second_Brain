@@ -1,0 +1,197 @@
+{
+  "main": {
+    "id": "f8dcb4dcf2367e6d",
+    "type": "split",
+    "children": [
+      {
+        "id": "c2c09a75fd99375a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5d158fae5c55aa37",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "pll_fundamentals"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "256518f6f7ce2a73",
+    "type": "split",
+    "children": [
+      {
+        "id": "1ab78a9f47e1eea2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8d0deb6db06eb29a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "faa29a298ccdb4d0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "69dbf62a4e7ea026",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "1191bca06a9da7e7",
+    "type": "split",
+    "children": [
+      {
+        "id": "bac433a2c476b742",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "306c66dd469722a7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for pll_fundamentals"
+            }
+          },
+          {
+            "id": "12e75313b136c63f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from pll_fundamentals"
+            }
+          },
+          {
+            "id": "227305327a57950b",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "afe181e57eea3a7a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "907ed26ba2cd1e61",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of pll_fundamentals"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "5d158fae5c55aa37",
+  "lastOpenFiles": [
+    "01_AnalogIC_SerDes/SerDes_RX/pam4_adc_based_rx.md",
+    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/ADC_TI_SAR",
+    "01_AnalogIC_SerDes/SerDes_RX",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md"
+  ]
+}
