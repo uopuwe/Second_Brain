@@ -445,6 +445,7 @@ Focus:
 
 - `PLL_CDR_Clocking/phase_noise_jitter.md`
 - `PLL_CDR_Clocking/pll_fundamentals.md`
+- `PLL_CDR_Clocking/cdr_fundamentals.md`
 
 ## Active LDO / Power Notes
 
