@@ -54,6 +54,7 @@ Active technical notes:
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md`
+- `01_AnalogIC_SerDes/LDO_Bandgap/ldo_stability_notes.md`
 
 ---
 
