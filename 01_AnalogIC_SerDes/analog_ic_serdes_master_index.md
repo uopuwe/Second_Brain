@@ -440,6 +440,10 @@ Focus:
 
 - `SerDes/pcie7_overview.md`
 - `Study_Plans/synopsys_4_week_prep_plan.md`
+
+## Active PLL / CDR / Clocking Notes
+
+- `PLL_CDR_Clocking/phase_noise_jitter.md`
 ---
 ## Related Notes
 

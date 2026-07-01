@@ -549,7 +549,7 @@ Use these gradually after joining.
 * `../ADC/`
 * `../LDO_Bandgap/`
 * `../Interview_QA/`
-
+- `../PLL_CDR_Clocking/phase_noise_jitter.md`
 ---
 
 # Next Actions
