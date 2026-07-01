@@ -436,7 +436,11 @@ Focus:
 * What technical stories should I prepare for future Marvell-level interviews?
 
 ---
+## Active PCIe / SerDes Notes
 
+- `SerDes/pcie7_overview.md`
+- `Study_Plans/synopsys_4_week_prep_plan.md`
+---
 ## Related Notes
 
 * `../02_Synopsys_Work/synopsys_master_note.md`

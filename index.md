@@ -50,6 +50,7 @@ Active technical notes:
 
 - `01_AnalogIC_SerDes/analog_ic_serdes_master_index.md`
 - `01_AnalogIC_SerDes/Study_Plans/synopsys_4_week_prep_plan.md`
+- `01_AnalogIC_SerDes/SerDes/pcie7_overview.md`
 ---
 
 ### 2. Synopsys Work
