@@ -550,6 +550,7 @@ Use these gradually after joining.
 * `../LDO_Bandgap/`
 * `../Interview_QA/`
 - `../PLL_CDR_Clocking/phase_noise_jitter.md`
+- `../PLL_CDR_Clocking/pll_fundamentals.md`
 - `../LDO_Bandgap/serdes_power_integrity.md`
 - `../LDO_Bandgap/ldo_psrr_notes.md`
 - `../LDO_Bandgap/ldo_stability_notes.md`
