@@ -551,6 +551,7 @@ Use these gradually after joining.
 * `../Interview_QA/`
 - `../PLL_CDR_Clocking/phase_noise_jitter.md`
 - `../LDO_Bandgap/serdes_power_integrity.md`
+- `../LDO_Bandgap/ldo_psrr_notes.md`
 ---
 
 # Next Actions
