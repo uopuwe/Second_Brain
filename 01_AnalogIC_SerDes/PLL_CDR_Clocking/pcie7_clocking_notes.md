@@ -899,6 +899,865 @@ Clock frequency, integration bandwidth, RMS or peak-to-peak definition, PVT cond
 
 ---
 
+---
+
+## Concrete Knowledge Points
+
+### 1. PCIe 7.0 Clocking Starts from 128 GT/s
+
+PCIe 7.0 doubles PCIe 6.x from 64 GT/s to 128 GT/s.
+
+From the PHY / clocking perspective, this means the timing budget becomes much tighter.
+
+Key public facts:
+
+```text
+PCIe 7.0 raw transfer rate: 128.0 GT/s
+Signaling: PAM4
+x16 bidirectional bandwidth: up to 512 GB/s
+Nyquist frequency: 32 GHz, according to PCI-SIG webinar Q&A
+```
+
+Design meaning:
+
+```text
+Higher transfer rate
+↓
+smaller UI
+↓
+tighter jitter budget
+↓
+more demanding PLL / CDR / clock distribution / power integrity
+```
+
+Important point:
+
+```text
+PCIe 7.0 should not be studied only as a protocol standard.
+For analog / mixed-signal preparation, it should be studied as a high-speed SerDes clocking and signal-integrity problem.
+```
+
+---
+
+### 2. PAM4 Changes the Clocking Problem
+
+PCIe 7.0 uses PAM4.
+
+PAM4 carries 2 bits per symbol using 4 amplitude levels.
+
+Compared with NRZ:
+
+```text
+NRZ:
+2 levels
+1 bit per symbol
+larger vertical eye
+
+PAM4:
+4 levels
+2 bits per symbol
+smaller vertical eye
+higher spectral efficiency
+more sensitivity to noise, nonlinearity, ISI, and jitter
+```
+
+Clocking implication:
+
+```text
+PAM4 reduces vertical margin.
+Clock jitter reduces horizontal margin.
+Together they reduce the usable eye opening.
+```
+
+This is why PLL jitter, CDR timing recovery, clock distribution, and supply-induced jitter matter so much.
+
+For PCIe 7.0:
+
+```text
+PAM4 + 128 GT/s
+↓
+small vertical margin + small timing margin
+↓
+clocking quality becomes central to link margin
+```
+
+---
+
+### 3. Nyquist Frequency for PCIe 7.0
+
+According to PCI-SIG webinar Q&A, PCIe 6.0 at 64 GT/s uses PAM4 with 16G Nyquist frequency, and PCIe 7.0 at 128 GT/s uses PAM4 and FLIT mode at 32G Nyquist frequency.
+
+Important interpretation:
+
+```text
+PCIe 7.0 pushes much more energy into very high-frequency channel / package / connector / board behavior.
+```
+
+Design meaning:
+
+```text
+Higher Nyquist frequency
+↓
+more channel loss
+↓
+more ISI
+↓
+more equalization requirement
+↓
+harder CDR timing recovery
+↓
+more sensitive clocking / jitter budget
+```
+
+This connects PCIe 7.0 clocking to channel equalization, CTLE / FFE / DFE, and CDR.
+
+Related notes:
+
+* `../SerDes/ctle_ffe_dfe_notes.md`
+* `cdr_fundamentals.md`
+
+---
+
+## Formula Derivations
+
+### 1. Unit Interval
+
+The unit interval is the time available for one transfer interval.
+
+```text
+UI = 1 / transfer_rate
+```
+
+For PCIe 7.0:
+
+```text
+transfer_rate = 128 GT/s = 128e9 transfers/s
+
+UI = 1 / 128e9
+   = 7.8125 ps
+```
+
+Design meaning:
+
+```text
+One UI is only 7.8125 ps.
+```
+
+This is extremely small. Any clock uncertainty consumes a meaningful part of the sampling margin.
+
+Timing uncertainty sources include:
+
+* PLL integrated jitter
+* VCO phase noise
+* CDR tracking error
+* phase interpolator error
+* clock buffer delay modulation
+* duty-cycle distortion
+* supply-induced jitter
+* crosstalk-induced jitter
+* ISI-induced data-dependent jitter
+
+---
+
+### 2. Jitter as Fraction of UI
+
+Jitter can be normalized to UI:
+
+```text
+jitter_UI = jitter_time / UI
+```
+
+Example:
+
+```text
+RMS jitter = 100 fs
+UI = 7.8125 ps
+
+jitter_UI = 100 fs / 7.8125 ps
+          = 0.0128 UI
+```
+
+So:
+
+```text
+100 fs RMS jitter ≈ 1.28% UI
+```
+
+Design meaning:
+
+```text
+Small absolute jitter can still be important when UI is only a few ps.
+```
+
+A single jitter contributor may look small, but the receiver cares about the total combined margin after PLL, CDR, clock distribution, channel, equalization, supply noise, and receiver noise all take their cut. Circuits are very cooperative when stealing margin.
+
+---
+
+### 3. Phase Error to Timing Error
+
+Clock phase error and timing error are connected by:
+
+```text
+Δφ = 2πf0Δt
+```
+
+Therefore:
+
+```text
+Δt = Δφ / (2πf0)
+```
+
+where:
+
+* `Δφ` = phase error in radians
+* `f0` = clock frequency
+* `Δt` = timing error in seconds
+
+Design chain:
+
+```text
+PLL phase noise
+↓
+phase error
+↓
+timing jitter
+↓
+sampling uncertainty
+↓
+horizontal eye closure
+```
+
+This is the bridge between frequency-domain phase noise and time-domain SerDes sampling margin.
+
+Related note:
+
+* `phase_noise_jitter.md`
+
+---
+
+### 4. Phase Noise to Integrated RMS Jitter
+
+A common relationship between single-sideband phase noise and RMS jitter is:
+
+```text
+σt = 1 / (2πf0) × sqrt(2 × ∫ 10^(L(f)/10) df)
+```
+
+where:
+
+* `σt` = RMS jitter in seconds
+* `f0` = carrier frequency
+* `L(f)` = single-sideband phase noise in dBc/Hz
+* integration is performed over a specified offset-frequency range
+
+Important rule:
+
+```text
+Never quote integrated RMS jitter without the integration bandwidth.
+```
+
+Bad statement:
+
+```text
+PLL jitter is 80 fs.
+```
+
+Better statement:
+
+```text
+PLL output integrated RMS jitter is 80 fs from 10 kHz to 100 MHz at a specific output frequency, PVT corner, and supply condition.
+```
+
+Design meaning:
+
+```text
+Different integration bandwidths can produce different jitter numbers.
+```
+
+A jitter number without bandwidth is not an engineering spec. It is a decorative number wearing a lab coat.
+
+---
+
+### 5. Supply Noise to VCO Frequency Modulation
+
+If VCO frequency depends on supply voltage, define supply pushing as:
+
+```text
+KVDD = Δf / ΔVDD
+```
+
+where:
+
+* `KVDD` = supply sensitivity of oscillator frequency
+* `Δf` = frequency change
+* `ΔVDD` = supply voltage change
+
+Supply ripple can create frequency modulation:
+
+```text
+Supply ripple
+↓
+VCO frequency modulation
+↓
+phase modulation
+↓
+clock jitter
+↓
+sampling uncertainty
+```
+
+Design meaning:
+
+```text
+LDO PSRR and LDO output noise directly affect PLL / VCO jitter if the oscillator is supply-sensitive.
+```
+
+This is one of the strongest links between LDO design and PCIe 7.0 clocking.
+
+Related notes:
+
+* `../LDO_Bandgap/serdes_power_integrity.md`
+* `../LDO_Bandgap/ldo_psrr_notes.md`
+
+---
+
+### 6. Clock Buffer Supply Noise to Delay Modulation
+
+Even if PLL output is clean, clock buffers can add jitter.
+
+Simplified relationship:
+
+```text
+Δt ≈ Kdelay,VDD × ΔVDD
+```
+
+where:
+
+* `Δt` = timing shift
+* `Kdelay,VDD` = delay sensitivity to supply voltage
+* `ΔVDD` = supply disturbance
+
+Design chain:
+
+```text
+Supply noise
+↓
+clock buffer delay variation
+↓
+clock edge movement
+↓
+sampling jitter
+↓
+horizontal eye closure
+```
+
+Design meaning:
+
+```text
+The relevant clock quality is the clock at the sampler or TX driver, not only the clock at the PLL output.
+```
+
+A clean PLL feeding dirty clock distribution is like serving bottled water through a rusty pipe. Technically water, spiritually betrayal.
+
+---
+
+### 7. Sampling Jitter and ADC-Based Receiver Error
+
+For ADC-based PAM4 receivers, sampling jitter creates voltage error proportional to signal slope.
+
+```text
+ΔV ≈ dV/dt × Δt
+```
+
+For a sinusoidal input, jitter-limited SNR is approximately:
+
+```text
+SNR_jitter ≈ -20 log10(2πfinσt)
+```
+
+where:
+
+* `fin` = input frequency
+* `σt` = RMS sampling jitter
+
+Design meaning:
+
+```text
+Higher input frequency
+↓
+larger signal slope
+↓
+same sampling jitter creates larger voltage error
+↓
+worse SNDR / EVM / symbol margin
+```
+
+This directly connects PCIe / SerDes clocking to ADC-based receiver performance.
+
+Related notes:
+
+* `../ADC/sampling_jitter_adc.md`
+* `../ADC/adc_based_receiver.md`
+
+---
+
+## Worked Examples
+
+### Example 1: PCIe 7.0 UI Calculation
+
+Given:
+
+```text
+PCIe 7.0 transfer rate = 128 GT/s
+```
+
+Calculation:
+
+```text
+UI = 1 / 128e9
+   = 7.8125 ps
+```
+
+Conclusion:
+
+```text
+PCIe 7.0 timing margin is extremely small.
+```
+
+Design interpretation:
+
+```text
+PLL jitter, CDR error, clock buffer noise, PI error, and supply-induced jitter must all fit inside a very small timing budget.
+```
+
+---
+
+### Example 2: 100 fs RMS Jitter as UI Fraction
+
+Given:
+
+```text
+RMS jitter = 100 fs
+UI = 7.8125 ps
+```
+
+Calculation:
+
+```text
+jitter_UI = 100 fs / 7.8125 ps
+          = 0.0128 UI
+```
+
+Conclusion:
+
+```text
+100 fs RMS jitter ≈ 1.28% UI
+```
+
+Design interpretation:
+
+```text
+One jitter source may be acceptable alone, but multiple jitter contributors add up.
+```
+
+The system-level timing budget must include:
+
+* PLL output jitter
+* recovered clock jitter
+* clock distribution jitter
+* supply-induced jitter
+* channel-induced jitter
+* ISI / DDJ
+* crosstalk
+* receiver aperture uncertainty
+
+---
+
+### Example 3: Residual Ripple After LDO PSRR
+
+Given:
+
+```text
+Input supply ripple = 10 mV
+LDO PSRR = 40 dB at the ripple frequency
+```
+
+Since:
+
+```text
+40 dB = 100× attenuation
+```
+
+Residual output ripple:
+
+```text
+Vout_ripple = 10 mV / 100
+            = 100 µV
+```
+
+Design interpretation:
+
+```text
+If this 100 µV residual ripple reaches a supply-sensitive VCO or clock buffer, it can still become jitter.
+```
+
+Open calculation needed:
+
+```text
+待确认：Need actual VCO KVDD, clock buffer delay sensitivity, LDO PSRR curve, and supply noise spectrum to estimate timing jitter contribution.
+```
+
+---
+
+### Example 4: Why High Input Frequency Makes ADC Jitter Worse
+
+Given jitter-limited SNR:
+
+```text
+SNR_jitter ≈ -20 log10(2πfinσt)
+```
+
+If `fin` increases while `σt` stays constant:
+
+```text
+fin ↑
+↓
+2πfinσt ↑
+↓
+SNR_jitter ↓
+```
+
+Design interpretation:
+
+```text
+ADC-based PAM4 receivers become very sensitive to sampling clock jitter because high-speed input content has large slope.
+```
+
+This is why PLL / CDR clock quality matters not only for slicer timing, but also for ADC-based receiver SNDR and EVM.
+
+---
+
+### Example 5: CDR Bandwidth Tradeoff
+
+Conceptual behavior:
+
+```text
+Low-frequency input jitter:
+CDR tends to track it
+
+High-frequency input jitter:
+CDR may not track it and it appears as sampling error
+```
+
+If CDR bandwidth is too wide:
+
+```text
+More input jitter may be transferred to recovered clock.
+More noise may enter the sampling phase.
+Jitter generation may worsen.
+```
+
+If CDR bandwidth is too narrow:
+
+```text
+Low-frequency wander may not be tracked well.
+Acquisition may be slower.
+SSC or frequency offset tracking may become harder.
+```
+
+Design interpretation:
+
+```text
+CDR bandwidth is a tradeoff between tracking useful phase movement and rejecting harmful jitter.
+```
+
+Related note:
+
+* `cdr_fundamentals.md`
+
+---
+
+## Design Implications
+
+### 1. PCIe 7.0 Clocking Is Not Just PLL Design
+
+PCIe 7.0 clocking includes:
+
+* reference clock quality
+* PLL phase noise
+* PLL integrated jitter
+* reference spur
+* clock distribution
+* divider noise
+* phase interpolator noise / nonlinearity
+* CDR loop behavior
+* jitter transfer
+* jitter tolerance
+* jitter generation
+* power supply noise
+* LDO PSRR
+* local decoupling
+* supply isolation
+* post-layout parasitics
+
+Design conclusion:
+
+```text
+The clock at the sampler or TX driver is what matters.
+```
+
+The PLL output alone is not the full story.
+
+---
+
+### 2. PAM4 Makes Timing and Noise Budgets Tighter
+
+PAM4 has smaller vertical eye opening than NRZ.
+
+Clock jitter reduces horizontal margin.
+
+Combined effect:
+
+```text
+PAM4 smaller vertical margin
++
+clock jitter horizontal margin loss
++
+ISI
++
+supply noise
++
+receiver noise
+=
+reduced link margin
+```
+
+Design conclusion:
+
+```text
+Clocking, equalization, and power integrity must be studied together.
+```
+
+---
+
+### 3. PLL Jitter Must Be Interpreted Through CDR Behavior
+
+PLL jitter matters, but CDR determines how timing error appears at the receiver sampler.
+
+Key questions:
+
+* Is PLL jitter common-mode or differential relative to received data?
+* Which jitter components does CDR track?
+* Which jitter components become sampling error?
+* How does CDR bandwidth shape input jitter?
+* How does equalization affect CDR phase detection?
+* Does the receiver use phase interpolation?
+* How much jitter is generated inside the CDR?
+
+Design conclusion:
+
+```text
+PLL jitter alone does not fully determine RX timing margin.
+```
+
+CDR loop behavior is essential.
+
+---
+
+### 4. Supply Noise Is a Clocking Problem
+
+Supply noise can affect clocking through:
+
+* VCO frequency modulation
+* DCO delay modulation
+* clock buffer delay modulation
+* divider delay variation
+* phase interpolator delay variation
+* sampler aperture variation
+* comparator delay variation
+* reference / bias disturbance
+
+Design conclusion:
+
+```text
+LDO, decap, and supply isolation are part of the clocking design.
+```
+
+This is why LDO experience can be positioned as SerDes-relevant experience.
+
+---
+
+### 5. Clock Distribution Can Destroy a Good PLL
+
+Clock distribution adds its own non-idealities:
+
+* buffer jitter
+* duty-cycle distortion
+* routing mismatch
+* skew
+* supply sensitivity
+* crosstalk
+* substrate coupling
+* divider noise
+* PI nonlinearity
+
+Design conclusion:
+
+```text
+Measure or simulate clock quality at the actual load, not only at the PLL output.
+```
+
+For RX, the actual load is the sampler / ADC / slicer clock input.
+
+For TX, the actual load is the serializer / driver timing path.
+
+---
+
+### 6. Jitter Budget Needs Source Separation
+
+Useful classification:
+
+```text
+Random jitter:
+thermal noise, oscillator phase noise, device noise
+
+Deterministic jitter:
+ISI, duty-cycle distortion, periodic supply noise, reference spur, crosstalk
+
+Data-dependent jitter:
+ISI-related edge movement
+
+Supply-induced jitter:
+VCO pushing, buffer delay modulation, sampler disturbance
+```
+
+Design conclusion:
+
+```text
+Different jitter sources require different fixes.
+```
+
+Examples:
+
+* VCO phase noise → improve oscillator / PLL loop / supply
+* reference spur → charge pump matching / leakage / layout / filtering
+* ISI-induced jitter → channel / equalization
+* supply-induced jitter → LDO / decap / isolation / layout
+* PI nonlinearity → calibration / architecture / layout
+
+---
+
+## Synopsys Onboarding Questions
+
+### Architecture Questions
+
+* What is the top-level PCIe 7.0 clocking architecture?
+* Which clocking blocks are owned by the local team?
+* Which blocks will I work on first?
+* What are the main TX and RX clock domains?
+* Is there a shared PLL across lanes?
+* Are phase interpolators used per lane?
+* How is clock distribution partitioned across lanes?
+* How are clocking blocks verified at top level?
+
+### PLL Questions
+
+* What PLL architecture is used?
+* What are the main output frequencies?
+* What is the target integrated RMS jitter?
+* What phase noise integration bandwidth is used?
+* What are the dominant PLL noise contributors?
+* How are reference spur and deterministic jitter verified?
+* How is supply-induced PLL jitter simulated?
+* How are post-layout parasitics included in PLL jitter verification?
+
+### CDR Questions
+
+* What CDR architecture is used?
+* Is the CDR baud-rate, oversampling, bang-bang, linear, or DSP-based?
+* Does the CDR use phase interpolation?
+* What is the target CDR loop bandwidth?
+* How are jitter transfer, jitter tolerance, and jitter generation verified?
+* How does CDR interact with CTLE / FFE / DFE adaptation?
+* How does the CDR handle SSC or frequency offset?
+* What are the most common CDR-related debug issues?
+
+### Power / LDO Questions
+
+* Which clocking blocks use local LDOs?
+* Are PLL / VCO / DCO / clock buffers powered by separate regulators?
+* What PSRR is required for clocking supplies?
+* What output noise is allowed for clocking LDOs?
+* How is supply noise translated into jitter budget?
+* Are supply ripple injection simulations part of signoff?
+* How much local decap is available near PLL and clock buffers?
+* Are noisy digital blocks isolated from clocking supplies?
+
+### Simulation / Signoff Questions
+
+* Which simulations are mandatory for PCIe 7.0 clocking signoff?
+* Are phase noise, transient jitter, and supply-induced jitter all simulated?
+* Is jitter budget allocated across PLL, CDR, PI, clock buffers, and channel?
+* Are post-layout extracted simulations required for all clocking paths?
+* How are clocking simulations correlated with link-level margin?
+* What are the most important plots to understand first?
+* Which existing design document should I read first?
+
+---
+
+## 待确认
+
+### Public Specification Details
+
+* 待确认：Exact PCIe 7.0 electrical jitter requirements from the official base / CEM / PHY-related documents.
+* 待确认：Exact compliance methodology for PCIe 7.0 clocking and jitter.
+* 待确认：How the timing budget is partitioned under PCIe 7.0 PAM4, FLIT mode, and FEC.
+* 待确认：Which assumptions are public specification requirements versus implementation choices.
+
+### Synopsys Internal Architecture
+
+* 待确认：Actual Synopsys PCIe 7.0 PLL architecture.
+* 待确认：Actual CDR architecture.
+* 待确认：Whether the RX is slicer-based, ADC-based, or hybrid.
+* 待确认：Whether phase interpolators are used per lane.
+* 待确认：Actual clock distribution architecture.
+* 待确认：Actual local LDO partitioning for PLL / VCO / clock buffers / PI.
+* 待确认：Actual jitter budget allocation.
+
+### Simulation / Signoff
+
+* 待确认：Internal phase noise simulation methodology.
+* 待确认：Internal jitter integration bandwidth.
+* 待确认：Supply-induced jitter simulation flow.
+* 待确认：Post-layout extraction requirements for clock paths.
+* 待确认：Jitter tolerance and jitter transfer verification flow.
+* 待确认：Whether link-level simulations include LDO ripple / supply injection.
+
+### First 90-Day Learning Priorities
+
+* 待确认：Which internal documents should be read first.
+* 待确认：Which block I will own first.
+* 待确认：Which simulation benches I should learn first.
+* 待确认：Who are the key internal experts for PCIe 7.0 clocking, PLL, CDR, LDO, and power integrity.
+
+---
+
+## Interview-Ready Explanation
+
+### Short Version
+
+PCIe 7.0 reaches 128 GT/s using PAM4, so the UI is only about 7.8125 ps. This makes clocking extremely important. PLL phase noise, CDR tracking error, clock distribution jitter, phase interpolator error, and supply-induced jitter all consume horizontal eye margin. Since PAM4 already reduces vertical eye margin, clocking quality, equalization, and power integrity must be analyzed together.
+
+### Senior-Level Version
+
+For PCIe 7.0 clocking, I would not look at PLL jitter as an isolated number. I would connect the clocking chain from reference clock, PLL, dividers, clock buffers, phase interpolator, CDR, sampler, and supply network to the final eye margin. The important questions are which noise sources dominate, how phase noise integrates into RMS jitter, which jitter components the CDR tracks or rejects, how supply noise converts into VCO or buffer delay modulation, and how the final timing uncertainty affects PAM4 receiver margin.
+
+### Synopsys-Focused Version
+
+For Synopsys PCIe 7.0 preparation, I should focus on the relationship between clocking blocks and link margin. Since the role may involve clocking and LDO, the key technical bridge is understanding how PLL / CDR jitter and LDO supply noise affect the sampling clock and therefore the PCIe 7.0 PAM4 eye. I should verify the actual internal architecture, jitter budget, simulation methodology, and LDO requirements after joining.
+
+---
+
 ## 12. Related Notes
 
 * `pll_fundamentals.md`
