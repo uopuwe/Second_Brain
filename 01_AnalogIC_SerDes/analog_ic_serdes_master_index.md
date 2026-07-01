@@ -454,6 +454,7 @@ Focus:
 - `LDO_Bandgap/serdes_power_integrity.md`
 - `LDO_Bandgap/ldo_psrr_notes.md`
 - `LDO_Bandgap/ldo_stability_notes.md`
+- `LDO_Bandgap/bandgap_reference_notes.md`
 ---
 ## Related Notes
 

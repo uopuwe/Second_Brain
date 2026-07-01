@@ -55,6 +55,7 @@ Active technical notes:
 - `01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/ldo_stability_notes.md`
+- `01_AnalogIC_SerDes/LDO_Bandgap/bandgap_reference_notes.md`
 
 ---
 
