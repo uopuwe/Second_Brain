@@ -444,6 +444,11 @@ Focus:
 ## Active PLL / CDR / Clocking Notes
 
 - `PLL_CDR_Clocking/phase_noise_jitter.md`
+
+## Active LDO / Power Notes
+
+- `LDO_Bandgap/serdes_power_integrity.md`
+
 ---
 ## Related Notes
 
