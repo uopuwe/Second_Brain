@@ -1041,9 +1041,14 @@ My previous PLL, ADC, and LDO experience connects naturally to CDR and SerDes cl
 * `phase_noise_jitter.md`
 * `pcie7_clocking_notes.md`
 * `../SerDes/pcie7_overview.md`
+* `../SerDes/serdes_architecture_overview.md`
+* `../SerDes/pam4_receiver_basics.md`
+* `../SerDes/ctle_ffe_dfe_notes.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`
 * `../LDO_Bandgap/ldo_psrr_notes.md`
 * `../ADC/adc_based_receiver.md`
+* `../ADC/sampling_jitter_adc.md`
+* `../Interview_QA/synopsys_relevant_qa.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`
 * `../../02_Synopsys_Work/onboarding_plan.md`

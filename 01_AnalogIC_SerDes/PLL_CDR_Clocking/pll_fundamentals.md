@@ -857,8 +857,11 @@ My PLL and clocking experience is relevant to SerDes because high-speed links de
 * `cdr_fundamentals.md`
 * `pcie7_clocking_notes.md`
 * `../SerDes/pcie7_overview.md`
+* `../SerDes/serdes_architecture_overview.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`
 * `../LDO_Bandgap/ldo_psrr_notes.md`
+* `../ADC/sampling_jitter_adc.md`
+* `../Interview_QA/synopsys_relevant_qa.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`
 * `../../02_Synopsys_Work/onboarding_plan.md`

@@ -118,6 +118,8 @@ Create or update these notes:
 
 * `../SerDes/serdes_architecture_overview.md`
 * `../SerDes/pcie7_overview.md`
+* `../SerDes/pam4_receiver_basics.md`
+* `../SerDes/ctle_ffe_dfe_notes.md`
 
 Minimum content to write:
 
@@ -214,6 +216,7 @@ Create or update:
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
 * `../PLL_CDR_Clocking/phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
+* `../ADC/sampling_jitter_adc.md`
 
 Minimum content to write:
 
@@ -440,6 +443,7 @@ Create or update:
 * `../ADC/sampling_jitter_adc.md`
 * `../Interview_QA/technical_story_bank.md`
 * `../Interview_QA/synopsys_relevant_qa.md`
+* `../Papers_Books/core_serdes_papers.md`
 
 Minimum content to write:
 
@@ -549,13 +553,23 @@ Use these gradually after joining.
 * `../ADC/`
 * `../LDO_Bandgap/`
 * `../Interview_QA/`
+- `../SerDes/serdes_architecture_overview.md`
+- `../SerDes/pam4_receiver_basics.md`
+- `../SerDes/ctle_ffe_dfe_notes.md`
 - `../PLL_CDR_Clocking/phase_noise_jitter.md`
 - `../PLL_CDR_Clocking/pll_fundamentals.md`
 - `../PLL_CDR_Clocking/cdr_fundamentals.md`
+- `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
+- `../ADC/adc_based_receiver.md`
+- `../ADC/ti_sar_adc_calibration.md`
+- `../ADC/sampling_jitter_adc.md`
 - `../LDO_Bandgap/serdes_power_integrity.md`
 - `../LDO_Bandgap/ldo_psrr_notes.md`
 - `../LDO_Bandgap/ldo_stability_notes.md`
 - `../LDO_Bandgap/bandgap_reference_notes.md`
+- `../Interview_QA/technical_story_bank.md`
+- `../Interview_QA/synopsys_relevant_qa.md`
+- `../Papers_Books/core_serdes_papers.md`
 ---
 
 # Next Actions

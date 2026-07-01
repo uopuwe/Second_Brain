@@ -687,12 +687,16 @@ The second one sounds like an engineer wrote it. The first one sounds like a mar
 
 * `../analog_ic_serdes_master_index.md`
 * `../SerDes/pcie7_overview.md`
+* `../SerDes/serdes_architecture_overview.md`
+* `../SerDes/pam4_receiver_basics.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 * `pll_fundamentals.md`
 * `cdr_fundamentals.md`
 * `pcie7_clocking_notes.md`
+* `../ADC/sampling_jitter_adc.md`
 * `../LDO_Bandgap/ldo_psrr_notes.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`
+* `../Interview_QA/synopsys_relevant_qa.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`
 
 ---

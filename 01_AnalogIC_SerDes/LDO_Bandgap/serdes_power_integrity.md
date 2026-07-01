@@ -824,11 +824,17 @@ My LDO experience is directly relevant to SerDes because local regulators are no
 
 * `../analog_ic_serdes_master_index.md`
 * `../SerDes/pcie7_overview.md`
+* `../SerDes/serdes_architecture_overview.md`
+* `../SerDes/pam4_receiver_basics.md`
 * `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
+* `../ADC/adc_based_receiver.md`
+* `../ADC/sampling_jitter_adc.md`
 * `ldo_fundamentals.md`
 * `ldo_psrr_notes.md`
 * `ldo_stability_notes.md`
 * `bandgap_reference_notes.md`
+* `../Interview_QA/synopsys_relevant_qa.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`
 * `../../02_Synopsys_Work/onboarding_plan.md`

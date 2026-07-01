@@ -439,6 +439,9 @@ Focus:
 ## Active PCIe / SerDes Notes
 
 - `SerDes/pcie7_overview.md`
+- `SerDes/serdes_architecture_overview.md`
+- `SerDes/pam4_receiver_basics.md`
+- `SerDes/ctle_ffe_dfe_notes.md`
 - `Study_Plans/synopsys_4_week_prep_plan.md`
 
 ## Active PLL / CDR / Clocking Notes
@@ -446,6 +449,13 @@ Focus:
 - `PLL_CDR_Clocking/phase_noise_jitter.md`
 - `PLL_CDR_Clocking/pll_fundamentals.md`
 - `PLL_CDR_Clocking/cdr_fundamentals.md`
+- `PLL_CDR_Clocking/pcie7_clocking_notes.md`
+
+## Active ADC / ADC-Based Receiver Notes
+
+- `ADC/adc_based_receiver.md`
+- `ADC/ti_sar_adc_calibration.md`
+- `ADC/sampling_jitter_adc.md`
 
 ## Active LDO / Power Notes
 
@@ -457,6 +467,15 @@ Focus:
 - `LDO_Bandgap/ldo_psrr_notes.md`
 - `LDO_Bandgap/ldo_stability_notes.md`
 - `LDO_Bandgap/bandgap_reference_notes.md`
+
+## Active Interview Q&A Notes
+
+- `Interview_QA/technical_story_bank.md`
+- `Interview_QA/synopsys_relevant_qa.md`
+
+## Active Papers / Books / References Notes
+
+- `Papers_Books/core_serdes_papers.md`
 ---
 ## Related Notes
 

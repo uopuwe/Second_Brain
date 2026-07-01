@@ -51,13 +51,23 @@ Active technical notes:
 - `01_AnalogIC_SerDes/analog_ic_serdes_master_index.md`
 - `01_AnalogIC_SerDes/Study_Plans/synopsys_4_week_prep_plan.md`
 - `01_AnalogIC_SerDes/SerDes/pcie7_overview.md`
+- `01_AnalogIC_SerDes/SerDes/serdes_architecture_overview.md`
+- `01_AnalogIC_SerDes/SerDes/pam4_receiver_basics.md`
+- `01_AnalogIC_SerDes/SerDes/ctle_ffe_dfe_notes.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md`
+- `01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md`
+- `01_AnalogIC_SerDes/ADC/adc_based_receiver.md`
+- `01_AnalogIC_SerDes/ADC/ti_sar_adc_calibration.md`
+- `01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/ldo_stability_notes.md`
 - `01_AnalogIC_SerDes/LDO_Bandgap/bandgap_reference_notes.md`
+- `01_AnalogIC_SerDes/Interview_QA/technical_story_bank.md`
+- `01_AnalogIC_SerDes/Interview_QA/synopsys_relevant_qa.md`
+- `01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md`
 
 ---
 

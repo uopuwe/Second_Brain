@@ -409,11 +409,19 @@ For my Synopsys preparation, I should focus on PCIe 7.0 not only as a protocol s
 
 * `../analog_ic_serdes_master_index.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
+* `serdes_architecture_overview.md`
+* `pam4_receiver_basics.md`
+* `ctle_ffe_dfe_notes.md`
 * `../PLL_CDR_Clocking/pll_fundamentals.md`
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
 * `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 * `../LDO_Bandgap/ldo_psrr_notes.md`
+* `../LDO_Bandgap/serdes_power_integrity.md`
 * `../ADC/adc_based_receiver.md`
+* `../ADC/sampling_jitter_adc.md`
+* `../Interview_QA/synopsys_relevant_qa.md`
+* `../Papers_Books/core_serdes_papers.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`
 * `../../02_Synopsys_Work/onboarding_plan.md`
 
