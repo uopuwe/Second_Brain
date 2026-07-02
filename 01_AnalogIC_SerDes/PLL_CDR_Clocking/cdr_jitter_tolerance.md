@@ -29,7 +29,7 @@ PAM4 下 jitter tolerance 更敏感，因为 vertical eye 小、threshold 多、
 
 This note explains CDR jitter tolerance, jitter transfer, and jitter generation for high-speed SerDes receivers, with emphasis on PCIe 7.0-class PAM4 links. The goal is to connect CDR loop behavior to PLL noise, equalization, ADC sampling, jitter compliance, and practical verification.
 
-Related notes: [[pcie7_clocking_notes]], [[pll_phase_noise_jitter]], [[cdr_fundamentals]], [[phase_noise_jitter]], [[pam4_adc_based_rx]], [[ctle_ffe_dfe_notes]], [[sampling_jitter_adc]].
+Related notes: [[pcie7_clocking_notes]], [[pll_phase_noise_jitter]], [[cdr_fundamentals]], [[pam4_adc_based_rx]], [[ctle_ffe_dfe_notes]], [[sampling_jitter_adc]].
 
 ## What the CDR Actually Does
 

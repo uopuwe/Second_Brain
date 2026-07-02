@@ -1052,7 +1052,7 @@ My previous PLL, ADC, and LDO experience connects naturally to CDR and SerDes cl
 ## 30. Related Notes
 
 * `pll_fundamentals.md`
-* `phase_noise_jitter.md`
+* `pll_phase_noise_jitter.md`
 * `pcie7_clocking_notes.md`
 * `../SerDes/pcie7_overview.md`
 * `../SerDes/serdes_architecture_overview.md`

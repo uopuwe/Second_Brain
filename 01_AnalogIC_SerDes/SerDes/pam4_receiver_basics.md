@@ -319,7 +319,7 @@ It captures amplitude information digitally and enables flexible DSP equalizatio
 * `ctle_ffe_dfe_notes.md`
 * `../ADC/adc_based_receiver.md`
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 

@@ -247,18 +247,18 @@ DFE is powerful but decision-directed. If timing is poor or PAM4 thresholds are 
 
 ADC-based receiver margin is consumed by many contributors:
 
-| Contributor | Domain | Impact |
-|---|---|---|
-| channel loss | analog | ISI and reduced high-frequency content |
-| thermal noise | analog | vertical noise |
-| ADC quantization | converter | quantization noise |
-| ADC INL/DNL | converter | distortion and threshold error |
-| TI mismatch | converter/clock | spurs and deterministic errors |
-| aperture jitter | clock | voltage error proportional to slope |
-| PLL phase noise | clock | sampling uncertainty |
-| CDR phase error | clock/control | residual timing error |
-| reference noise | ADC/LDO | gain and threshold variation |
-| DSP adaptation error | digital | residual ISI or wrong thresholds |
+| Contributor          | Domain          | Impact                                 |
+| -------------------- | --------------- | -------------------------------------- |
+| channel loss         | analog          | ISI and reduced high-frequency content |
+| thermal noise        | analog          | vertical noise                         |
+| ADC quantization     | converter       | quantization noise                     |
+| ADC INL/DNL          | converter       | distortion and threshold error         |
+| TI mismatch          | converter/clock | spurs and deterministic errors         |
+| aperture jitter      | clock           | voltage error proportional to slope    |
+| PLL phase noise      | clock           | sampling uncertainty                   |
+| CDR phase error      | clock/control   | residual timing error                  |
+| reference noise      | ADC/LDO         | gain and threshold variation           |
+| DSP adaptation error | digital         | residual ISI or wrong thresholds       |
 
 The receiver does not care which team owns the impairment. It sees total margin loss.
 

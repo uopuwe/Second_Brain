@@ -840,7 +840,7 @@ My LDO experience is directly relevant to SerDes because local regulators are no
 * `../SerDes/pcie7_overview.md`
 * `../SerDes/serdes_architecture_overview.md`
 * `../SerDes/pam4_receiver_basics.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 * `../ADC/adc_based_receiver.md`
 * `../ADC/sampling_jitter_adc.md`

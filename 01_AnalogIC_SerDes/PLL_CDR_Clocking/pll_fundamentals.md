@@ -534,7 +534,7 @@ The second sentence is uglier, which is how you know it might be useful.
 Related note:
 
 ```text
-phase_noise_jitter.md
+pll_phase_noise_jitter.md
 ```
 
 ---
@@ -867,7 +867,7 @@ My PLL and clocking experience is relevant to SerDes because high-speed links de
 
 ## 24. Related Notes
 
-* `phase_noise_jitter.md`
+* `pll_phase_noise_jitter.md`
 * `cdr_fundamentals.md`
 * `pcie7_clocking_notes.md`
 * `../SerDes/pcie7_overview.md`

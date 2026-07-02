@@ -167,7 +167,7 @@ Important future files:
 
 * `pll_fundamentals.md`
 * `cdr_fundamentals.md`
-* `phase_noise_jitter.md`
+* `pll_phase_noise_jitter.md`
 * `pcie7_clocking_notes.md`
 * `pfd_charge_pump_notes.md`
 * `clocking_interview_qa.md`
@@ -454,7 +454,7 @@ Focus:
 
 ## Active PLL / CDR / Clocking Notes
 
-- `PLL_CDR_Clocking/phase_noise_jitter.md`
+- `PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 - `PLL_CDR_Clocking/pll_fundamentals.md`
 - `PLL_CDR_Clocking/cdr_fundamentals.md`
 - `PLL_CDR_Clocking/pcie7_clocking_notes.md`

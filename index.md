@@ -62,7 +62,7 @@ Active technical notes:
 - `01_AnalogIC_SerDes/SerDes/serdes_architecture_overview.md`
 - `01_AnalogIC_SerDes/SerDes/pam4_receiver_basics.md`
 - `01_AnalogIC_SerDes/SerDes/ctle_ffe_dfe_notes.md`
-- `01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md`
+- `01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md`
 - `01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md`

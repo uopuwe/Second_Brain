@@ -422,7 +422,7 @@ For my Synopsys preparation, I should focus on PCIe 7.0 not only as a protocol s
 * `ctle_ffe_dfe_notes.md`
 * `../PLL_CDR_Clocking/pll_fundamentals.md`
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 * `../LDO_Bandgap/ldo_psrr_notes.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`

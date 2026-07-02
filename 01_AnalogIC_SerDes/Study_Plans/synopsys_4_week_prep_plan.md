@@ -234,7 +234,7 @@ Create or update:
 
 * `../PLL_CDR_Clocking/pll_fundamentals.md`
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 * `../ADC/sampling_jitter_adc.md`
 
@@ -582,7 +582,7 @@ Use these gradually after joining.
 - `../SerDes/serdes_architecture_overview.md`
 - `../SerDes/pam4_receiver_basics.md`
 - `../SerDes/ctle_ffe_dfe_notes.md`
-- `../PLL_CDR_Clocking/phase_noise_jitter.md`
+- `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 - `../PLL_CDR_Clocking/pll_fundamentals.md`
 - `../PLL_CDR_Clocking/cdr_fundamentals.md`
 - `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
@@ -602,7 +602,7 @@ Use these gradually after joining.
 
 1. Create the missing topic notes listed in this plan.
 2. Start with `../SerDes/pcie7_overview.md`.
-3. Then create `../PLL_CDR_Clocking/phase_noise_jitter.md`.
+3. Then review and update `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`.
 4. Then create `../LDO_Bandgap/ldo_psrr_notes.md`.
 5. Update this file weekly as preparation progresses.
 

@@ -1017,7 +1017,7 @@ My bandgap and reference experience is relevant to SerDes because reference qual
 * `serdes_power_integrity.md`
 * `ldo_psrr_notes.md`
 * `ldo_stability_notes.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../SerDes/pcie7_overview.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
 * `../../02_Synopsys_Work/synopsys_master_note.md`

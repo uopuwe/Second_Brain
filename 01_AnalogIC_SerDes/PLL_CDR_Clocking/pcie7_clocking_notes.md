@@ -974,7 +974,6 @@ Separate by measurement point and spectrum: PLL phase noise/spurs, clock tree ad
 - [[ti_sar_mismatch_calibration]]
 - [[serdes_channel_equalization]]
 - [[pcie7_gtps_vs_gbaud_ui]]
-- [[phase_noise_jitter]]
 - [[pll_fundamentals]]
 - [[cdr_fundamentals]]
 - [[serdes_power_integrity]]

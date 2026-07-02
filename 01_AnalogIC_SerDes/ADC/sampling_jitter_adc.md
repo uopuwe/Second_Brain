@@ -276,7 +276,7 @@ Not fully. Static timing skew may be calibrated, but random jitter is a noise pr
 
 * `adc_based_receiver.md`
 * `ti_sar_adc_calibration.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pll_fundamentals.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 * `../SerDes/pam4_receiver_basics.md`

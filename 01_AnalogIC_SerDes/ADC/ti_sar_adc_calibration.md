@@ -310,7 +310,7 @@ Calibration running during normal operation to track drift without stopping the 
 * `sampling_jitter_adc.md`
 * `../SerDes/pam4_receiver_basics.md`
 * `../SerDes/ctle_ffe_dfe_notes.md`
-* `../PLL_CDR_Clocking/phase_noise_jitter.md`
+* `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/cdr_fundamentals.md`
 * `../LDO_Bandgap/serdes_power_integrity.md`
 * `../Study_Plans/synopsys_4_week_prep_plan.md`
