@@ -5,319 +5,613 @@ tags:
   - CDR
   - JitterTolerance
   - JitterTransfer
+  - JitterGeneration
   - SerDes
   - PCIe7
   - PAM4
   - Clocking
+  - PhaseInterpolator
+  - ADC
   - Synopsys
+aliases:
+  - cdr_jtol
+  - CDR JTOL
+  - CDR Jitter Tolerance
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 status: "active"
 ---
 
 # CDR Jitter Tolerance
 
-## 中文补充翻译
+## 0. Status and Scope
 
-这篇笔记解释 CDR jitter tolerance：receiver 在维持目标 BER 的前提下，能承受多少输入 jitter。它通常是随 jitter frequency 变化的曲线，而不是一个单一数字。
+| Item | Content |
+|---|---|
+| Maturity | Senior / Staff-level design-review reference; still needs project-specific spec and lab correlation |
+| Target use | PCIe 7.0-class PAM4 SerDes RX, CDR loop design, clocking review, verification planning, interview preparation |
+| Covers | jitter tolerance, jitter transfer, jitter generation, CDR residual error, PAM4 timing detector behavior, PI effects, equalizer interaction, supply-noise coupling, simulation and lab debug |
+| Does not claim | official PCIe 7.0 JTOL mask, compliance pass/fail limits, vendor-specific receiver architecture, or proprietary Synopsys implementation |
+| Spec caveat | Any compliance limit, stress profile, BER criterion, filtering method, SSC condition, and calibration mode must be verified against the official spec or internal IP requirement |
 
-CDR 会跟踪低频相位变化，但对高频 jitter 的跟踪能力有限。低频 jitter 如果在 CDR bandwidth 内，可能被 recovered clock 跟随；高频 jitter 往往变成 residual sampling error，直接消耗 eye margin。jitter transfer 描述输入 jitter 如何传到 recovered clock 或 output，jitter generation 描述 CDR 自己产生多少 jitter。
+This note is not a list of magic numbers. It is a design framework for defending a CDR jitter-tolerance result from device noise to link margin:
 
-PAM4 下 jitter tolerance 更敏感，因为 vertical eye 小、threshold 多、ISI 和 equalization residue 会影响 phase detector。验证 CDR robust 时，应同时看 sinusoidal jitter tolerance、random jitter、periodic jitter、data-dependent jitter、equalizer setting、PI resolution、supply noise 和 link-level BER。
+```text
+Input jitter spectrum
+-> CDR tracking / residual transfer
+-> sampler phase error
+-> equalized PAM4 eye closure
+-> timing detector reliability
+-> BER / FEC / compliance margin
+```
 
-## Purpose
+Related notes: [[cdr_fundamentals]], [[pll_phase_noise_jitter]], [[pcie7_clocking_notes]], [[pam4_adc_based_rx]], [[ctle_ffe_dfe_notes]], [[sampling_jitter_adc]], [[serdes_power_integrity]].
 
-This note explains CDR jitter tolerance, jitter transfer, and jitter generation for high-speed SerDes receivers, with emphasis on PCIe 7.0-class PAM4 links. The goal is to connect CDR loop behavior to PLL noise, equalization, ADC sampling, jitter compliance, and practical verification.
+## 1. Executive Summary
 
-Related notes: [[pcie7_clocking_notes]], [[pll_phase_noise_jitter]], [[cdr_fundamentals]], [[pam4_adc_based_rx]], [[ctle_ffe_dfe_notes]], [[sampling_jitter_adc]].
+CDR jitter tolerance means the maximum input data jitter a receiver can tolerate while still meeting a defined error criterion. It is frequency-dependent because the CDR tracks slow phase movement and rejects, only partially tracks, or fails to follow faster phase movement.
 
-## What the CDR Actually Does
+The important senior-level distinction is:
 
-A clock and data recovery loop aligns the receiver sampling phase to the incoming data. In simple terms, the CDR observes timing information in the received waveform and adjusts a local sampling phase until the receiver samples near the desired point in the eye.
+- Jitter transfer describes how input jitter moves to recovered clock or retimed output.
+- Jitter tolerance describes how much input jitter the receiver can survive.
+- Jitter generation describes jitter created by the receiver clocking path itself.
+- Residual sampling error is often the quantity that most directly closes the eye.
+
+A useful first-order mental model is:
+
+$$
+J_{res}(f)=|H_{err}(j2\pi f)|J_{in}(f)
+$$
+
+and a receiver passes when residual timing error plus internal timing uncertainty plus ISI/DDJ plus margin reserve stays below the available horizontal margin:
+
+$$
+J_{res}+J_{int}+J_{ISI/DDJ}+J_{eq/adapt}+J_{reserve}<M_t
+$$
+
+This equation is not a compliance rule. It is a review model. The real pass/fail criterion must come from protocol requirements, internal signoff methodology, and measured BER/margin.
+
+For PAM4, timing tolerance cannot be reviewed as a purely horizontal problem. Timing error is converted to voltage error through waveform slope:
+
+$$
+\Delta V \approx \frac{dV}{dt}\Delta t
+$$
+
+Because PAM4 vertical eyes are smaller and transition slopes vary by symbol class, the same timing jitter can create different error probability for different transitions and levels.
+
+## 2. 中文资深设计要点速查
+
+### 2.1 一句话定位
+
+CDR jitter tolerance 不是单纯的 CDR bandwidth 指标，而是 RX 在给定 channel、EQ、PVT、supply、pattern 和 BER criterion 下，对输入 timing modulation 的系统级承受能力。真正进入 BER 的不是输入 jitter 本身，而是经过 CDR tracking 后剩下的 residual sampling phase error，再叠加 internal jitter、DDJ/ISI、PI/clock path error、sampler aperture jitter 和 margin reserve。
+
+### 2.2 设计评审时必须问清楚
+
+| Review question | 为什么重要 |
+|---|---|
+| JTOL 曲线的 BER / error-count / confidence criterion 是什么？ | 没有 pass/fail criterion，tolerance 数字没有工程意义 |
+| jitter amplitude 是 peak、peak-to-peak、RMS 还是 UI？ | amplitude convention 错了会直接导致预算错误 |
+| 注入的是 SJ、RJ、PJ、DDJ、SSC 还是组合 stress？ | 不同 jitter 类型不能用同一个处理方式 |
+| CDR 是 bang-bang、linear、Mueller-Muller 还是 DSP timing recovery？ | detector gain、非线性、pattern dependency 完全不同 |
+| EQ 是 frozen、ideal converged，还是真实 adaptation running？ | 真实 link training 下 CDR/EQ 可能互相拉偏 |
+| JTOL stress 是加在 TX 端、channel 前、receiver pad，还是 behavioral input？ | 注入点不同，经过 channel 和 equalizer 后的实际 stress 不同 |
+| 是否包含 PLL、divider、PI、clock tree、sampler aperture jitter？ | PLL output jitter 不等于 final sampler jitter |
+| 是否包含 supply noise、spurs、PI limit cycle、DDJ？ | deterministic jitter 不能简单当 RJ RSS |
+| PAM4 UI 用的是 15.625 ps symbol UI 还是 7.8125 ps bit-equivalent interval？ | UI 归一化错了会把 margin 估错一倍 |
+
+### 2.3 高级判断框架
+
+低频 jitter 主要考验 CDR tracking range、SSC/wander/frequency-offset 能力和 cycle-slip margin；bandwidth 附近主要考验 loop peaking、damping、latency、detector gain collapse 和 equalizer interaction；高频 jitter 主要考验 residual eye margin、internal jitter、sampler aperture、PAM4 vertical margin 和 post-EQ ISI/DDJ。
+
+如果 JTOL 在低频失败，优先看 tracking range、frequency offset、SSC、loop gain、PI range 和 acquisition。
+
+如果 JTOL 在 bandwidth 附近失败，优先看 peaking、phase margin、loop latency、bang-bang limit cycle、detector gain 和 EQ/CDR 交互。
+
+如果 JTOL 在高频失败，优先看 actual eye opening、internal clock jitter、PI noise、sampler aperture jitter、channel DDJ 和 crosstalk。
+
+### 2.4 资深工程口径
+
+一个可信的 JTOL claim 应该同时给出：
+
+- CDR architecture、loop bandwidth、damping、update rate、latency。
+- timing detector 输入点、PAM4 transition weighting、threshold calibration 状态。
+- channel / package / crosstalk / EQ state / adaptation sequence。
+- jitter stress 类型、频率、幅度 convention、注入点、校准方法。
+- residual transfer、internal jitter generation、deterministic jitter breakdown。
+- BER / bathtub / eye margin 结果，以及 PVT、supply、layout extraction 覆盖。
+- 哪些结果是 spec-compliance，哪些只是 internal design-margin estimate。
+
+资深设计 review 的重点不是说“CDR bandwidth 是 10 MHz，所以能过 JTOL”，而是说明“在这个 stress frequency 下，输入 jitter 通过 $H_{err}$ 后剩余多少 sampling error；剩下的 horizontal/vertical margin 被 internal jitter、ISI/DDJ、PI/supply deterministic jitter 和 margin reserve 吃掉多少；最终 BER criterion 是否仍然满足”。
+
+## 3. Key Definitions
+
+| Term | Meaning | Design-review question |
+|---|---|---|
+| Input jitter | Phase/timing modulation on incoming data | What type: SJ, RJ, PJ, DDJ, SSC, wander, crosstalk-correlated? |
+| Jitter tolerance, JTOL | Max input jitter amplitude that still passes target criterion | What BER, confidence, stress pattern, EQ state, PVT, and supply condition? |
+| Jitter transfer, JTRAN | Input jitter to recovered clock/output transfer | What loop bandwidth, peaking, detector gain, and data pattern? |
+| Jitter generation, JGEN | Jitter produced internally by RX/CDR/clock path | Does it include PLL, PI, clock tree, sampler, supply, quantization, limit cycle? |
+| Residual jitter | Input jitter not tracked by CDR and left as sampling phase error | Is the residual mapped to the actual sampler/ADC clock node? |
+| TIE | Timing error versus ideal reference | Which reference, filter, time window, and clock-recovery setting? |
+| SJ | Sinusoidal jitter | What frequency and amplitude convention: peak, peak-to-peak, UI? |
+| RJ | Random jitter | Gaussian assumption valid? What RMS bandwidth and extrapolation? |
+| DDJ | Data-dependent jitter | Which channel, equalizer setting, pattern, and symbol history? |
+| SSC / wander | Low-frequency phase/frequency modulation | Does CDR track it without cycle slip or excessive phase error? |
+
+## 4. CDR Loop Model
+
+The simplest linearized CDR model treats input phase as the command and recovered sampling phase as the loop output.
 
 ```mermaid
 flowchart LR
-  DATA[Equalized input data] --> PD[Phase detector / timing error detector]
-  PD --> LF[Loop filter]
-  LF --> PI[Phase interpolator / DCO control]
-  PLL[PLL clock phases] --> PI
-  PI --> SMP[Sampler / ADC clock]
-  SMP --> DATA
+  DIN[Equalized data / ADC samples] --> TED[Timing error detector]
+  TED --> LF[Loop filter]
+  LF --> ACT[PI / DCO / phase actuator]
+  CLK[PLL phases] --> ACT
+  ACT --> SMP[Sampler clock]
+  SMP --> DIN
 ```
 
-The CDR is not just a digital control loop. Its behavior depends on the phase detector, equalized waveform, transition density, slicer or ADC noise, PI resolution, loop latency, and the PLL clock feeding it.
-
-## Three Core Jitter Metrics
-
-| Metric | Question it answers | Typical use |
-|---|---|---|
-| Jitter transfer | How much input jitter appears on recovered clock/output? | loop bandwidth and tracking behavior |
-| Jitter tolerance | How much input jitter can be tolerated before errors? | compliance and robustness |
-| Jitter generation | How much jitter does the receiver/clocking create itself? | intrinsic clock quality |
-
-These are related but not interchangeable. A CDR can have low jitter transfer but poor jitter tolerance if its sampler margin is small. It can have good tolerance but high jitter generation if its PI or local clock is noisy.
-
-## CDR Tracking Model
-
-A first-order CDR tracking model is:
+For a first-order tracking approximation:
 
 $$
-H_{track}(s)=\frac{\omega_c}{s+\omega_c}
-$$
-
-The residual phase error from input phase jitter is:
-
-$$
-H_{error}(s)=1-H_{track}(s)=\frac{s}{s+\omega_c}
-$$
-
-For sinusoidal input jitter at angular frequency \(\omega_j\):
-
-$$
-|H_{track}(j\omega_j)|=\frac{\omega_c}{\sqrt{\omega_j^2+\omega_c^2}}
+H_{trk}(s)=\frac{\omega_c}{s+\omega_c}
 $$
 
 $$
-|H_{error}(j\omega_j)|=\frac{\omega_j}{\sqrt{\omega_j^2+\omega_c^2}}
+H_{err}(s)=1-H_{trk}(s)=\frac{s}{s+\omega_c}
 $$
 
-Low-frequency jitter is tracked. High-frequency jitter is not tracked and becomes sampling phase error.
+For sinusoidal jitter at frequency $f_j$:
 
-## Jitter Tolerance Curve
+$$
+|H_{trk}(j2\pi f_j)|=\frac{f_c}{\sqrt{f_j^2+f_c^2}}
+$$
 
-Jitter tolerance is usually measured by applying sinusoidal jitter of varying frequency and amplitude to the input data, then finding the maximum jitter amplitude the receiver can tolerate while meeting a target error criterion.
+$$
+|H_{err}(j2\pi f_j)|=\frac{f_j}{\sqrt{f_j^2+f_c^2}}
+$$
+
+Interpretation:
+
+- $f_j \ll f_c$: CDR tracks most of the jitter; residual sampling error is small.
+- $f_j \approx f_c$: tolerance is sensitive to loop peaking, damping, latency, and detector gain.
+- $f_j \gg f_c$: CDR barely tracks; input jitter appears mostly as sampling phase error.
+
+Real CDRs are often nonlinear, especially bang-bang loops. The model is still useful, but the effective gain depends on transition density, jitter amplitude, slicer/ADC noise, ISI, and equalizer state.
+
+## 5. What Makes a JTOL Curve
+
+JTOL is typically measured or simulated by injecting jitter into the input data and sweeping jitter frequency and amplitude.
 
 ```mermaid
 flowchart TD
-  A[Inject sinusoidal jitter] --> B[Run receiver with stressed data]
-  B --> C[Measure errors / margin]
-  C --> D{Pass target?}
-  D -->|Yes| E[Increase jitter amplitude]
-  D -->|No| F[Record previous pass amplitude]
-  E --> B
+  A[Select channel / EQ / PVT / supply / pattern] --> B[Inject jitter type and frequency]
+  B --> C[Run acquisition and tracking]
+  C --> D[Measure BER / errors / eye margin]
+  D --> E{Pass criterion?}
+  E -->|Yes| F[Increase jitter amplitude]
+  E -->|No| G[Record previous passing amplitude]
+  F --> C
 ```
 
-The tolerance curve is usually high at low jitter frequency because the CDR tracks slow movement. It rolls off near the CDR bandwidth and becomes limited by residual eye margin at high frequency.
+The curve is usually high at low jitter frequency, rolls off near the CDR bandwidth, and flattens at a high-frequency floor set by eye margin and internal jitter.
 
-## Intuitive Eye-Margin Model
+Important: the measured curve is not only a loop response. It includes the entire RX:
 
-Let available horizontal margin be \(M_t\), input sinusoidal jitter amplitude be \(J_{in}\), and residual error be:
+```text
+TX stress + channel + package + CTLE/VGA + ADC/slicer
++ FFE/DFE + timing detector + CDR + PI/clock tree
++ adaptation sequence + supply noise + decision criterion
+```
+
+## 6. Architecture Assumptions to Record
+
+Before discussing numbers, record these assumptions.
+
+| Area | Must be explicit |
+|---|---|
+| CDR type | bang-bang, linear, Mueller-Muller, baud-rate, oversampling, ADC/DSP-based |
+| Actuator | phase interpolator, DCO, local VCO, clock mux, fractional divider |
+| Loop order | proportional/integral path, damping, latency, update rate, loop bandwidth |
+| Timing detector input | raw slicer samples, ADC samples, equalized samples, edge samples, decision-directed error |
+| Equalization state | CTLE/VGA fixed or adaptive, FFE/DFE enabled, adaptation frozen or running |
+| PAM4 handling | which transitions contribute to timing, threshold calibration, level weighting |
+| Clock source | PLL phase noise, divider, phase generation, PI, clock tree, sampler local buffer |
+| Stress condition | pattern, channel loss, crosstalk, SSC, frequency offset, supply noise, PVT |
+| Pass criterion | BER, error count, confidence, FEC assumption, bathtub margin, eye opening |
+
+If these are not stated, a JTOL number is not reviewable.
+
+## 7. PAM4-Specific Design Points
+
+PAM4 makes CDR harder because timing information is not uniform across transitions.
+
+| PAM4 effect | CDR/JTOL impact | Design implication |
+|---|---|---|
+| Smaller vertical eyes | Noise and threshold errors more easily corrupt timing decisions | Timing detector must reject unreliable decisions or weight them |
+| Multiple transition sizes | Large transitions have stronger slope than small transitions | Detector gain is data-dependent |
+| Three slicer thresholds | Threshold offset creates symbol-dependent timing bias | Threshold calibration and CDR must be co-verified |
+| ISI and precursor/postcursor residue | Apparent edge position shifts with symbol history | DDJ must be included in timing budget |
+| DFE error propagation | Wrong decision can corrupt both data and timing update | Freeze/weight/qualify timing updates during high error periods |
+| FEC/FLIT traffic patterns | Transition density can differ from simple PRBS assumptions | Verify with protocol-relevant traffic, not only ideal random data |
+
+For PCIe 7.0-class PAM4, use the correct UI convention in analysis. 128 GT/s bit-equivalent signaling corresponds to 64 Gbaud PAM4 electrical symbols, so the PAM4 symbol UI is:
 
 $$
-J_{err}(f)=|H_{error}(j2\pi f)|J_{in}
+UI_{sym}=\frac{1}{64\times10^9}=15.625\text{ ps}
 $$
 
-A simplified pass condition is:
+The 7.8125 ps value is bit-equivalent interval, not the PAM4 symbol UI used for sampler phase placement, unless the context explicitly defines bit-equivalent normalization.
+
+## 8. Equalization and CDR Coupling
+
+The CDR does not see an ideal waveform. It sees whatever the receiver front-end and DSP create.
+
+```mermaid
+flowchart LR
+  CH[Channel / package] --> CTLE[CTLE / VGA]
+  CTLE --> ADC[Sampler or ADC]
+  ADC --> EQ[FFE / DFE / DSP]
+  EQ --> TED[Timing detector]
+  TED --> CDR[CDR loop]
+  CDR --> ADC
+```
+
+Critical interactions:
+
+- CTLE peaking changes transition slope and noise enhancement.
+- FFE changes precursor/postcursor ISI and therefore timing bias.
+- DFE decisions can improve eye opening but can also inject error propagation into decision-directed timing.
+- CDR phase error changes the samples used by equalizer adaptation.
+- Equalizer convergence can move the apparent CDR lock point.
+
+Senior review question:
+
+```text
+Was JTOL measured after ideal EQ convergence, during realistic adaptation, or with adaptation frozen at a worst-case setting?
+```
+
+A receiver can pass JTOL with a frozen, optimized equalizer and fail during real link training.
+
+## 9. Internal Jitter and Actuator Limits
+
+Input jitter tolerance is reduced by internally generated jitter. The relevant node is the actual sampling instant, not merely the standalone PLL output.
+
+Internal contributors:
+
+- PLL phase noise and spurs after relevant clock-path shaping.
+- Divider and multi-phase generator additive jitter.
+- Duty-cycle distortion and quadrature/phase-spacing error.
+- Phase interpolator noise, INL, DNL, monotonicity error, and supply sensitivity.
+- PI quantization and digital control limit cycles.
+- Clock-tree additive jitter and supply-induced delay modulation.
+- Sampler aperture jitter.
+- ADC time-interleaving skew, if ADC-based.
+- Timing detector noise and false early/late decisions.
+- Digital loop latency and update quantization.
+
+PI step example for a 64 Gbaud PAM4 symbol UI:
 
 $$
-J_{err}(f)+J_{internal}+J_{ISI}+J_{margin\ allowance}<M_t
+t_{LSB}=\frac{15.625\text{ ps}}{64}=244.1\text{ fs}
 $$
 
-This is not a compliance equation. It is a mental model. It shows that jitter tolerance depends on CDR tracking, internal jitter, ISI, equalization, sampler noise, and eye opening.
+If the CDR limit cycles by one PI LSB, this creates bounded deterministic phase modulation. It should not be hidden inside an RMS random jitter number without checking spectral content and BER impact.
 
-## Worked Example: Residual Jitter vs CDR Bandwidth
+## 10. Bandwidth Tradeoffs
+
+| CDR bandwidth choice | Helps | Hurts | Review question |
+|---|---|---|---|
+| Wider bandwidth | tracks more low/mid-frequency jitter, SSC, wander, frequency offset; faster acquisition | passes more input jitter to recovered clock, passes more detector noise, may amplify peaking, can interact with EQ adaptation | Is added tracking worth the noise and peaking penalty? |
+| Narrower bandwidth | rejects more input jitter and detector noise, lower recovered-clock jitter | poorer SSC/wander tracking, slower acquisition, larger low-frequency residual phase error | Can it track required offset and modulation without slips? |
+| Higher damping | less peaking, more robust stability | slower response, lower tracking near bandwidth | Is acquisition still acceptable? |
+| Lower damping | faster response | jitter peaking, ringing, possible instability | Is peaking counted in JTOL and JTRAN? |
+
+Loop bandwidth should be chosen against the combined spectrum:
+
+```text
+input jitter + SSC + frequency offset + channel DDJ + detector noise
++ PLL/PI jitter + supply-induced tones + adaptation dynamics
+```
+
+The best bandwidth is the one that maximizes link margin, not the one that gives the cleanest single block metric.
+
+## 11. Budget Method
+
+A practical JTOL budget separates tracked input jitter, residual input jitter, internal jitter, deterministic effects, and margin reserve.
+
+| Budget item | Treatment | Notes |
+|---|---|---|
+| Residual sinusoidal jitter | $J_{res}=|H_{err}|J_{in}$ | amplitude convention must be explicit |
+| Random jitter | statistical RMS / BER extrapolation | integration bandwidth and Gaussian assumption matter |
+| Periodic/spur jitter | deterministic pk or pp | track by frequency and source; do not blindly RSS |
+| DDJ / ISI | bounded or pattern-conditioned | depends on channel and EQ |
+| PI quantization / limit cycle | bounded deterministic or shaped quantization | check spectral tones |
+| Supply-induced jitter | deterministic or random depending on aggressor | use supply-to-phase/delay transfer |
+| Sampler aperture | RMS plus deterministic clock coupling | pre-DSP error in ADC-based RX |
+| Margin reserve | explicit engineering reserve | covers modeling error and correlation risk |
+
+Example budget:
+
+| Parameter | Value |
+|---|---:|
+| Available horizontal margin after setup/hold and lock-point offset | 0.25 UI |
+| Internal random-equivalent timing allowance | 0.035 UI |
+| ISI/DDJ allowance | 0.055 UI |
+| PI/supply deterministic allowance | 0.030 UI |
+| Reserve | 0.030 UI |
+| Residual transfer at stress frequency | 0.50 |
+
+Remaining residual SJ margin:
+
+$$
+M_{rem}=0.25-0.035-0.055-0.030-0.030=0.10\ UI
+$$
+
+Estimated input SJ tolerance:
+
+$$
+J_{in,max}=\frac{M_{rem}}{|H_{err}|}=\frac{0.10}{0.50}=0.20\ UI
+$$
+
+This is an intuition estimate, not a compliance result. It is useful because it shows which contributor is consuming margin.
+
+## 12. Worked Residual-Tracking Example
 
 Assume:
 
 | Parameter | Value |
 |---|---:|
 | CDR bandwidth | 10 MHz |
-| Input sinusoidal jitter frequency | 100 MHz |
-| Input jitter amplitude | 0.10 UI peak |
+| Input SJ frequency | 100 MHz |
+| Input SJ amplitude | 0.10 UI peak |
 
 Using the first-order residual transfer:
 
 $$
-|H_{error}|=\frac{100}{\sqrt{100^2+10^2}}=0.995
-$$
-
-Residual sampling jitter:
-
-$$
-J_{err}=0.995\cdot0.10\ UI=0.0995\ UI
-$$
-
-The CDR barely tracks this high-frequency jitter. Nearly all of it appears as sampling error.
-
-Now use \(f_j=1\ \text{MHz}\):
-
-$$
-|H_{error}|=\frac{1}{\sqrt{1^2+10^2}}=0.0995
+|H_{err}|=\frac{100}{\sqrt{100^2+10^2}}=0.995
 $$
 
 $$
-J_{err}=0.00995\ UI
+J_{res}=0.995\cdot0.10=0.0995\ UI
 $$
 
-Slow jitter is mostly tracked, so residual sampling error is much smaller.
+The CDR barely tracks 100 MHz jitter.
 
-## Bandwidth Tradeoffs
+At 1 MHz:
 
-| CDR bandwidth choice | Advantage | Risk |
-|---|---|---|
-| Wider bandwidth | tracks low/mid-frequency input jitter and SSC better, faster acquisition | transfers more input jitter, passes more detector noise, can interact with equalizer |
-| Narrower bandwidth | rejects more input jitter, less noisy recovered clock | poorer wander/SSC tracking, slower acquisition, larger low-frequency phase error |
-| High damping | less jitter peaking | slower response |
-| Low damping | faster response | jitter peaking and instability |
+$$
+|H_{err}|=\frac{1}{\sqrt{1^2+10^2}}=0.0995
+$$
 
-The right bandwidth depends on protocol requirements, SSC, channel loss, transition density, phase detector type, latency, PI resolution, and PLL noise.
+$$
+J_{res}=0.00995\ UI
+$$
 
-## CDR Phase Detector Types
+Slow jitter is mostly tracked. This is why JTOL curves are high at low frequency and lower at high frequency.
 
-| Phase detector | Basic idea | Strength | Risk |
-|---|---|---|---|
-| Alexander / bang-bang | early/late decisions around transitions | simple and robust | nonlinear gain, limit cycles, pattern dependence |
-| Linear phase detector | proportional timing error estimate | easier loop modeling | needs amplitude information and linear region |
-| Mueller-Muller | decision-directed timing from symbol samples | useful in baud-rate receivers | sensitive to wrong decisions and ISI |
-| ADC/DSP timing detector | computes timing error digitally | flexible and calibratable | latency, power, algorithm complexity |
+## 13. Supply Noise Coupling
 
-PAM4 complicates phase detection because there are multiple levels, unequal transition classes, and smaller vertical margin. Phase detector gain can depend on equalization, thresholds, and symbol distribution.
+Supply noise can degrade JTOL even when the injected input jitter is unchanged.
 
-## PAM4-Specific Issues
-
-PAM4 has three eyes and multiple transition amplitudes. A transition from level 0 to level 3 has a much larger slope than a transition from level 1 to level 2. Timing-error information can therefore be data-dependent.
-
-| PAM4 issue | CDR impact |
+| Coupling path | Effect |
 |---|---|
-| Smaller vertical eyes | more timing detector errors under noise |
-| Unequal transition slopes | data-dependent phase detector gain |
-| ISI after channel | timing bias and data-dependent jitter |
-| FEC / FLIT traffic patterns | possible transition-density differences |
-| Decision errors | can corrupt decision-directed timing recovery |
+| PLL VCO supply pushing | phase/frequency modulation of source clock |
+| Clock buffer supply sensitivity | delay modulation after PLL loop suppression |
+| PI supply sensitivity | sampling phase modulation and INL shift |
+| Sampler/ADC supply noise | aperture shift and threshold/reference disturbance |
+| Digital CDR supply noise | loop update jitter, metastability risk, limit-cycle modulation |
+| Shared rail/package resonance | correlated multi-lane jitter and frequency-specific JTOL holes |
 
-The CDR should be analyzed with realistic equalized data, not only an ideal two-level waveform.
+Supply-induced timing can be represented as:
 
-## Equalization and CDR Coupling
+$$
+J_{supply}(f)=|K_{\phi,VDD}(f)|V_{noise}(f)
+$$
 
-```mermaid
-flowchart LR
-  CH[Lossy channel] --> CTLE[CTLE]
-  CTLE --> ADC[Sampler / ADC]
-  ADC --> EQ[DSP / FFE / DFE]
-  EQ --> TED[Timing error detector]
-  TED --> CDR[CDR loop]
-  CDR --> ADC
+or, for delay-sensitive blocks:
+
+$$
+\Delta t(f)=|K_{d,VDD}(f)|V_{noise}(f)
+$$
+
+Design review should include supply injection sweeps, not only clean-supply JTOL.
+
+## 14. Verification Matrix
+
+Minimum verification coverage for a senior design review:
+
+| Category | Cases |
+|---|---|
+| Loop behavior | lock acquisition, phase step response, frequency offset, SSC tracking, cycle-slip margin |
+| JTOL | SJ sweep across frequency, high-frequency floor, bandwidth-region peaking, low-frequency wander |
+| JTRAN | recovered clock/output transfer, peaking, data-pattern dependence |
+| JGEN | clean-input recovered clock jitter, PI quantization, limit cycle, PLL/clock-tree contribution |
+| Jitter types | RJ, PJ, SJ, DDJ, DCD, crosstalk-induced jitter, supply-induced jitter |
+| Channel/EQ | channel loss corners, CTLE/VGA gain, FFE/DFE settings, adaptation frozen/running |
+| PAM4 | level thresholds, transition-class weighting, small-slope transitions, error propagation |
+| ADC-based RX | aperture jitter, TI skew, sampling-clock phase spacing, DSP latency |
+| PVT/layout | process, voltage, temperature, mismatch, extracted clock tree, extracted PI routing |
+| Lab correlation | instrument CDR settings, stress calibration, jitter injection point, measured rail noise, BER confidence |
+
+Recommended result package:
+
+- JTOL curves for multiple PVT and channel corners.
+- JTRAN magnitude/peaking with stated detector gain assumptions.
+- JGEN breakdown at the sampler clock node.
+- Eye/bathtub or BER result under the same conditions.
+- Explicit statement of adaptation sequence and whether coefficients are frozen.
+- Supply-noise sensitivity plot for PLL, PI, clock tree, and sampler paths.
+
+## 15. Debug Strategy
+
+When JTOL fails, do not immediately change loop bandwidth. Isolate the failure mode.
+
+```text
+Failure frequency?
+-> low frequency: SSC/wander/frequency-offset tracking, loop range, acquisition
+-> near bandwidth: peaking, damping, latency, detector gain, adaptation interaction
+-> high frequency: eye margin, internal jitter, sampler aperture, EQ residue
 ```
 
-Equalization changes the waveform used for timing recovery. Timing recovery changes the samples used for equalization. If the loops adapt at the same time, they can interact.
+Debug checklist:
 
-Important verification scenarios:
+- Does BER improve with manual sampling phase sweep?
+- Is the CDR lock point centered in the post-EQ eye?
+- Does failure correlate with a specific jitter frequency or supply spur?
+- Does freezing EQ improve or worsen JTOL?
+- Does disabling DFE change timing detector stability?
+- Does a specific PAM4 transition class dominate errors?
+- Does recovered clock show peaking or limit-cycle tones?
+- Are PI steps monotonic and calibrated across PVT?
+- Is CDR bandwidth what the model predicts after detector gain variation?
+- Does the failure appear only under crosstalk or realistic traffic?
+- Is the lab instrument clock-recovery setting hiding or exaggerating the issue?
 
-1. CDR acquisition before equalizer convergence.
-2. Equalizer adaptation with CDR phase error.
-3. CDR tolerance under worst-case channel and crosstalk.
-4. Timing recovery with realistic PAM4 symbol statistics.
-5. Background calibration interaction in ADC-based receivers.
+## 16. Design Review Red Flags
 
-## Jitter Generation
+1. JTOL number reported without jitter frequency.
+2. No BER/error-count/confidence criterion.
+3. No statement of amplitude convention: peak, peak-to-peak, RMS, UI.
+4. Loop bandwidth stated without detector gain and latency assumptions.
+5. PAM4 symbol UI confused with bit-equivalent interval.
+6. Jitter transfer used as a substitute for jitter tolerance.
+7. PLL output jitter treated as final sampler jitter.
+8. PI quantization, INL/DNL, or limit cycle ignored.
+9. DDJ hidden inside random jitter budget.
+10. Spurs RSS-combined as Gaussian RJ.
+11. Clean-supply simulation used as product-level proof.
+12. Equalizer assumed ideal or fully converged without startup/adaptation cases.
+13. CDR simulated with ideal two-level data for PAM4 signoff.
+14. No channel/crosstalk stress during JTOL.
+15. No PVT, mismatch, or extracted clock-path coverage.
+16. Lab stress not calibrated at the receiver input.
+17. Instrument clock recovery settings not documented.
+18. Compliance implied without official spec condition verification.
 
-Jitter generation is the jitter created by the receiver clocking path even with a clean input. Sources include PLL jitter, PI quantization, PI thermal noise, loop filter noise, phase detector noise, supply-induced delay modulation, digital control limit cycles, and sampler aperture uncertainty.
+## 17. Senior-Level Talking Points
 
-If a PI has 64 steps per UI at PCIe 7.0:
+Short explanation:
 
-$$
-t_{LSB}=\frac{7.8125\ \text{ps}}{64}=122.1\ \text{fs}
-$$
+```text
+CDR jitter tolerance is the receiver's ability to maintain the target error rate under input timing modulation. The curve is shaped by how much input phase the CDR tracks versus leaves as residual sampling error, and by how much margin remains after internal jitter, ISI, PAM4 detector uncertainty, equalizer interaction, and supply-induced timing noise.
+```
 
-If the PI control toggles by one LSB in a limit cycle, that quantization can become visible as deterministic jitter unless shaped or averaged.
+Design-review explanation:
 
-## Jitter Transfer
+```text
+I would not review JTOL as a standalone CDR loop number. I would state the CDR architecture, detector input, loop bandwidth, actuator resolution, PLL/PI clock path, EQ state, channel stress, jitter type, amplitude convention, and BER criterion. Then I would separate residual input jitter from internal jitter generation and deterministic effects such as DDJ, spurs, PI limit cycles, and supply modulation. For PAM4, I would also check transition-dependent detector gain and timing-to-voltage conversion.
+```
 
-Jitter transfer describes how input jitter appears in the recovered clock or retimed output. A narrow CDR bandwidth gives low high-frequency transfer, while a wide CDR bandwidth passes more input phase modulation.
+Interview-ready explanation:
 
-For retimers and repeaters, jitter transfer is system-level important because excessive transfer can pass upstream jitter downstream. For endpoint receivers, the more important quantity may be residual sampling error and BER.
+```text
+At low jitter frequency the CDR can track phase motion, so tolerance is high. Around loop bandwidth, peaking, latency, and detector gain are critical. At high jitter frequency, most input jitter becomes residual sampling error, so tolerance is limited by horizontal eye margin, internal jitter, ISI, and PAM4 decision margin. A robust verification plan must include equalization, supply noise, PVT, acquisition, and realistic data patterns.
+```
 
-## Worked Example: Tolerance From Eye Margin
+## 18. Common Interview Q&A
 
-Assume:
+### Q1. What is CDR jitter tolerance?
 
-| Parameter | Value |
-|---|---:|
-| Available horizontal margin after setup/hold | 0.25 UI |
-| Internal random-equivalent jitter allowance | 0.04 UI |
-| ISI/DDJ allowance | 0.06 UI |
-| Margin reserve | 0.03 UI |
-| CDR residual transfer at stress frequency | 0.5 |
+It is the maximum input data jitter the receiver can tolerate while meeting a defined error criterion. It is a curve versus jitter frequency, not a single universal number.
 
-Remaining margin for residual sinusoidal jitter:
+### Q2. Why is JTOL frequency-dependent?
 
-$$
-M_{rem}=0.25-0.04-0.06-0.03=0.12\ UI
-$$
+Because the CDR tracks low-frequency phase movement better than high-frequency movement. High-frequency jitter becomes residual sampling error.
 
-Input jitter tolerance estimate:
+### Q3. What is the difference between jitter tolerance and jitter transfer?
 
-$$
-J_{in,max}=\frac{M_{rem}}{|H_{error}|}=\frac{0.12}{0.5}=0.24\ UI
-$$
+Jitter tolerance asks how much input jitter the receiver survives. Jitter transfer asks how much input jitter appears at the recovered clock or output. Transfer is a loop response; tolerance is a robustness result.
 
-This is a design intuition calculation, not a spec limit. It shows why equalization and internal jitter reduce tolerance even if the CDR loop tracks well.
+### Q4. Why can low jitter transfer still have poor jitter tolerance?
 
-## Design Implications
+Because tolerance also depends on eye margin, internal jitter, equalizer residue, sampler noise, PAM4 vertical margin, and timing detector reliability.
 
-### PLL
+### Q5. Why is PAM4 harder for CDR?
 
-PLL jitter feeds the CDR through local clock phases. If high-frequency PLL jitter is outside the CDR correction path, it may directly become sampling jitter. PLL phase noise and CDR bandwidth should be reviewed together.
+PAM4 has smaller vertical eyes, multiple transition amplitudes, threshold sensitivity, and stronger ISI/DDJ interaction. Timing detector gain becomes data-dependent.
 
-### CDR
+### Q6. How does CDR bandwidth affect JTOL?
 
-The CDR must balance acquisition, tracking, jitter rejection, jitter generation, and stability. For PAM4, phase detector design must be robust to multiple levels, ISI, threshold offsets, and decision errors.
+Wider bandwidth improves tracking of slower input jitter, SSC, and wander, but can pass more detector noise and create peaking. Narrower bandwidth rejects more jitter but may fail low-frequency tracking and acquisition.
 
-### SerDes RX
+### Q7. What should be included in CDR jitter generation?
 
-Receiver jitter tolerance depends on the actual equalized eye. CTLE, FFE, DFE, VGA, ADC resolution, slicer thresholds, and CDR timing all contribute. A receiver with good standalone CDR behavior can still fail under a stressed channel if timing detector gain collapses.
+PLL/clock-path noise, PI noise and quantization, clock-tree additive jitter, supply-induced delay modulation, sampler aperture jitter, detector noise, and digital loop limit cycles.
 
-### SerDes TX
+### Q8. How do equalization and CDR interact?
 
-TX jitter affects the input stress seen by the far-end CDR. TX clock spurs, duty-cycle distortion, and data-dependent jitter can reduce the far-end receiver margin.
+Equalization changes waveform slope and ISI seen by the timing detector. CDR phase changes the samples used for equalizer adaptation. The two loops can help or destabilize each other depending on startup and adaptation sequence.
 
-### ADC
+### Q9. How would you verify JTOL?
 
-In ADC-based receivers, timing error creates voltage error:
+Run SJ sweeps across frequency and amplitude under realistic channel, pattern, EQ, PVT, supply, SSC, and adaptation conditions. Also measure JTRAN, JGEN, lock behavior, recovered clock peaking, eye/bathtub margin, and BER confidence.
 
-$$
-\Delta V \approx \frac{dV}{dt}\Delta t
-$$
+### Q10. What is a common senior-level mistake?
 
-The CDR therefore affects not only decision timing but also ADC sample accuracy and DSP equalizer input quality.
+Reporting one clean JTOL curve without stating the stress pattern, EQ state, BER criterion, supply condition, amplitude convention, UI normalization, and whether adaptation was running.
+
+## 19. Principal-Level Checklist
+
+### Architecture
+
+- [ ] CDR type, detector, loop filter, actuator, update rate, and latency documented.
+- [ ] PI/DCO gain, range, resolution, INL/DNL, monotonicity, and calibration documented.
+- [ ] PLL, divider, clock tree, and sampler clock nodes included in the timing path.
+- [ ] PAM4 transition selection and detector weighting documented.
+
+### Modeling
+
+- [ ] Linear loop model correlated to nonlinear/time-domain behavior.
+- [ ] Detector gain variation over amplitude, ISI, threshold, and transition density covered.
+- [ ] Loop bandwidth and peaking extracted under PVT and EQ states.
+- [ ] Residual transfer $H_{err}$ used for sampler phase error, not confused with JTRAN.
+
+### Budget
+
+- [ ] Residual input jitter separated from internal jitter.
+- [ ] RJ, PJ/SJ, DDJ, spurs, supply-induced jitter, and PI limit cycles separated.
+- [ ] UI convention is correct for PAM4 symbol timing.
+- [ ] Margin reserve explicitly stated.
 
 ### Verification
 
-CDR verification should include jitter tolerance sweeps, jitter transfer, jitter generation, stressed-eye tests, SSC tracking, frequency offset, acquisition, lock robustness, equalizer interaction, PVT, supply injection, and Monte Carlo mismatch.
+- [ ] JTOL, JTRAN, and JGEN are all measured or simulated.
+- [ ] Channel, package, crosstalk, PVT, supply, and layout extraction included.
+- [ ] Equalizer adaptation sequence matches expected product behavior.
+- [ ] BER criterion, confidence, and stress calibration documented.
 
-## Common Mistakes
+### Lab
 
-1. Confusing jitter tolerance with jitter transfer.
-2. Assuming low jitter transfer automatically means good tolerance.
-3. Ignoring phase detector gain variation with PAM4 level transitions.
-4. Simulating CDR with ideal equalized data only.
-5. Ignoring PI quantization and limit cycles.
-6. Choosing CDR bandwidth without considering PLL phase noise.
-7. Ignoring SSC and low-frequency wander.
-8. Treating CDR as independent from CTLE / FFE / DFE adaptation.
+- [ ] Jitter injection calibrated at the relevant receiver input.
+- [ ] Instrument clock recovery/filter settings recorded.
+- [ ] Rail noise measured during JTOL test.
+- [ ] Failure frequencies correlated with recovered clock, supply spectrum, and error logs.
 
-## Interview Q&A
+## 20. Open Items for Project-Specific Completion
 
-### What is CDR jitter tolerance?
+- TODO: verify official PCIe 7.0 JTOL stress profile, mask, filters, and pass/fail criterion.
+- TODO: confirm target CDR architecture: bang-bang, linear, Mueller-Muller, or DSP timing recovery.
+- TODO: confirm symbol UI convention used in internal SerDes documentation.
+- TODO: confirm CDR loop bandwidth, damping, update rate, and latency assumptions.
+- TODO: confirm PI range, step size, INL/DNL, and calibration scheme.
+- TODO: confirm whether JTOL signoff runs EQ adaptation frozen or active.
+- TODO: confirm supply-noise injection levels and rail impedance model.
+- TODO: confirm lab instrument clock recovery and jitter injection methodology.
 
-It is the amount of input data jitter the receiver can tolerate while still meeting the target error criterion. It is frequency-dependent because the CDR tracks low-frequency jitter better than high-frequency jitter.
+## 21. Related Notes
 
-### What is the difference between jitter tolerance and jitter transfer?
-
-Jitter tolerance asks how much input jitter the receiver can survive. Jitter transfer asks how much input jitter appears at the recovered clock or output. One is a robustness metric; the other is a loop transfer metric.
-
-### Why does CDR bandwidth matter?
-
-Bandwidth sets the boundary between tracked phase movement and residual sampling error. Wider bandwidth tracks more input movement but can pass more jitter and noise. Narrower bandwidth rejects more jitter but may fail low-frequency tracking or acquisition requirements.
-
-### Why is PAM4 harder for CDR than NRZ?
-
-PAM4 has smaller vertical margin and multiple transition sizes. Timing detector decisions are more vulnerable to noise, ISI, threshold error, and incorrect symbol decisions.
-
-### How does equalization affect CDR?
-
-Equalization changes the waveform slope and ISI seen by the timing detector. If equalization is poor, the CDR can see biased timing information. If CDR timing is poor, equalizer adaptation can converge incorrectly.
-
-### How would you verify CDR robustness?
-
-I would run jitter tolerance sweeps across frequency, jitter transfer, jitter generation, SSC tracking, acquisition under stressed channels, equalizer interaction, supply noise injection, PVT, and Monte Carlo. I would inspect both loop metrics and final BER / eye margin.
+- [[cdr_fundamentals]]
+- [[pll_phase_noise_jitter]]
+- [[pcie7_clocking_notes]]
+- [[pcie7_gtps_vs_gbaud_ui]]
+- [[pam4_adc_based_rx]]
+- [[sampling_jitter_adc]]
+- [[ctle_ffe_dfe_notes]]
+- [[phase_interpolator]]
+- [[clock_distribution_jitter]]
+- [[serdes_power_integrity]]
+- [[ldo_psrr_notes]]
+- [[serdes_verification_methodology]]
