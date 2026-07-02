@@ -216,6 +216,259 @@ flowchart TD
 
 这张图也适合在 interview whiteboard 上画。它把候选人是否真的理解 PAM4 的关键点暴露得很清楚：PAM4 让 symbol rate 减半，但没有免费增加 vertical margin。
 
+### 5.1 Random Binary Sequence (RBS) 频谱分析和推导
+
+Random binary sequence (RBS) 是理解 SerDes data spectrum 的最基本模型。它假设每个 bit 或 symbol 独立随机，概率相同，然后把离散时间 symbol sequence 通过一个 pulse shape 变成连续时间 waveform。这个模型不能替代真实 PCIe scrambling、coding、FFE、channel 和 package model，但它给出了 data spectrum、Nyquist frequency、AC coupling、equalizer stress 和 CDR transition density 的 first-order intuition。
+
+先从 binary NRZ RBS 开始。令 bit interval 为 $T_b$，bit rate 为：
+
+$$
+R_b = \frac{1}{T_b}
+$$
+
+定义独立同分布的 polar binary sequence：
+
+$$
+a_k \in \{-A, +A\}
+$$
+
+且：
+
+$$
+P(a_k = +A) = P(a_k = -A) = \frac{1}{2}
+$$
+
+因此：
+
+$$
+\mu_a = E[a_k] = 0
+$$
+
+$$
+\sigma_a^2 = E[a_k^2] - \mu_a^2 = A^2
+$$
+
+连续时间 NRZ waveform 可以写成：
+
+$$
+x(t) = \sum_{k=-\infty}^{\infty} a_k p(t-kT_b)
+$$
+
+其中 $p(t)$ 是单个 bit 的 transmit pulse。对 iid zero-mean symbol sequence，data waveform 的功率谱密度为：
+
+$$
+S_x(f) = \frac{\sigma_a^2}{T_b}|P(f)|^2
+$$
+
+这里 $P(f)$ 是 $p(t)$ 的 Fourier transform。这个公式是 RBS 频谱推导的核心：随机性由 $\sigma_a^2/T_b$ 决定，pulse shape 由 $|P(f)|^2$ 决定。
+
+#### 5.1.1 Rectangular NRZ Pulse
+
+如果使用理想 rectangular NRZ pulse：
+
+$$
+p(t) =
+\begin{cases}
+1, & 0 \le t < T_b \\
+0, & \text{otherwise}
+\end{cases}
+$$
+
+它的 Fourier transform 是：
+
+$$
+P(f) = T_b \cdot \text{sinc}(fT_b)e^{-j\pi fT_b}
+$$
+
+其中：
+
+$$
+\text{sinc}(x) = \frac{\sin(\pi x)}{\pi x}
+$$
+
+所以：
+
+$$
+|P(f)|^2 = T_b^2\text{sinc}^2(fT_b)
+$$
+
+代入 RBS PSD：
+
+$$
+S_x(f) = \frac{A^2}{T_b}T_b^2\text{sinc}^2(fT_b)
+$$
+
+得到：
+
+$$
+S_x(f) = A^2T_b\text{sinc}^2(fT_b)
+$$
+
+这个结果说明了几个重要事实：
+
+| Property                | Meaning                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| Spectrum envelope       | rectangular NRZ RBS 有 $\text{sinc}^2(fT_b)$ envelope                 |
+| First null              | $f = R_b$                                                            |
+| Null locations          | $f = nR_b,\ n=\pm1,\pm2,\ldots$                                      |
+| Low-frequency content   | zero-mean polar RBS 没有 DC discrete line，但连续 PSD 在低频不为零               |
+| High-frequency roll-off | ideal rectangular pulse 的 sidelobe roll-off 比实际 band-limited pulse 慢 |
+
+需要注意，"first null at $R_b$" 不等于 "Nyquist is $R_b$"。对于 binary NRZ，symbol rate 等于 bit rate，所以 baseband Nyquist 是：
+
+$$
+f_{Nyquist,NRZ} = \frac{R_b}{2}
+$$
+
+而 rectangular pulse 的 sinc null 来自 pulse shape。Nyquist frequency 来自 symbol sampling theory。工程讨论中经常把这两个概念混在一起：一个描述 pulse spectrum envelope 的零点，另一个描述 symbol-rate baseband channel 的最低无 ISI 采样带宽 anchor。
+
+#### 5.1.2 Non-Zero Mean Binary Sequence
+
+如果使用 unipolar binary sequence：
+
+$$
+a_k \in \{0, A\}
+$$
+
+且 0/1 等概率，则：
+
+$$
+\mu_a = \frac{A}{2}
+$$
+
+$$
+\sigma_a^2 = \frac{A^2}{4}
+$$
+
+PSD 会分成 continuous random data spectrum 和 discrete line spectrum：
+
+$$
+S_x(f) =
+\frac{\sigma_a^2}{T_b}|P(f)|^2
++
+\frac{\mu_a^2}{T_b^2}\sum_{n=-\infty}^{\infty}
+|P(\frac{n}{T_b})|^2\delta(f-\frac{n}{T_b})
+$$
+
+对 rectangular NRZ pulse，$P(n/T_b)$ 在非零整数 $n$ 处为零，因此主要 discrete line 是 DC：
+
+$$
+S_{line}(f) = \mu_a^2\delta(f)
+$$
+
+这就是为什么 high-speed serial links 通常避免有 DC bias 的 raw unipolar data，并使用 differential signaling、scrambling、coding 或 AC coupling strategy 来控制低频和 DC content。真实链路中，finite pattern length、coding、scrambler polynomial、idle/training sequence 和 SSC 都会改变低频 spectrum。
+
+#### 5.1.3 Transition Density and CDR Intuition
+
+对 iid polar binary RBS，连续两个 bit 不同的概率是：
+
+$$
+P(a_k \ne a_{k-1}) = \frac{1}{2}
+$$
+
+所以 ideal random NRZ 的 average transition density 是 0.5 transition/bit。CDR 不能只看平均 transition density，还要看 run length distribution。长度为 $m$ 的 same-symbol run 的概率按几何分布下降：
+
+$$
+P(\text{run length}=m) = \left(\frac{1}{2}\right)^m
+$$
+
+长 run 会降低 CDR 可用 timing information，低频 data content 也会影响 AC coupling baseline wander。PCIe 这类链路会通过 scrambling、encoding/training pattern 和 CDR tolerance requirement 来避免把真实接收机完全暴露在 pathological raw RBS 假设下，但 RBS 仍然是做 first-order spectrum 和 transition-density sanity check 的好模型。
+
+#### 5.1.4 Extension to PAM4 Symbol Sequence
+
+对 PAM4，可以把 binary bit sequence 先映射成四电平 symbol sequence。假设 ideal independent equiprobable PAM4 levels：
+
+$$
+a_k \in \{-3A, -A, +A, +3A\}
+$$
+
+则：
+
+$$
+\mu_a = 0
+$$
+
+$$
+\sigma_a^2 =
+\frac{1}{4}\left(9A^2 + A^2 + A^2 + 9A^2\right)
+= 5A^2
+$$
+
+连续时间 PAM4 waveform 是：
+
+$$
+x(t) = \sum_{k=-\infty}^{\infty} a_k p(t-kT_s)
+$$
+
+其中：
+
+$$
+T_s = UI_{sym} = \frac{1}{R_s}
+$$
+
+zero-mean iid PAM4 data spectrum 同样满足：
+
+$$
+S_x(f) = \frac{\sigma_a^2}{T_s}|P(f)|^2
+$$
+
+如果仍假设 rectangular symbol pulse：
+
+$$
+S_x(f) = 5A^2T_s\text{sinc}^2(fT_s)
+$$
+
+对 PCIe 7.0 PAM4：
+
+$$
+R_s = 64\text{ Gbaud}
+$$
+
+$$
+T_s = 15.625\text{ ps}
+$$
+
+rectangular symbol pulse 的 first null 在：
+
+$$
+f = R_s = 64\text{ GHz}
+$$
+
+但 baseband Nyquist anchor 仍然是：
+
+$$
+f_{Nyquist} = \frac{R_s}{2} = 32\text{ GHz}
+$$
+
+因此不能把 RBS rectangular-pulse first null 误认为 channel Nyquist。对于 practical SerDes，TX FFE、package/channel loss、CTLE、RX equalizer、finite rise/fall time 和 bandwidth limitation 会把 ideal $\text{sinc}^2$ envelope 改成实际 waveform spectrum。对 raised-cosine 或 root-raised-cosine 类 Nyquist pulse，理想 baseband spectrum 的主要占用带宽通常写成：
+
+$$
+B = \frac{1+\alpha}{2}R_s
+$$
+
+其中 $\alpha$ 是 roll-off factor。$\alpha=0$ 时是理想 brick-wall Nyquist pulse，带宽为 $R_s/2$；$\alpha>0$ 时需要更宽带宽，但 time-domain pulse 更容易实现。
+
+#### 5.1.5 Engineering Use in PCIe 7.0 Clocking
+
+RBS spectrum 推导对 PCIe 7.0 clocking 的价值不是给出 official compliance mask，而是帮助建立几个判断：
+
+| Question               | RBS-derived intuition                                                |
+| ---------------------- | -------------------------------------------------------------------- |
+| Data spectrum 由什么决定？   | symbol variance 和 pulse shape                                        |
+| 32 GHz 从哪里来？           | 64 Gbaud PAM4 的 baseband Nyquist                                     |
+| 64 GHz first null 是什么？ | ideal rectangular PAM4 symbol pulse 的 sinc null                      |
+| 为什么要看低频？               | DC balance、AC coupling、baseline wander、CDR low-frequency tracking    |
+| 为什么要看高频？               | edge slope、jitter-to-voltage conversion、equalizer boost、crosstalk    |
+| 为什么不能只看 RBS？           | 真实 PCIe data 有 scrambling、coding、training、FFE、channel 和 equalization |
+
+一个实用说法是：
+
+$$
+\text{Data PSD} = \text{symbol statistics} \times \text{pulse-shape spectrum}
+$$
+
+对于 PCIe 7.0 PAM4，clocking 分析应该使用 $R_s=64\text{ Gbaud}$ 和 $UI_{sym}=15.625\text{ ps}$；频谱分析中可以用 RBS PSD 做 sanity check，但 channel/equalizer/CDR signoff 必须用真实 pattern、实际 pulse shape、transmitter equalization、channel S-parameter 和 receiver adaptation model。
+
 ## 6. Worked Example 1: 128 GT/s PCIe 7.0 UI and Nyquist
 
 假设分析对象是 PCIe 7.0 单 lane，headline rate 为 128 GT/s，使用 PAM4。
@@ -908,6 +1161,7 @@ Separate by measurement point and spectrum: PLL phase noise/spurs, clock tree ad
 - [ ] Use $UI_{sym}=15.625\text{ ps}$ for sampler/CDR/PI timing.
 - [ ] Use $UI_{bit,eq}=7.8125\text{ ps}$ only for bit-equivalent arithmetic.
 - [ ] Use $f_{Nyquist}=32\text{ GHz}$ for baseband channel anchor.
+- [ ] Distinguish RBS rectangular-pulse first null from symbol-rate Nyquist frequency.
 - [ ] Mark official compliance assumptions with TODO: verify against PCIe 7.0 spec.
 
 ### 15.2 PLL Preparation
@@ -941,6 +1195,7 @@ Separate by measurement point and spectrum: PLL phase noise/spurs, clock tree ad
 ### 15.5 Channel and Equalization
 
 - [ ] Use 32 GHz Nyquist as the first-order channel anchor.
+- [ ] Use RBS/PRBS spectrum only as a sanity check, then verify with actual pattern, pulse shape, channel S-parameters and equalizer settings.
 - [ ] Model channel beyond Nyquist for waveform integrity.
 - [ ] Include package、PCB、connector、vias、return loss and crosstalk.
 - [ ] Co-simulate CTLE/FFE/DFE with CDR behavior.
