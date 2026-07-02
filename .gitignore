@@ -1,2 +1,21 @@
+# Raw ChatGPT export data
 00_Inbox/raw_chat_exports/**/*.json
 00_Inbox/raw_chat_exports/**/*.zip
+00_Inbox/raw_chat_exports/**/*.dat
+
+# Temporary exported data folder
+export_data/**/*.json
+export_data/**/*.dat
+export_data/**/*.zip
+
+# Large / sensitive raw archives
+*.zip
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache
+__pycache__/
+*.pyc
