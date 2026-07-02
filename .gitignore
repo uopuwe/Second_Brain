@@ -2,6 +2,7 @@
 00_Inbox/raw_chat_exports/**/*.json
 00_Inbox/raw_chat_exports/**/*.zip
 00_Inbox/raw_chat_exports/**/*.dat
+00_Inbox/raw_chat_exports/**/md_by_conversation/
 
 # Temporary exported data folder
 export_data/**/*.json
