@@ -14,8 +14,11 @@ Durable notes should use valid YAML frontmatter:
 title: "Readable Note Title"
 domain: "AnalogIC_SerDes"
 tags:
-  - SerDes
-  - PLL
+  - domain/analog_ic_serdes
+  - topic/serdes
+  - topic/pll
+  - type/permanent
+  - status/active
 status: "active"
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
@@ -46,15 +49,15 @@ This note explains how CDR loop behavior affects receiver tolerance to input jit
 
 ## Related Notes
 
-- [CDR fundamentals](cdr_fundamentals.md)
-- [PLL phase noise and jitter](pll_phase_noise_jitter.md)
+- CDR fundamentals: `cdr_fundamentals.md`
+- PLL phase noise and jitter: `pll_phase_noise_jitter.md`
 ```
 
 ## Bad Example
 
 ```markdown
 # notes
-PLL CDR stuff #important #readlater [[thing]] [here](missing.md)
+PLL CDR stuff #important #readlater thing here missing.md
 ```
 
 ## Link Standard
@@ -62,13 +65,13 @@ PLL CDR stuff #important #readlater [[thing]] [here](missing.md)
 Prefer:
 
 ```markdown
-[PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+PLL phase noise and jitter: `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 ```
 
 Avoid vague links:
 
 ```markdown
-[here](note.md)
+here: `note.md`
 ```
 
 ## Markdown Quality Gate
@@ -81,4 +84,3 @@ Before finishing a durable note:
 - Links are useful and resolve.
 - No empty section stubs remain.
 - The file is readable in plain text.
-

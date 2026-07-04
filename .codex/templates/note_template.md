@@ -294,9 +294,9 @@ Example:
 ```markdown
 ## Related Notes
 
-- [SerDes architecture overview](../SerDes/serdes_architecture_overview.md)
-- [CDR fundamentals](cdr_fundamentals.md)
-- [SerDes power integrity](../LDO_Bandgap/serdes_power_integrity.md)
+- [SerDes architecture overview](../../01_AnalogIC_SerDes/SerDes/serdes_architecture_overview.md)
+- [CDR fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md)
+- [SerDes power integrity](../../01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md)
 ```
 
 ## Sources and Provenance

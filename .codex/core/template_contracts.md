@@ -127,6 +127,7 @@ Required intent:
 - Technical uncertainty.
 - Confidentiality screen.
 - Verification performed.
+- Continuous knowledge improvement actions and metrics from [../continuous_knowledge_improvement.md](../continuous_knowledge_improvement.md).
 
 ## Template Quality Gate
 
@@ -137,4 +138,3 @@ Before using any template:
 - Do not duplicate global policy inside the note.
 - Link to durable notes when relevant.
 - Apply [quality_standards.md](quality_standards.md).
-

@@ -326,6 +326,74 @@ Calibration running during normal operation to track drift without stopping the 
 
 ---
 
+## 15. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 15.1 Timing Skew Model
+
+For an `M`-way time-interleaved ADC:
+
+```text
+t_m,n = n*T_s + m*T_s/M + Delta t_m
+```
+
+For a sine input:
+
+```text
+x(t) = A*sin(2*pi*f_in*t)
+e_m[n] ~= Delta t_m * dx/dt
+|e| proportional to 2*pi*f_in*A*|Delta t_m|
+```
+
+Design implication: the same absolute skew becomes much worse at high input frequency.
+
+### 15.2 Spur Locations
+
+For interleaving mismatch:
+
+```text
+f_spur = |k*f_s/M +/- f_in|, k = 1...(M-1)
+```
+
+Mismatch signatures:
+
+- offset mismatch: spurs near `k*f_s/M`
+- gain mismatch: spurs near `k*f_s/M +/- f_in`
+- timing skew: spurs near `k*f_s/M +/- f_in`, with amplitude increasing with `f_in`
+- bandwidth mismatch: similar image locations, but the effective error is frequency-dependent
+
+### 15.3 Calibration Methods
+
+- Foreground sine-based spur minimization: inject known tones and tune delay/PI until mismatch images are minimized.
+- Ramp or edge calibration: use `e = S*Delta t` when the input slope `S` is known.
+- Background derivative LMS:
+
+```text
+e_m ~= Delta t_m * x'(t)
+Delta t_m[n+1] = Delta t_m[n] - mu * e_m[n] * x_hat'[n]
+```
+
+- Adjacent-channel correlation: use correlation of neighboring sub-ADC outputs to infer relative timing error.
+- Reference/calibration channel: rotate an extra channel through active phases; flag or remove calibration samples from final data.
+- Digital correction: Taylor correction `y_corr = y_m - Delta t_hat*x_hat'` or fractional-delay/Farrow filters.
+- Broadband joint reconstruction: solve a periodically time-varying mixing problem instead of assuming one scalar skew per channel.
+
+### 15.4 Skew vs Bandwidth Mismatch Debug
+
+If best-fit skew changes with input frequency, the error is not pure constant timing skew. It likely includes channel-dependent analog bandwidth or phase mismatch.
+
+Calibration order:
+
+```text
+offset -> gain -> skew -> bandwidth/phase mismatch -> residual image cancellation
+```
+
+### 15.5 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-24__高速TI-ADC时钟偏移.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

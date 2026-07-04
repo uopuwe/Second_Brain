@@ -345,6 +345,52 @@ Equalization shapes the transitions used for phase detection. Poor equalization 
 
 ---
 
+## 14. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 14.1 CTLE Modeling Sanity Formula
+
+A compact CTLE magnitude model used for Python-level receiver exploration:
+
+```text
+|H_ctle(f)| = A_dc * sqrt((1 + (f/fz)^2) /
+                         ((1 + (f/fp1)^2)*(1 + (f/fp2)^2)))
+```
+
+Use it as a behavioral model, not a transistor-level prescription.
+
+Sanity checks:
+
+- Channel response should be low-pass.
+- CTLE response should provide high-frequency peaking or low-frequency attenuation.
+- Combined channel plus CTLE response should be flatter over the signal band.
+- If channel insertion-loss signs are stored as negative dB values, the linear magnitude should use `10^(IL_dB/20)`. Using `10^(-IL_dB/20)` accidentally turns loss into gain.
+
+### 14.2 CTLE vs FFE vs DFE Roles
+
+- CTLE: continuous-time analog shaping before sampling; useful for early high-frequency boost but also boosts noise and crosstalk.
+- FFE: FIR equalization that cancels pre-cursor and post-cursor ISI; can be TX-side or RX/DSP-side.
+- DFE: uses prior decisions to cancel post-cursor ISI without directly amplifying pre-slicer noise, but is sensitive to error propagation.
+- MLSD: sequence estimation can outperform DFE when residual channel memory is modeled well enough.
+
+### 14.3 Interview-Safe Project Framing
+
+Safe project wording:
+
+```text
+Built a Python / system-level PAM4 receiver model with channel loss, CTLE,
+ADC quantization, digital FFE/DFE, threshold adaptation, and BER/EVM/SNDR
+metrics to study equalization tradeoffs.
+```
+
+Avoid saying this was a production SerDes tapeout unless there is project evidence. This should be framed as modeling, exploration, or architecture study.
+
+### 14.4 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-18__CTLE_FFE_面试准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-10__ADC_RX建模与Python.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

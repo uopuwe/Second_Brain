@@ -893,6 +893,90 @@ My PLL and clocking experience is relevant to SerDes because high-speed links de
 
 ---
 
+## 26. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 26.1 Type-II CPPLL Loop Bandwidth Derivation
+
+For a charge-pump PLL with divider ratio `N`, charge-pump gain `Kpd`, VCO gain `Kvco`, and loop-filter impedance `Z(s)`:
+
+```text
+G(s) = (Kpd * Kvco / N) * Z(s) / s
+```
+
+For a simple PI filter:
+
+```text
+Z(s) = R + 1/(sC)
+K = Kpd * Kvco / N
+characteristic equation: s^2 + K*R*s + K/C = 0
+omega_n = sqrt(K/C)
+zeta = (R/2) * sqrt(K*C)
+f_BW ~= omega_n / (2*pi)
+```
+
+Worked example from the conversation:
+
+```text
+Icp = 200 uA
+Kvco = 200 MHz/V
+N = 112
+C = 20 pF
+
+omega_n ~= sqrt((Icp*Kvco/N)/C)
+f_BW is on the order of a few MHz, about 3.3 MHz with the simplified assumptions.
+```
+
+Design implication: use this only as a sizing estimate. Real loop bandwidth and peaking must be verified with the actual PFD/CP gain, loop filter, divider ratio, VCO gain curve, PVT, parasitics, and nonlinear simulations.
+
+### 26.2 SerDes PLL vs RF PLL Emphasis
+
+- SerDes PLL design is usually judged by time-domain sampling or launch jitter after the clock tree and CDR interaction.
+- RF PLL design is often judged more directly by phase-noise spectrum, close-in phase noise, EVM, ACLR, and spur purity.
+- SerDes PLL loop bandwidths are often wider than narrowband RF PLLs because the link can tolerate or track some low-frequency wander while needing low high-frequency sampling jitter.
+- PLL output phase noise shaping:
+
+```text
+S_out ~= |H_ref|^2*S_ref + |H_vco|^2*S_vco + in-loop noise terms
+```
+
+Inside the loop bandwidth, reference and in-loop noise dominate more strongly. Outside the loop bandwidth, VCO noise dominates more strongly.
+
+### 26.3 GF22FDX CPPLL Lessons to Reuse
+
+The extracted design checklist from the GF22FDX CPPLL conversation:
+
+- Start with architecture: PFD, charge pump, passive second/third-order loop filter, LC-VCO or ring VCO, divider, output buffer, bias, and supply isolation.
+- PFD: check reset delay, dead zone, phase-detector linearity, and reference-spur contribution.
+- Charge pump: trim UP/DN mismatch, check output current versus control voltage, feedthrough, leakage, and compliance range.
+- Loop filter: place the zero near the target loop bandwidth region and place high-frequency poles to control ripple and peaking.
+- VCO: keep `Kvco` low enough for jitter sensitivity while preserving tuning range; use switched capacitor banks for coarse tuning and varactors for fine tuning.
+- Divider: include divider and clock-buffer noise in the PLL output budget; they are often underestimated.
+- Verification: run lock transient, loop stability, PSS/PNoise, transient noise, reference spur, supply pushing, PVT, Monte Carlo, and extracted simulations.
+
+待确认: Exact GF22FDX internal CPPLL schematic choices, device options, and signoff targets are not public and should not be asserted as facts.
+
+### 26.4 LC-VCO Extraction Reminders
+
+- Use EM extraction for inductors, shields, and high-Q routing; use active-device PEX for the oscillator core.
+- From extracted impedance:
+
+```text
+L_eff = Im(Z) / (2*pi*f)
+Q = Im(Z) / Re(Z)
+```
+
+- Keep self-resonant frequency well above the operating band where possible.
+- Startup rule of thumb: `gm*Rp > 1`; practical margin target is often greater than 2 to 3.
+- Re-check phase noise, tuning range, supply pushing, and startup after replacing ideal inductors with EM-extracted nports.
+
+### 26.5 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-15__SerDes_vs_RF_PLL_Jitter.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-21__GF_22FDX_CPPLL设计.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

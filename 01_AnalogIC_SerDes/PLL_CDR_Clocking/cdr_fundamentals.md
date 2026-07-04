@@ -1080,6 +1080,73 @@ My previous PLL, ADC, and LDO experience connects naturally to CDR and SerDes cl
 
 ---
 
+## 32. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 32.1 CDR Bandwidth Rule
+
+CDR bandwidth should be high enough to track low-frequency phase wander, frequency offset, and SSC-related movement, but low enough to reject high-frequency jitter, ISI-driven data-dependent jitter, phase-detector noise, and quantization noise.
+
+Useful first-order loop relationship:
+
+```text
+H_CDR(s) ~= L(s) / (1 + L(s))
+```
+
+Below the CDR bandwidth, input phase tends to be tracked. Above the bandwidth, the CDR increasingly rejects input phase movement and the sampler sees residual high-frequency jitter.
+
+Practical ranges from the conversation, not standards:
+
+- 10/25G links: often a few MHz.
+- 56G PAM4: often a few MHz to about 10 MHz.
+- 112G PAM4: often about 5 to 20 MHz.
+- 224G PAM4: several MHz to tens of MHz, strongly architecture-dependent.
+
+待确认: Actual Synopsys CDR loop bandwidth targets, jitter-transfer masks, and measurement methods must be checked against internal design documents.
+
+### 32.2 112G PAM4 Timing Example
+
+For 112 Gb/s PAM4:
+
+```text
+symbol rate = 56 Gbaud
+UI = 1 / 56e9 = 17.86 ps
+CDR bandwidth = 10 MHz
+normalized bandwidth = 10e6 / 56e9 = 1.8e-4
+```
+
+Design implication: even a 10 MHz CDR is extremely slow relative to symbol rate. It tracks low-frequency phase movement over many symbols, not individual symbol-to-symbol data transitions.
+
+### 32.3 Interaction With ADC-Based RX
+
+In an ADC-based receiver, CDR behavior moves into a mixed analog/digital boundary:
+
+- ADC aperture jitter and sampling-clock phase noise create voltage noise before DSP can help.
+- Digital timing recovery can track low-frequency timing movement but cannot undo random aperture jitter.
+- FFE/DFE adaptation, timing recovery, gain/offset adaptation, and TI-ADC skew calibration should run on separated time scales.
+- Rule of thumb:
+
+```text
+adaptation bandwidth << CDR bandwidth << symbol rate
+```
+
+### 32.4 Jitter Generation Sources
+
+CDR jitter generation can come from:
+
+- phase-detector noise and quantization
+- bang-bang phase detector limit cycles
+- DCO/VCO phase noise
+- PI quantization and INL
+- supply noise on clock buffers and samplers
+- digital loop truncation or coefficient quantization
+- ADC noise causing timing-detector error
+
+### 32.5 Source Conversation
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

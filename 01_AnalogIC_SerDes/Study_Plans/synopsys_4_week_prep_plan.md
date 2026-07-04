@@ -608,6 +608,56 @@ Use these gradually after joining.
 
 ---
 
+# Batch 1 Prep Update - 2026-07-02
+
+## Four-Week Priority Compression
+
+### Week 1 - PCIe 7.0 and SerDes Timing Scale
+
+- Re-derive 128 GT/s PAM4 timing from 64 Gbaud assumptions and verify official PCIe 7.0 definitions before quoting compliance limits.
+- Review PAM4 UI, Nyquist frequency, FLIT/FEC implications, retimers, common-clock / SRIS / SRNS clocking, and jitter taxonomy.
+- Deliverable: one-page PCIe 7.0 clocking map from REFCLK to TX/RX sampler.
+
+### Week 2 - PLL, CDR, and Clock Distribution
+
+- Review Type-II CPPLL loop equations, loop bandwidth tradeoffs, phase-noise shaping, reference spurs, supply pushing, dividers, PI, ILO, and clock-buffer additive jitter.
+- Practice CDR bandwidth explanation: tracking low-frequency wander versus rejecting high-frequency jitter and data-dependent noise.
+- Deliverable: explain why PLL output jitter is not the same as final sampler jitter.
+
+### Week 3 - ADC-Based RX and Equalization
+
+- Build or review the ADC RX model stack: channel, CTLE, AFE, sampler jitter, ADC quantization/TI mismatch, FFE, DFE, MLSD, timing recovery, and BER/EVM/SNDR metrics.
+- Reuse CTLE sanity checks and TI-ADC skew formulas.
+- Deliverable: one modeling demo or notebook outline that sweeps ADC bits, jitter, channel loss, and equalizer taps.
+
+### Week 4 - LDO / Power Integrity / Interview Readiness
+
+- Connect LDO PSRR and PDN impedance to VCO, divider, PI, clock-buffer, and sampler jitter.
+- Prepare onboarding questions for internal specs, signoff simulations, architecture ownership, and 224G/PCIe7 project relationship.
+- Deliverable: short technical story set covering ADC RX modeling, PLL/CDR clocking, CTLE/FFE/DFE, TI-ADC calibration, and LDO-to-jitter budgeting.
+
+## Batch 1 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-06__PCIe7_Clocking_LDO学习计划.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-02__Synopsys入职技术准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-29__职位匹配与薪资分析.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-10__ADC_RX建模与Python.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-18__CTLE_FFE_面试准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-15__SerDes_vs_RF_PLL_Jitter.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-21__GF_22FDX_CPPLL设计.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-24__高速TI-ADC时钟偏移.md`
+
+## Batch 1 待确认 Items
+
+- Exact Synopsys assigned architecture, project family, and relation to public 224G transceiver work.
+- Internal PCIe 7.0 jitter metrics, compliance cases, clocking modes, and signoff simulation flow.
+- Internal LDO/PDN-to-jitter methodology and supply-noise injection requirements.
+- Exact ADC-based RX partition, TI-ADC calibration loops, CDR/timing-recovery implementation, and equalization metrics.
+
+---
+
 # Last Updated
 
-2026-07-01
+2026-07-02

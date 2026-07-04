@@ -334,6 +334,46 @@ It captures amplitude information digitally and enables flexible DSP equalizatio
 
 ---
 
+## 15. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 15.1 224G PAM4 Receiver Implications
+
+For 224 Gb/s PAM4:
+
+```text
+bits per PAM4 symbol = 2
+symbol rate = 224 Gb/s / 2 = 112 Gbaud
+UI = 1 / 112e9 ~= 8.93 ps
+Nyquist frequency ~= 56 GHz
+```
+
+Design implications:
+
+- PAM4 has three vertical eyes, so the vertical noise and linearity budget is tighter than NRZ at the same symbol rate.
+- Timing error converts into voltage error through the local slope: `e_v ~= (dx/dt)*Delta t`.
+- CTLE / VGA / ADC / DSP must preserve enough linearity for level spacing and reliable threshold adaptation.
+- A 40 dB insertion-loss channel at 112 Gbaud requires joint analog and digital equalization; plain DFE may not be enough.
+- MLSD can improve BER when the channel memory is stable enough to model.
+
+### 15.2 Public 224G Receiver Details to Remember
+
+The public 224G Synopsys discussion highlighted:
+
+- termination with T-coil bandwidth extension
+- CTLE1 / CTLE2 / VGA before ADC
+- time-interleaved SAR ADC sampling
+- gain / offset correction before DSP equalization
+- FFE, DFE, and MLSD as progressively stronger equalization options
+- phase control with recovered clocking and fine phase rotation
+
+待确认: Exact Synopsys internal PAM4 receiver margin metrics, CTLE/VGA settings, MLSD deployment rules, and compliance flow are internal details.
+
+### 15.3 Source Conversation
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

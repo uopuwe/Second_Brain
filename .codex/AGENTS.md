@@ -23,6 +23,36 @@ Every future Codex session must follow this sequence before editing durable vaul
 
 If a task is purely informational and does not edit the vault, steps 5-8 may be reduced, but mandatory rules still apply.
 
+## Normal Knowledge Workflow
+
+Every source-processing or knowledge-growth task must follow this operating sequence unless the user explicitly asks for a narrower action:
+
+```mermaid
+flowchart LR
+  A[Capture] --> B[Ingest]
+  B --> C[Knowledge Evolution]
+  C --> D[Quality Evaluation]
+  D --> E[Gap Analysis]
+  E --> F[Research Roadmap]
+  F --> G[Continuous Knowledge Improvement]
+  G --> H[Archive]
+  H --> I[Report]
+```
+
+The stages are implemented by these documents:
+
+- Capture: [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md)
+- Ingest: [ingest.md](ingest.md)
+- Knowledge Evolution: [knowledge_evolution.md](knowledge_evolution.md)
+- Quality Evaluation: [quality_score.md](quality_score.md)
+- Gap Analysis: [knowledge_gap.md](knowledge_gap.md)
+- Research Roadmap: [research_roadmap.md](research_roadmap.md)
+- Continuous Knowledge Improvement: [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md)
+- Archive: [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) and `90_Archive/`
+- Report: [core/template_contracts.md](core/template_contracts.md)
+
+For a small edit that does not involve source material, apply only the relevant subset of the sequence, but do not skip quality evaluation, gap analysis, or reporting when the edit changes durable knowledge.
+
 ## Core Documents
 
 The core layer is authoritative.
@@ -40,6 +70,11 @@ Workflow documents define procedures:
 
 - `ingest.md`
 - `knowledge_ingestion_pipeline.md`
+- `knowledge_evolution.md`
+- `quality_score.md`
+- `knowledge_gap.md`
+- `research_roadmap.md`
+- `continuous_knowledge_improvement.md`
 - `merge_knowledge.md`
 - `expand_note.md`
 - `review.md`

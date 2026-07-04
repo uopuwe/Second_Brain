@@ -5,6 +5,7 @@
 Use this workflow when overlapping notes should be consolidated or canonicalized.
 Mandatory policy is in [core/mandatory_rules.md](core/mandatory_rules.md).
 Quality gates are in [core/quality_standards.md](core/quality_standards.md).
+Continuous improvement may route duplicate candidates here from [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md).
 
 ## Active Roles
 
@@ -30,7 +31,8 @@ Do not merge when notes serve distinct purposes such as paper summary, interview
 8. Resolve conflicting claims or add a visible uncertainty section.
 9. Update links using [build_links.md](build_links.md).
 10. Update indexes using [indexing.md](indexing.md).
-11. Do not delete source notes unless explicitly requested.
+11. Report merge outcomes back to [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) when the merge was triggered by CKI.
+12. Do not delete source notes unless explicitly requested.
 12. Verify against [core/quality_standards.md](core/quality_standards.md).
 
 ## Good Example
@@ -60,4 +62,3 @@ This destroys purpose boundaries.
 ## Output Contract
 
 A merge task should report canonical note, source notes considered, content promoted, conflicts or uncertainty, links and indexes updated, and source notes left untouched or redirected.
-

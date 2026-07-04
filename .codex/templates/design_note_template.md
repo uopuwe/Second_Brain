@@ -213,9 +213,9 @@ The current conclusion is that more evidence is needed before choosing a design 
 ```markdown
 ## Related Notes
 
-- [SerDes power integrity](../LDO_Bandgap/serdes_power_integrity.md)
-- [LDO PSRR notes](../LDO_Bandgap/ldo_psrr_notes.md)
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+- [SerDes power integrity](../../01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md)
+- [LDO PSRR notes](../../01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md)
+- [PLL phase noise and jitter](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md)
 ```
 
 ## Sources and Provenance

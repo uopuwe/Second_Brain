@@ -1232,3 +1232,70 @@ Separate by measurement point and spectrum: PLL phase noise/spurs, clock tree ad
 - [[pll_fundamentals]]
 - [[cdr_fundamentals]]
 - [[serdes_power_integrity]]
+
+---
+
+## 17. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 17.1 PCIe 7.0 Clocking Prep Map
+
+Reusable architecture map:
+
+`REFCLK -> PLL / CMU -> dividers / ILO / PI / clock buffers -> TX launch clocks and RX sampling clocks -> CDR / timing recovery -> PAM4 margin`
+
+Key working assumptions from the source conversations:
+
+- PCIe 7.0 public positioning is 128 GT/s with PAM4 signaling. The useful first timing anchor is 64 Gbaud, so UI is about 15.625 ps and Nyquist is about 32 GHz.
+- Do not equate GT/s directly with symbol rate for PAM4. For first-order analog clocking work, start from 64 Gbaud and then verify the exact compliance definitions against the official PCI-SIG specification.
+- The clocking problem is not only PLL integrated jitter. The final sampler margin also includes divider noise, clock-tree additive jitter, duty-cycle distortion, PI quantization / INL, supply-induced deterministic jitter, CDR tracking, and data-dependent jitter from residual ISI.
+- LDO and PDN requirements should be derived from timing margin, not treated as a generic low-noise block requirement.
+
+### 17.2 Supply-to-Jitter Back Calculation
+
+For VCO or clock-buffer supply sensitivity:
+
+```text
+Delta f(t) = K_VDD * v_supply(t)
+phi(t) = 2*pi * integral(Delta f(t) dt)
+sigma_t = sigma_phi / (2*pi*f_clk)
+```
+
+For a sinusoidal supply ripple at frequency `f_r`:
+
+```text
+Delta phi_pk = K_VDD * V_ripple_pk / f_r
+Delta t_pk = Delta phi_pk / (2*pi*f_clk)
+```
+
+Design use:
+
+- Convert the allowed jitter contribution into a maximum ripple at each sensitive node.
+- Compare that ripple limit against LDO PSRR, package / on-die PDN impedance, decap resonance, and simultaneous switching current.
+- Run supply-ripple injection on PLL, dividers, PI, clock buffers, and sampler clocks rather than assuming LDO output noise alone bounds jitter.
+
+Worked example template:
+
+```text
+Given:
+K_VDD = 50 MHz/V
+allowed sigma_t = 50 fs
+f_clk = 14 GHz
+injected ripple frequency = f_r
+
+Find V_ripple such that the supply-induced jitter contribution stays below 50 fs.
+Use the sinusoidal relation above, then add margin for package resonance and PVT.
+```
+
+### 17.3 Synopsys Onboarding Questions
+
+- 待确认: Which PCIe 7.0 clocking mode is most relevant to the assigned work: common clock, SRIS, SRNS, retimer, or internal test mode?
+- 待确认: Which jitter metrics are used internally for clocking design review: integrated RMS, TIE histogram, jitter transfer, jitter generation, jitter tolerance, or compliance-mask-specific measurements?
+- 待确认: How are LDO PSRR and PDN impedance translated into clock-tree jitter limits for VCO, divider, PI, and sampler supplies?
+- 待确认: Which simulations are signoff-critical for PCIe 7.0 clocking: PSS/PNoise, transient noise, extracted transient, supply-ripple injection, or behavioral BER margin?
+
+### 17.4 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-06__PCIe7_Clocking_LDO学习计划.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-02__Synopsys入职技术准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-29__职位匹配与薪资分析.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`

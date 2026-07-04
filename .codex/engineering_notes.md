@@ -5,6 +5,7 @@
 This document defines technical depth standards for analog and mixed-signal notes.
 It is a quality standard, not a workflow.
 Use [expand_note.md](expand_note.md) for expansion steps and [core/quality_standards.md](core/quality_standards.md) for global gates.
+Continuous engineering-insight expansion is coordinated by [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md), which routes post-ingest depth improvements here instead of duplicating these standards.
 
 ## Core Standard
 
@@ -87,4 +88,3 @@ Before calling a note technically strong:
 - Failure modes are included when relevant.
 - Source status is visible.
 - Related notes are linked.
-

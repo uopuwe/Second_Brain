@@ -4,7 +4,8 @@
 
 Use this workflow to improve navigation through the vault.
 Global link quality standards are in [core/quality_standards.md](core/quality_standards.md).
-Vault structure is defined in [knowledge_tree.md](knowledge_tree.md).
+Vault structure is defined in [knowledge_tree.md](knowledge_tree.md) and the scalable architecture in [knowledge_architecture.md](knowledge_architecture.md).
+Continuous improvement may route link gaps and cross-link optimization work here from [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md).
 
 ## Active Roles
 
@@ -29,6 +30,7 @@ Vault structure is defined in [knowledge_tree.md](knowledge_tree.md).
 5. Use relative Markdown links for durable links.
 6. Add source links when claims depend on source material.
 7. Add index links for major notes using [indexing.md](indexing.md).
+8. Return link decisions to [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) when link work is part of a post-ingest improvement pass.
 8. Check that targets exist.
 9. Avoid duplicate-folder targets unless intentional.
 
@@ -37,15 +39,15 @@ Vault structure is defined in [knowledge_tree.md](knowledge_tree.md).
 ```markdown
 ## Related Notes
 
-- [SerDes architecture overview](../SerDes/serdes_architecture_overview.md): System context for TX, channel, RX, equalization, and clocking.
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md): Timing-noise mechanism behind sampling margin loss.
-- [Sampling jitter in ADCs](../ADC/sampling_jitter_adc.md): Converter-level view of clock jitter sensitivity.
+- SerDes architecture overview: `../SerDes/serdes_architecture_overview.md`
+- PLL phase noise and jitter: `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
+- Sampling jitter in ADCs: `../ADC/sampling_jitter_adc.md`
 ```
 
 ## Bad Example
 
 ```markdown
-See [here](x.md), [[stuff]], and [ADC](missing.md).
+See vague links such as `here`, ambiguous wikilinks such as `stuff`, and missing targets such as `missing.md`.
 ```
 
 ## Edge Cases
@@ -58,4 +60,3 @@ See [here](x.md), [[stuff]], and [ADC](missing.md).
 ## Output Contract
 
 Link work should leave important notes easier to navigate without creating broken links or noisy link walls.
-

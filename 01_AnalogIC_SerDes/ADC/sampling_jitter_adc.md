@@ -294,6 +294,55 @@ Not fully. Static timing skew may be calibrated, but random jitter is a noise pr
 
 ---
 
+## 14. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 14.1 Aperture Jitter Formula
+
+For a sine input, sampling-time error converts to voltage error:
+
+```text
+x(t) = A*sin(2*pi*f_in*t)
+e(t) ~= Delta t * dx/dt
+SNR_jitter ~= -20*log10(2*pi*f_in*sigma_t)
+```
+
+Design implications:
+
+- Jitter sensitivity increases directly with input frequency.
+- ADC ENOB can be jitter-limited even when quantization noise is acceptable.
+- Random aperture jitter raises the noise floor and is not removed by deterministic skew calibration.
+
+### 14.2 Deterministic Skew vs Random Jitter
+
+For repeated edge measurements:
+
+```text
+t_i = t_ideal_i + Delta t_i + j_i
+mean(t_i - t_ideal_i) -> deterministic skew estimate
+std(t_i - t_ideal_i) -> random jitter estimate
+sigma_mean = sigma_j / sqrt(N)
+```
+
+Use many samples to estimate deterministic skew below the single-shot random jitter floor.
+
+### 14.3 TI-ADC Skew Example
+
+For `f_s = 8 GS/s` and `M = 8`:
+
+```text
+T_s = 125 ps
+sub-ADC spacing = 125 ps / 8 = 15.625 ps
+```
+
+A deterministic skew of hundreds of femtoseconds is small relative to the sub-ADC spacing, but large enough to create high-frequency mismatch spurs and degrade SFDR.
+
+### 14.4 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-24__高速TI-ADC时钟偏移.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

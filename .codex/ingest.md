@@ -22,19 +22,39 @@ This workflow applies to chat exports, manual source packets, processed AI summa
 
 ## Workflow
 
-1. Preserve raw input in the appropriate source location.
+The ingest workflow is no longer complete when content is merely promoted.
+Every source-processing task follows this chain:
+
+```text
+Capture
+  -> Ingest
+  -> Knowledge Evolution
+  -> Quality Evaluation
+  -> Gap Analysis
+  -> Research Roadmap
+  -> Continuous Knowledge Improvement
+  -> Archive
+  -> Report
+```
+
+1. Capture source material in `00_Inbox/` according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
 2. Inventory source path, source type, date if known, domains, and sensitivity.
 3. Search for existing canonical notes before creating new files.
 4. Classify fragments as concept, equation, tradeoff, debug, interview, source, career, raw, or not promoted.
 5. Screen technical claims for assumptions, units, source quality, and confidentiality.
-6. Choose destination using [knowledge_tree.md](knowledge_tree.md).
+6. Choose destination using [knowledge_tree.md](knowledge_tree.md) and [knowledge_architecture.md](knowledge_architecture.md).
 7. Promote only durable content into domain notes.
 8. Record provenance in every destination note touched.
-9. Add links using [build_links.md](build_links.md) when promoted material affects related notes.
-10. Update indexes using [indexing.md](indexing.md) only for major durable changes.
-11. Write an ingest report for substantial batches using [reports/ingest_report_template.md](reports/ingest_report_template.md).
-12. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
-13. Verify against [core/quality_standards.md](core/quality_standards.md).
+9. Apply [knowledge_evolution.md](knowledge_evolution.md) to decide whether each output is a reference note, seed note, active permanent note, MOC candidate, handbook candidate, superseded item, or archive-only source.
+10. Apply [quality_score.md](quality_score.md) to durable notes that were created, substantially changed, or proposed for maturity.
+11. Apply [knowledge_gap.md](knowledge_gap.md) to record unresolved source, equation, standards, link, tradeoff, debug, or synthesis gaps.
+12. Apply [research_roadmap.md](research_roadmap.md) when a gap is high-priority, multi-note, source-dependent, or relevant to SerDes/PCIe7/PLL/CDR/ADC/LDO/DSP study direction.
+13. Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) to run the automatic post-ingest improvement pass: refactor changed notes, triage duplicates, optimize links, improve formulas, expand engineering insight, generate interview questions, detect research gaps, recommend reading, and check knowledge density.
+14. Add links using [build_links.md](build_links.md) when promoted material affects related notes or CKI identifies missing graph edges.
+15. Update indexes using [indexing.md](indexing.md) when notes become canonical, mature, MOC-worthy, source-index-worthy, roadmap-relevant, or CKI identifies retrieval gaps.
+16. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) only after CKI status is recorded.
+17. Write an ingest report for substantial batches using [core/template_contracts.md](core/template_contracts.md). The legacy path [reports/ingest_report_template.md](reports/ingest_report_template.md) remains available for compatibility.
+18. Verify against [core/quality_standards.md](core/quality_standards.md).
 
 ## Destination Rules
 
@@ -70,5 +90,5 @@ A full AI conversation is pasted into a PLL note and treated as source-backed te
 
 ## Output Contract
 
-An ingest task should produce one or more of updated durable notes, source-specific notes, a source inventory, an ingest report, links, or index entries.
-Final response must include changed files and verification limits.
+An ingest task should produce one or more of updated durable notes, source-specific notes, a source inventory, an ingest report, links, index entries, CKI actions, or CKI metrics.
+Final response must include changed files, lifecycle decisions, quality evaluation, gap decisions, roadmap decisions, continuous improvement actions, archive actions, and verification limits.

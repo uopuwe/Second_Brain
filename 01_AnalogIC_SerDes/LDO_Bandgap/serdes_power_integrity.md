@@ -866,6 +866,63 @@ My LDO experience is directly relevant to SerDes because local regulators are no
 
 ---
 
+## 23. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 23.1 LDO-to-Clock-Jitter Chain
+
+For SerDes clocking, the LDO requirement should be traced through the clock path:
+
+```text
+LDO output noise / ripple
+-> local PDN impedance and package resonance
+-> VCO / divider / PI / clock-buffer supply modulation
+-> phase noise, deterministic jitter, duty-cycle distortion, or skew
+-> TX launch / RX sampler timing error
+-> PAM4 eye margin and BER
+```
+
+Design implication: PSRR at one frequency is not enough. The relevant frequency band is set by supply-noise spectrum, PLL/CDR transfer behavior, VCO/clock-buffer supply sensitivity, and PDN resonances.
+
+### 23.2 Supply Ripple Budget From Jitter Budget
+
+For a sensitive clock block:
+
+```text
+Delta f = K_VDD * v_supply
+Delta phi_pk = K_VDD * V_ripple_pk / f_ripple
+Delta t_pk = Delta phi_pk / (2*pi*f_clk)
+```
+
+Use this to back-calculate the allowed ripple after assigning a jitter budget to the block. Then verify with supply-ripple injection in Spectre, not only with small-signal PSRR.
+
+### 23.3 Domain Partitioning Questions
+
+- Put VCO supplies, divider supplies, PI / phase-rotator supplies, clock-buffer supplies, sampler supplies, and digital supplies into separate analysis buckets.
+- Local LDOs reduce low/mid-frequency supply coupling but can interact with package inductance and on-die decap.
+- Clock-buffer simultaneous switching current can turn supply impedance into deterministic jitter or duty-cycle distortion.
+- ADC sampler supplies connect power integrity directly to aperture jitter and kickback sensitivity.
+
+### 23.4 EMIR Reminders
+
+- EM uses long-term current density and heating risk.
+- Static IR uses average current drop.
+- Dynamic IR uses transient switching current and local droop.
+- Supply-noise-to-jitter analysis needs both amplitude and spectrum, especially near PLL/CDR-sensitive bands.
+
+### 23.5 Synopsys Onboarding Questions
+
+- 待确认: Which clock domains have dedicated local LDOs versus shared analog supplies?
+- 待确认: What supply-noise injection amplitude and frequency grid is used for jitter signoff?
+- 待确认: Are VCO, divider, PI, clock buffer, and sampler `K_VDD` or PSIJ metrics maintained as internal specs?
+- 待确认: How are package / board impedance and on-die decap included in SerDes jitter budgeting?
+
+### 23.6 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-06__PCIe7_Clocking_LDO学习计划.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-21__GF_22FDX_CPPLL设计.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

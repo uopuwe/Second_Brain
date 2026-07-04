@@ -6,6 +6,7 @@
 
 Use this report after processing a substantial source batch.
 The report records what was ingested, what was promoted, what remained raw, what was rejected from durable notes, and what still needs verification.
+It also records the Continuous Knowledge Improvement pass required by [../continuous_knowledge_improvement.md](../continuous_knowledge_improvement.md).
 
 Reports are part of vault memory.
 They help future Codex sessions understand why notes changed.
@@ -236,6 +237,54 @@ If no index was updated, state why:
 No index update was needed because no major durable note was created or reclassified.
 ```
 
+## Continuous Knowledge Improvement
+
+Use this section for every substantial ingest.
+For a small scoped edit, state that full CKI metrics were not required and record the relevant checks.
+
+```markdown
+## Continuous Knowledge Improvement
+
+### Scope
+
+- Changed durable notes:
+- Changed reference notes:
+- Index or MOC updates:
+
+### Actions Completed
+
+- Knowledge evolution:
+- Knowledge refactoring:
+- Duplicate elimination:
+- Cross-link optimization:
+- Formula improvement:
+- Engineering insight expansion:
+- Interview question generation:
+- Research gap detection:
+- Reading recommendation:
+- Knowledge density optimization:
+
+### Metrics
+
+| Metric | Result | Notes |
+| --- | --- | --- |
+| Source coverage ratio |  |  |
+| Quality evaluation coverage |  |  |
+| Gap decision coverage |  |  |
+| Duplicate candidates |  |  |
+| Broken links |  |  |
+| Formula completeness findings |  |  |
+| Interview questions generated |  |  |
+| Reading recommendations created |  |  |
+| Density issues resolved or deferred |  |  |
+
+### Remaining CKI Risks
+
+- 
+```
+
+When writing an actual report, fill every line with a concrete result or mark it `not applicable` with a reason.
+
 ## Verification Performed
 
 ```markdown
@@ -281,6 +330,7 @@ Before finishing:
 - Technical uncertainty is explicit.
 - Confidentiality screen is included.
 - Links and indexes are documented.
+- Continuous Knowledge Improvement actions and metrics are documented.
 - Verification limits are clear.
 
 ## Expert Rationale for This Report
@@ -296,6 +346,7 @@ Without ingest reports, future agents may see changed notes but not understand:
 - Which uncertainties remain.
 - Whether confidentiality was screened.
 - Whether indexes and links were updated.
+- Whether the post-ingest improvement loop actually improved the knowledge graph.
 
 For a senior engineer, this is similar to a lab or design-review record.
 For a future AI agent, it prevents repeating the same ingest work and preserves source-to-note traceability.
@@ -334,6 +385,12 @@ Uncertainty should remain visible after ingestion.
 Reason:
 The report must not imply checks that did not happen.
 
+### Continuous Knowledge Improvement
+
+Reason:
+The report must show whether ingestion improved the existing vault rather than merely adding more text.
+This includes duplicate elimination, cross-link optimization, formula improvement, engineering insight expansion, interview question generation, gap detection, reading recommendation, and density optimization.
+
 ## Best Practices
 
 - Write the report immediately after substantial ingest.
@@ -343,6 +400,7 @@ The report must not imply checks that did not happen.
 - Record standards-sensitive uncertainty.
 - Record confidentiality screening.
 - Mention link and index updates.
+- Record CKI actions and metrics for substantial batches.
 - State verification limits.
 - Keep the report concise but complete.
 - Avoid using the report as a dumping ground for raw source text.
@@ -429,9 +487,10 @@ Not promoted:
 7. Record technical uncertainties.
 8. Record confidentiality screening.
 9. Record links and index updates.
-10. Record verification performed.
-11. Add suggested next actions.
-12. State final status.
+10. Record Continuous Knowledge Improvement actions and metrics.
+11. Record verification performed.
+12. Add suggested next actions.
+13. State final status.
 
 ## Edge Cases
 
@@ -466,6 +525,7 @@ Either create one report per batch or a consolidated report with clear source gr
 - Technical uncertainty is visible.
 - Confidentiality screen is present.
 - Link/index updates are recorded.
+- Continuous Knowledge Improvement status is recorded.
 - Verification limits are explicit.
 - Suggested next actions are concrete.
 - Report can stand alone months later.
@@ -479,6 +539,7 @@ Future tools could:
 - Generate report skeletons.
 - Detect destination notes modified during ingest.
 - Extract link/index updates.
+- Extract CKI metrics from changed notes, gaps, links, formulas, and duplicate candidates.
 - Flag missing uncertainty sections.
 - Build source-to-note traceability maps.
 
@@ -492,6 +553,7 @@ The report still requires engineering judgment.
 - Add batch status tracking.
 - Add source confidence scoring.
 - Add promotion statistics by domain.
+- Add continuous improvement statistics by domain.
 - Add automatic follow-up issue generation.
 - Add periodic review of unresolved uncertainties.
 

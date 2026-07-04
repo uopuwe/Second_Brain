@@ -440,16 +440,16 @@ $$
 
 Spurs 是 deterministic phase modulation，要按 frequency、amplitude、source、transfer path、CDR tracking 分开记录。
 
-| Spur type | Typical source | Review concern |
-|---|---|---|
-| Reference spur | PFD/CP ripple、reference feedthrough | in-band PJ、spectral line |
-| Fractional spur | fractional-N pattern、DSM residue | deterministic PJ、calibration dependence |
-| DSM quantization spur | limit cycle / tonal quantization | fractional word dependent |
-| Supply spur | DC/DC ripple、digital activity | correlated jitter、package resonance |
-| Substrate spur | digital clocks、memory traffic | mode-dependent lab failure |
-| Package / decap resonance spur | PDN anti-resonance | frequency-specific jitter explosion |
-| Clock-tree periodic modulation | DCC、muxing、divider sequence | DCD、even/odd jitter |
-| Pattern-dependent jitter | ISI、driver level-dependent delay | DDJ eye closure |
+| Spur type                      | Typical source                      | Review concern                          |
+| ------------------------------ | ----------------------------------- | --------------------------------------- |
+| Reference spur                 | PFD/CP ripple、reference feedthrough | in-band PJ、spectral line                |
+| Fractional spur                | fractional-N pattern、DSM residue    | deterministic PJ、calibration dependence |
+| DSM quantization spur          | limit cycle / tonal quantization    | fractional word dependent               |
+| Supply spur                    | DC/DC ripple、digital activity       | correlated jitter、package resonance     |
+| Substrate spur                 | digital clocks、memory traffic       | mode-dependent lab failure              |
+| Package / decap resonance spur | PDN anti-resonance                  | frequency-specific jitter explosion     |
+| Clock-tree periodic modulation | DCC、muxing、divider sequence         | DCD、even/odd jitter                     |
+| Pattern-dependent jitter       | ISI、driver level-dependent delay    | DDJ eye closure                         |
 
 Sinusoidal phase modulation：
 

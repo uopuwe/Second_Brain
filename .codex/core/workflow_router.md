@@ -18,6 +18,11 @@ Quality gates are in [quality_standards.md](quality_standards.md).
 | Add cross-links or backlinks | [../build_links.md](../build_links.md) |
 | Maintain master indexes | [../indexing.md](../indexing.md) |
 | Design or audit repository-scale knowledge architecture | [../knowledge_architecture.md](../knowledge_architecture.md) |
+| Manage note maturity or lifecycle transitions | [../knowledge_evolution.md](../knowledge_evolution.md) |
+| Score note quality or maturity | [../quality_score.md](../quality_score.md) |
+| Identify or close knowledge gaps | [../knowledge_gap.md](../knowledge_gap.md) |
+| Plan research priorities or study tracks | [../research_roadmap.md](../research_roadmap.md) |
+| Run automatic post-ingest knowledge improvement | [../continuous_knowledge_improvement.md](../continuous_knowledge_improvement.md) |
 | Decide where knowledge belongs | [../knowledge_tree.md](../knowledge_tree.md) |
 | Check engineering depth | [../engineering_notes.md](../engineering_notes.md) |
 | Check formulas | [../formula_style.md](../formula_style.md) |
@@ -29,25 +34,61 @@ Quality gates are in [quality_standards.md](quality_standards.md).
 | Create interview material | [template_contracts.md](template_contracts.md) |
 | Report a source ingest | [template_contracts.md](template_contracts.md) |
 
+## Normal Knowledge Workflow
+
+When a request involves source material, durable note growth, or repository knowledge maintenance, route through the full workflow:
+
+```text
+Capture
+  -> Ingest
+  -> Knowledge Evolution
+  -> Quality Evaluation
+  -> Gap Analysis
+  -> Research Roadmap
+  -> Continuous Knowledge Improvement
+  -> Archive
+  -> Report
+```
+
+Stage routing:
+
+| Stage | Required documents |
+| --- | --- |
+| Capture | [../knowledge_ingestion_pipeline.md](../knowledge_ingestion_pipeline.md) |
+| Ingest | [../ingest.md](../ingest.md), [template_contracts.md](template_contracts.md) |
+| Knowledge Evolution | [../knowledge_evolution.md](../knowledge_evolution.md) |
+| Quality Evaluation | [../quality_score.md](../quality_score.md), [../review.md](../review.md) when needed |
+| Gap Analysis | [../knowledge_gap.md](../knowledge_gap.md) |
+| Research Roadmap | [../research_roadmap.md](../research_roadmap.md) |
+| Continuous Knowledge Improvement | [../continuous_knowledge_improvement.md](../continuous_knowledge_improvement.md), [../merge_knowledge.md](../merge_knowledge.md), [../build_links.md](../build_links.md), [../formula_style.md](../formula_style.md), [../engineering_notes.md](../engineering_notes.md), [../indexing.md](../indexing.md) |
+| Archive | [../knowledge_ingestion_pipeline.md](../knowledge_ingestion_pipeline.md), `90_Archive/` |
+| Report | [template_contracts.md](template_contracts.md) |
+
+Use a subset only when the request is explicitly scoped, such as "review this note only" or "fix this link only."
+If a scoped request changes durable knowledge, still apply quality evaluation, gap analysis, and reporting.
+
 ## Multi-Workflow Tasks
 
 Many tasks require multiple workflows.
 
 Examples:
 
-- Ingesting a paper may use `ingest.md`, `paper_template.md`, `build_links.md`, and `indexing.md`.
+- Ingesting a paper must use capture, ingest, knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive, and report stages.
 - Expanding a PLL note may use `expand_note.md`, `engineering_notes.md`, `formula_style.md`, and `build_links.md`.
 - Merging duplicate ADC notes may use `merge_knowledge.md`, `knowledge_tree.md`, `build_links.md`, and `indexing.md`.
+- Upgrading a note to mature status may use `knowledge_evolution.md`, `quality_score.md`, `review.md`, and `indexing.md`.
+- Planning SerDes or PCIe7 study may use `knowledge_gap.md`, `research_roadmap.md`, and `knowledge_architecture.md`.
 
 ## Default Decision Logic
 
-1. If source material is raw, start with ingest.
+1. If source material is raw, start with capture and ingest.
 2. If two notes overlap, start with merge.
 3. If one note is thin, start with expand.
 4. If the user asks for critique, start with review.
 5. If the task is navigation, start with links or indexing.
 6. If the task is note creation, choose the template by note type.
-7. If uncertain, inspect files and choose the least destructive workflow.
+7. After durable knowledge changes, run knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive decision, and report.
+8. If uncertain, inspect files and choose the least destructive workflow.
 
 ## Output Expectations
 
@@ -55,5 +96,11 @@ Every workflow should end with:
 
 - Files changed or reviewed.
 - Quality checks performed.
+- Lifecycle status decision.
+- Quality score or reason scoring was not needed.
+- Gaps opened, closed, or explicitly absent.
+- Roadmap item created, updated, deferred, or explicitly unnecessary.
+- Continuous improvement actions performed or explicitly unnecessary.
+- Archive action or reason no archive action was needed.
 - Remaining uncertainty or verification limits.
 - Any recommended follow-up that materially matters.

@@ -96,8 +96,8 @@ Always ask what integration bandwidth and measurement setup are used before comp
 
 ### Deep References
 
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
-- [SerDes architecture overview](../SerDes/serdes_architecture_overview.md)
+- [PLL phase noise and jitter](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+- [SerDes architecture overview](../../01_AnalogIC_SerDes/SerDes/serdes_architecture_overview.md)
 ```
 
 ## STAR Story Format
@@ -133,7 +133,7 @@ State how to use this story in an interview.
 
 ### Related Notes
 
-- [LDO stability notes](../LDO_Bandgap/ldo_stability_notes.md)
+- [LDO stability notes](../../01_AnalogIC_SerDes/LDO_Bandgap/ldo_stability_notes.md)
 ```
 
 ## Common Technical Question Categories
@@ -317,12 +317,12 @@ Every interview note should link to deep references:
 ```markdown
 ## Deep References
 
-- [SerDes architecture overview](../SerDes/serdes_architecture_overview.md)
-- [PAM4 receiver basics](../SerDes/pam4_receiver_basics.md)
-- [PLL fundamentals](../PLL_CDR_Clocking/pll_fundamentals.md)
-- [CDR fundamentals](../PLL_CDR_Clocking/cdr_fundamentals.md)
-- [ADC-based receiver](../ADC/adc_based_receiver.md)
-- [SerDes power integrity](../LDO_Bandgap/serdes_power_integrity.md)
+- [SerDes architecture overview](../../01_AnalogIC_SerDes/SerDes/serdes_architecture_overview.md)
+- [PAM4 receiver basics](../../01_AnalogIC_SerDes/SerDes/pam4_receiver_basics.md)
+- [PLL fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md)
+- [CDR fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md)
+- [ADC-based receiver](../../01_AnalogIC_SerDes/ADC/adc_based_receiver.md)
+- [SerDes power integrity](../../01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md)
 ```
 
 ## Interview Note Completion Checklist

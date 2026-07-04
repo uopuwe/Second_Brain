@@ -127,8 +127,8 @@ Loop bandwidth controls how the PLL responds to phase error over frequency. In a
 
 Vault connections:
 
-- [PLL fundamentals](../PLL_CDR_Clocking/pll_fundamentals.md)
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+- [PLL fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md)
+- [PLL phase noise and jitter](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md)
 
 Design implication:
 Choosing loop bandwidth requires balancing tracking, noise filtering, stability, and spur behavior.
@@ -188,10 +188,10 @@ Useful for answers about:
 ```markdown
 ## Links to Topic Notes
 
-- [PLL fundamentals](../PLL_CDR_Clocking/pll_fundamentals.md)
-- [CDR fundamentals](../PLL_CDR_Clocking/cdr_fundamentals.md)
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
-- [SerDes power integrity](../LDO_Bandgap/serdes_power_integrity.md)
+- [PLL fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md)
+- [CDR fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md)
+- [PLL phase noise and jitter](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+- [SerDes power integrity](../../01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md)
 ```
 
 ## Questions for Later Review
@@ -336,8 +336,8 @@ Summary:
 The book models PLL output phase noise as shaped contributions from reference, divider, loop components, and oscillator noise. The useful vault-level lesson is that loop bandwidth cannot be optimized without knowing the dominant noise source.
 
 Vault links:
-- [PLL fundamentals](../PLL_CDR_Clocking/pll_fundamentals.md)
-- [PLL phase noise and jitter](../PLL_CDR_Clocking/pll_phase_noise_jitter.md)
+- [PLL fundamentals](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md)
+- [PLL phase noise and jitter](../../01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md)
 ```
 
 ## Engineering Example: PLL Textbook

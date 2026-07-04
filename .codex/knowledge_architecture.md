@@ -27,6 +27,11 @@ Related operating documents:
 - [AGENTS.md](AGENTS.md)
 - [knowledge_tree.md](knowledge_tree.md)
 - [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md)
+- [knowledge_evolution.md](knowledge_evolution.md)
+- [knowledge_gap.md](knowledge_gap.md)
+- [quality_score.md](quality_score.md)
+- [research_roadmap.md](research_roadmap.md)
+- [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md)
 - [indexing.md](indexing.md)
 - [build_links.md](build_links.md)
 - [core/quality_standards.md](core/quality_standards.md)
@@ -47,7 +52,7 @@ The vault separates source lifecycle from durable knowledge.
 Source material moves:
 
 ```text
-00_Inbox -> processing -> durable notes -> 90_Archive
+Capture -> Ingest -> Knowledge Evolution -> Quality Evaluation -> Gap Analysis -> Research Roadmap -> Continuous Knowledge Improvement -> Archive -> Report
 ```
 
 Durable notes live in canonical domain folders.
@@ -192,7 +197,8 @@ Rules:
 
 ## Domain Folder Hierarchy
 
-Canonical technical domain:
+Current canonical technical folders are listed in [knowledge_tree.md](knowledge_tree.md).
+The scale-out technical domain target is:
 
 ```text
 01_AnalogIC_SerDes/
@@ -747,9 +753,15 @@ Use [merge_knowledge.md](merge_knowledge.md) for merges.
 Source captured
   -> Reference note
   -> Atomic permanent note
+  -> Lifecycle status decision
+  -> Quality evaluation
+  -> Gap analysis
+  -> Roadmap decision
+  -> Continuous improvement pass
   -> MOC integration
   -> Handbook synthesis
   -> Review and maturity upgrade
+  -> Archive/report
 ```
 
 ### Growth Rules
@@ -759,6 +771,11 @@ Source captured
 - Handbooks are built from mature notes, not raw sources.
 - Duplicate prevention is part of every growth cycle.
 - Review status must be visible.
+- Lifecycle transitions are governed by [knowledge_evolution.md](knowledge_evolution.md).
+- Quality maturity can be assessed with [quality_score.md](quality_score.md).
+- Missing prerequisites are tracked with [knowledge_gap.md](knowledge_gap.md).
+- Research priorities are managed with [research_roadmap.md](research_roadmap.md).
+- Continuous post-ingest improvement is governed by [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md).
 
 ### Scaling Rules for 100,000 Notes
 
@@ -846,8 +863,14 @@ Untitled.md
 
 - Source registration.
 - Promotion decision.
+- Knowledge evolution decision.
+- Quality score or quality evaluation decision.
+- Gap analysis decision.
+- Research roadmap decision.
+- Continuous improvement decision, including duplicate, link, formula, engineering-insight, interview-question, reading-recommendation, and density checks when relevant.
 - Link updates.
 - Archive status.
+- Report status.
 
 ### Weekly or Per Study Cycle
 
@@ -879,4 +902,4 @@ Before adding new knowledge at scale:
 - Are tags controlled?
 - Are source and confidence visible?
 - Is it linked to a parent MOC or index?
-
+- Has the normal workflow been applied: capture, ingest, evolution, quality evaluation, gap analysis, roadmap, continuous improvement, archive, report?

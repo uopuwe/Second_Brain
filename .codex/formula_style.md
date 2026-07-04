@@ -5,6 +5,7 @@
 This document defines formula quality standards.
 It is not a workflow.
 Use it whenever adding or reviewing equations.
+Continuous formula improvement is coordinated by [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md), which routes equation cleanup here instead of redefining formula rules.
 
 ## Mandatory Formula Elements
 
@@ -76,4 +77,3 @@ Before leaving an equation in a durable note:
 - Is it dimensionally reasonable?
 - Is it being used outside its valid range?
 - Does it imply a standards number without source support?
-

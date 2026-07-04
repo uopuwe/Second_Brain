@@ -417,6 +417,69 @@ By making repeated PVT, Monte Carlo, post-layout, jitter, PSRR, and transient ch
 
 ---
 
+## 17. Batch 1 Story Packets - 2026-07-02
+
+### 17.1 ADC-Based SerDes Receiver Modeling
+
+Use when asked how prior ADC work maps to high-speed SerDes.
+
+Core story:
+
+- Built or can explain a Python/system-level model of a PAM4 receiver including channel loss, CTLE, AFE noise, sampler jitter, ADC quantization, FFE/DFE, threshold adaptation, and BER/EVM/SNDR metrics.
+- Used sweeps such as ADC bits, jitter RMS, channel loss, CTLE settings, and equalizer tap count to identify the dominant margin limiter.
+- Connected circuit-level nonidealities to link-level metrics rather than optimizing blocks in isolation.
+
+Safe wording: frame this as modeling, architecture exploration, and analog-to-DSP tradeoff analysis unless there is direct silicon ownership evidence.
+
+Source:
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-10__ADC_RX建模与Python.md`
+
+### 17.2 CTLE / FFE / DFE Equalization Story
+
+Core story:
+
+- Channel loss is low-pass, CTLE provides high-frequency boost or low-frequency attenuation, FFE cancels precursor/postcursor ISI, and DFE cancels postcursor ISI without directly boosting pre-slicer noise.
+- A robust modeling flow sanity-checks the channel, CTLE, and combined response before trusting eye or BER results.
+- The main tradeoff is analog boost/noise/PVT sensitivity versus digital flexibility/power/noise enhancement.
+
+Source:
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-18__CTLE_FFE_面试准备.md`
+
+### 17.3 PLL / Clocking Story
+
+Core story:
+
+- CPPLL bandwidth shapes reference noise and VCO noise: inside bandwidth the output follows reference/in-loop noise more strongly, outside bandwidth VCO noise dominates.
+- In SerDes, the useful question is not only PLL output jitter, but final launch/sampling jitter after dividers, clock buffers, supply coupling, CDR tracking, and ADC aperture effects.
+- For implementation, explain the flow from loop-level sizing to PSS/PNoise, transient jitter, reference spur, supply pushing, PVT/Monte Carlo, and extracted verification.
+
+Source:
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-15__SerDes_vs_RF_PLL_Jitter.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-21__GF_22FDX_CPPLL设计.md`
+
+### 17.4 TI-ADC Calibration Story
+
+Core story:
+
+- Timing skew in an interleaved ADC creates error proportional to input slope and produces spurs near `k*f_s/M +/- f_in`.
+- Offset, gain, skew, and bandwidth mismatch have different frequency signatures and should be calibrated in a sensible order.
+- Background calibration can use derivative-LMS, correlation, reference channels, or digital reconstruction, but random aperture jitter is not calibratable like deterministic skew.
+
+Source:
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-24__高速TI-ADC时钟偏移.md`
+
+### 17.5 Overclaim Guardrail
+
+- Do not claim 112G/224G SerDes silicon ownership unless documented.
+- It is accurate to claim ADC/PLL/regulator analog design experience plus SerDes-relevant modeling and architecture preparation.
+- 待确认: Exact Synopsys team project, 224G relationship, internal architecture, and signoff ownership should be confirmed after onboarding.
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

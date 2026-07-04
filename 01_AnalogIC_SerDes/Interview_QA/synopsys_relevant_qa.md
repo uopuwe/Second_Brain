@@ -305,6 +305,56 @@ Common themes to practice:
 
 ---
 
+## 16. Batch 1 Q&A - 2026-07-02
+
+### Q: How should I explain the relevance of ADC work to SerDes?
+
+Answer:
+
+ADC-based SerDes receivers convert more of the receive problem into sampled-data and DSP processing. My ADC background maps to sampler aperture jitter, quantization, comparator noise, TI mismatch, calibration, and the boundary between analog front end and DSP equalization. The link-level framing is BER/EVM/SNDR and eye margin rather than only standalone ADC ENOB.
+
+### Q: How should I explain SerDes PLL jitter versus RF PLL phase noise?
+
+Answer:
+
+RF PLL discussions often emphasize phase-noise spectrum, close-in noise, EVM, ACLR, and spur purity. SerDes discussions translate phase noise into edge timing error at the TX launch or RX sampler. PLL output phase noise is only part of the final timing budget because dividers, clock buffers, PI, supply noise, CDR tracking, and ADC aperture jitter also matter.
+
+### Q: What should I ask about PCIe 7.0 clocking and LDO work?
+
+- 待确认: Which clocking modes and compliance cases matter for the team?
+- 待确认: How are jitter budgets allocated across PLL, dividers, clock buffers, PI, sampler, CDR, and supplies?
+- 待确认: What internal metrics are used for supply-induced jitter and PSRR-to-jitter translation?
+- 待确认: Which simulations are considered signoff versus exploration?
+
+### Q: What should I ask about the public 224G Synopsys paper?
+
+- 待确认: Is the assigned team directly connected to the public 224G transceiver work, a related Interface IP team, or a different project?
+- 待确认: Which architectural blocks are relevant to the role: CMU/PLL, CCU/ILO/phase rotator, AFE, ADC, DSP, CDR, or power integrity?
+- 待确认: Which details can be discussed externally versus kept internal?
+
+### Q: How do I answer CDR bandwidth questions?
+
+Answer:
+
+CDR bandwidth trades tracking and filtering. A wider loop tracks low-frequency wander and frequency offset better, but can also track data-dependent jitter, phase-detector noise, and quantization noise. A narrower loop rejects more high-frequency jitter but may fail SSC/wander/frequency-offset requirements. The right answer is validated by jitter transfer, tolerance, generation, and BER, not by one generic bandwidth number.
+
+### Q: How do I answer TI-ADC skew questions?
+
+Answer:
+
+For an interleaved ADC, channel timing skew creates an error approximately equal to `Delta t * dx/dt`, so it worsens with input frequency. It produces mismatch spurs near `k*f_s/M +/- f_in`. Deterministic skew can be estimated and corrected; random aperture jitter raises the noise floor and cannot be calibrated away the same way.
+
+### Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-02__Synopsys入职技术准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-29__职位匹配与薪资分析.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-15__SerDes_vs_RF_PLL_Jitter.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-24__高速TI-ADC时钟偏移.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

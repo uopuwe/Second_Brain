@@ -25,20 +25,18 @@ The goal is to convert useful information into trustworthy, retrievable, source-
 ## Canonical Flow
 
 ```text
-00_Inbox/
-  -> 00_Intake
-  -> 10_Register
-  -> 20_Quarantine_Screen
-  -> 30_Normalize_Extract
-  -> 40_Metadata_Provenance
-  -> 50_Triage_Classify
-  -> 60_Extract_Claims
-  -> 70_Synthesize_Promote
-  -> 80_Review_Integrate
-  -> 90_Archive/
+Capture
+  -> Ingest
+  -> Knowledge Evolution
+  -> Quality Evaluation
+  -> Gap Analysis
+  -> Research Roadmap
+  -> Continuous Knowledge Improvement
+  -> Archive
+  -> Report
 ```
 
-The stage names are logical stages.
+The detailed ingestion stages below implement the capture and ingest portions of the normal workflow, then hand off to [knowledge_evolution.md](knowledge_evolution.md), [quality_score.md](quality_score.md), [knowledge_gap.md](knowledge_gap.md), [research_roadmap.md](research_roadmap.md), [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md), archive handling, and reporting.
 The repository may store intermediate reports under `00_Inbox/` until automation creates dedicated subfolders.
 
 ## Archive Structure
@@ -604,7 +602,7 @@ Claim: All future SerDes receivers should use ADCs.
 
 ### Purpose
 
-Convert extracted knowledge into durable vault notes.
+Convert extracted knowledge into durable vault notes and hand off each output to lifecycle, quality, gap, roadmap, and continuous-improvement evaluation.
 
 ### Inputs
 
@@ -618,6 +616,11 @@ Convert extracted knowledge into durable vault notes.
 - New source-specific notes when needed.
 - Source/provenance sections.
 - Open questions.
+- Lifecycle decisions under [knowledge_evolution.md](knowledge_evolution.md).
+- Quality evaluation under [quality_score.md](quality_score.md).
+- Gap records under [knowledge_gap.md](knowledge_gap.md) when needed.
+- Roadmap decisions under [research_roadmap.md](research_roadmap.md) when needed.
+- CKI candidates under [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md), including duplicate, link, formula, engineering-insight, interview-question, reading-recommendation, and density opportunities.
 
 ### Decision Criteria
 
@@ -638,6 +641,7 @@ Create a new note when:
 - Use [merge_knowledge.md](merge_knowledge.md) if overlap is found.
 - Use [expand_note.md](expand_note.md) if a destination note is too thin.
 - Keep source-specific notes separate from general topic notes.
+- Do not skip lifecycle, quality, gap, roadmap, or CKI stages after promoting durable knowledge.
 
 ### Quality Checks
 
@@ -646,6 +650,11 @@ Create a new note when:
 - Claims are not overgeneralized.
 - Technical uncertainty remains visible.
 - Links are added where useful.
+- Lifecycle state is assigned.
+- Quality score or reason for not scoring is recorded.
+- Gaps are opened, closed, or explicitly absent.
+- Roadmap impact is evaluated.
+- CKI opportunities are applied, triaged, or explicitly absent.
 
 ### Failure Recovery
 
@@ -674,11 +683,11 @@ The whole paper becomes a generic ADC note.
 - Avoid expanding every related note in one pass.
 - Use staged promotion for books and long transcripts.
 
-## Stage 80: Review, Integration, and Indexing
+## Stage 80: Review, Continuous Improvement, Integration, and Indexing
 
 ### Purpose
 
-Ensure promoted knowledge is accurate, linked, indexed, and maintainable.
+Ensure promoted knowledge is accurate, linked, indexed, scored, gap-aware, roadmap-aware, continuously improved, and maintainable before archive and report.
 
 ### Inputs
 
@@ -691,6 +700,10 @@ Ensure promoted knowledge is accurate, linked, indexed, and maintainable.
 - Reviewed notes.
 - Related links.
 - Index updates.
+- Quality score records.
+- Gap records.
+- Roadmap updates.
+- CKI actions and metrics.
 - Ingest report.
 - Verification status.
 
@@ -709,6 +722,7 @@ Review is required when:
 - Run link checks when links are added.
 - Scan for source sections in promoted notes.
 - Update master indexes only for important durable notes.
+- Run [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) for every substantial source batch before archive.
 - Generate ingest reports for substantial batches.
 
 ### Quality Checks
@@ -716,6 +730,11 @@ Review is required when:
 - Apply [review.md](review.md).
 - Apply [build_links.md](build_links.md).
 - Apply [indexing.md](indexing.md).
+- Apply [knowledge_evolution.md](knowledge_evolution.md).
+- Apply [quality_score.md](quality_score.md).
+- Apply [knowledge_gap.md](knowledge_gap.md).
+- Apply [research_roadmap.md](research_roadmap.md).
+- Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md).
 - Apply [core/quality_standards.md](core/quality_standards.md).
 
 ### Failure Recovery
@@ -755,6 +774,7 @@ Move processed source packets out of active inbox state while preserving traceab
 - Source record.
 - Extracted text.
 - Ingest report.
+- CKI status and unresolved improvement risks.
 - Updated durable notes.
 - Review status.
 
@@ -771,6 +791,7 @@ Archive as `processed` when:
 
 - Source was reviewed.
 - Useful content was promoted or intentionally not promoted.
+- Continuous improvement status was recorded.
 - Ingest report records the decision.
 
 Archive as `rejected` when:
@@ -911,6 +932,7 @@ Before a source leaves active processing:
 - Promoted claims are traceable.
 - Durable notes are linked and source-aware.
 - Review status is recorded.
+- CKI status is recorded.
 - Archive category is correct.
 
 ## Automation Roadmap
@@ -928,4 +950,3 @@ Recommended future tools:
 - Inbox dashboard showing source status by stage.
 
 Automation must not silently promote claims, delete source material, or override confidentiality screening.
-

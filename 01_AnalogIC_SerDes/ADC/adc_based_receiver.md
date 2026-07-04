@@ -292,6 +292,81 @@ It creates sample amplitude error, reducing SNDR and receiver margin.
 
 ---
 
+## 14. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 14.1 Behavioral Model Stack
+
+Reusable ADC-based receiver model levels:
+
+- Level 1: PAM4/NRZ transmitter, channel, AWGN, sampler, ADC, FFE/DFE, slicer, BER.
+- Level 2: AFE bandwidth, CTLE, noise, offset, gain, nonlinearity, and aperture jitter.
+- Level 3: ADC finite bits, quantization, offset/gain mismatch, INL/DNL, comparator offset, sampling jitter, and TI mismatch.
+- Level 4: DSP adaptation, including LMS/sign-LMS FFE, DFE, threshold adaptation, AGC, timing recovery, and background TI-ADC calibration.
+
+Possible Python module split:
+
+```text
+tx.py
+channel.py
+afe.py
+adc.py
+dsp.py
+metrics.py
+sim_config.py
+experiments.py
+main.py
+```
+
+### 14.2 Metrics and Sweeps
+
+Core metrics:
+
+- pre-FEC BER and BER after equalization
+- PAM4 level mean/sigma and eye height/width
+- EVM, SNDR, SFDR, and ENOB
+- ADC code histogram and clipping rate
+- FFE/DFE tap convergence and noise enhancement
+- jitter tolerance and bathtub curves where applicable
+
+Useful sweeps:
+
+- BER versus ADC bits
+- BER versus aperture jitter RMS
+- BER versus channel loss
+- EVM versus FFE/DFE tap count
+- required ENOB versus insertion loss
+- CTLE zero/pole settings versus SNDR/EVM/BER
+
+### 14.3 ADC RX Tradeoffs
+
+- More ADC bits reduce quantization noise but increase power, area, and input capacitance.
+- More sampling rate can ease DSP equalization but increases clocking, ADC, and interleaving complexity.
+- Moving equalization into DSP improves flexibility but does not remove analog limits from AFE noise, sampler aperture jitter, and front-end linearity.
+- Timing jitter creates input-dependent voltage noise:
+
+```text
+SNR_jitter ~= -20*log10(2*pi*f_in*sigma_t)
+```
+
+### 14.4 Public 224G ADC RX Anchor
+
+The public 224G Synopsys discussion is a useful architecture anchor:
+
+- CTLE/VGA before ADC
+- massively time-interleaved SAR ADC front end
+- gain/offset correction before DSP equalization
+- FFE, DFE, and MLSD in DSP
+- CDR/timing recovery coupled to ADC sampling phase
+
+待确认: Exact Synopsys ADC bit depth, interleaving ratio, calibration loops, and DSP partition for the assigned product must be confirmed internally.
+
+### 14.5 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-10__ADC_RX建模与Python.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

@@ -347,6 +347,53 @@ LDO noise and finite PSRR can disturb PLL, CDR, RX front-end, ADC, and reference
 
 ---
 
+## 15. Batch 1 Extracted Knowledge - 2026-07-02
+
+### 15.1 224 Gb/s ADC/DSP-Based Transceiver Pattern
+
+From the public Synopsys 224 Gb/s PAM4 transceiver discussion, the reusable architecture pattern is:
+
+```text
+TX DSP -> serializer -> DAC / driver -> channel
+channel -> termination / T-coil -> CTLE -> VGA -> TI-SAR ADC -> DSP FFE / DFE / MLSD -> CDR / timing recovery
+```
+
+Important design points:
+
+- PAM4 at 224 Gb/s corresponds to 112 Gbaud, so analog bandwidth and clocking are strongly constrained.
+- A 1/8-rate clocking architecture reduces full-rate clock distribution burden, but requires accurate multi-phase clock generation and phase correction.
+- ADC/DSP-based receivers move more equalization into digital logic, but sampler aperture jitter, AFE noise, ADC quantization, and TI-ADC mismatch remain analog limits.
+- MLSD can recover margin beyond plain DFE when the post-equalized channel still has controlled memory.
+- Inverter-based AFE stages can be attractive for speed and energy, but biasing, linearity, common-mode control, and PVT sensitivity become central design questions.
+
+待确认: Whether the new role directly works on the same architecture, same 224G design family, or a different Synopsys Interface IP project must be confirmed during onboarding.
+
+### 15.2 Clocking Hierarchy Lessons
+
+The 224G discussion emphasized clock hierarchy rather than only a standalone PLL:
+
+- Shared CMU / PLL generates a clean base clock.
+- Multi-phase clocks feed TX and RX clock-control units.
+- Injection-locked oscillators, phase rotators, or phase-shifting buffers can create fine phase placement.
+- Background drift correction is needed across voltage and temperature.
+- Clocking must be evaluated with the AFE, ADC, DSP timing recovery, and link margin, not as an isolated block.
+
+### 15.3 Interview-Safe Framing
+
+Safe framing for prior work:
+
+- Strong direct experience: ADC, SAR/TI concepts, PLL/DCO, regulator/LDO, bandgap/reference, analog verification, modeling.
+- SerDes-relevant bridge: system-level PAM4 receiver modeling, CTLE/FFE/DFE tradeoffs, jitter/noise budgeting, and analog-to-DSP boundary reasoning.
+- Avoid overclaim: do not imply direct SerDes silicon ownership or 224G tapeout unless there is specific evidence.
+
+### 15.4 Source Conversations
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-04__总结A_224Gbs_Transceiver.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-06-02__Synopsys入职技术准备.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-04-29__职位匹配与薪资分析.md`
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-02

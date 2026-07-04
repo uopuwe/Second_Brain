@@ -15,14 +15,15 @@ Quality gates live in [quality_standards.md](quality_standards.md).
 5. Mark uncertainty. Do not make unverified claims sound certain.
 6. Do not invent sources, citations, standards requirements, paper results, employer details, measurement conditions, or user experience.
 7. Protect confidentiality. Do not promote employer-confidential, customer, proprietary, unreleased, or sensitive personal information into general technical notes.
-8. Use canonical paths. Route knowledge according to [../knowledge_tree.md](../knowledge_tree.md).
-9. Separate workflow from quality. Do not duplicate global quality policy in workflow files.
-10. Use engineering rigor. State assumptions, units, approximations, topology limits, and system impact.
-11. Make formulas usable. Follow [../formula_style.md](../formula_style.md).
-12. Reviews must lead with findings. Follow [../review.md](../review.md).
-13. Do not create broken knowledge graphs. Follow [../build_links.md](../build_links.md).
-14. Keep Markdown durable. Follow [../obsidian_style.md](../obsidian_style.md).
-15. Report verification limits in final responses after vault edits.
+8. Use canonical paths. Route knowledge according to [../knowledge_tree.md](../knowledge_tree.md) and the scalable architecture in [../knowledge_architecture.md](../knowledge_architecture.md).
+9. Apply the normal knowledge workflow for source-processing or durable-knowledge changes: capture, ingest, knowledge evolution, quality evaluation, gap analysis, research roadmap, continuous knowledge improvement, archive, report.
+10. Separate workflow from quality. Do not duplicate global quality policy in workflow files.
+11. Use engineering rigor. State assumptions, units, approximations, topology limits, and system impact.
+12. Make formulas usable. Follow [../formula_style.md](../formula_style.md).
+13. Reviews must lead with findings. Follow [../review.md](../review.md).
+14. Do not create broken knowledge graphs. Follow [../build_links.md](../build_links.md).
+15. Keep Markdown durable. Follow [../obsidian_style.md](../obsidian_style.md).
+16. Report verification limits in final responses after vault edits.
 
 ## Conflict Resolution
 
@@ -39,7 +40,12 @@ Before finishing edits, confirm:
 
 - User work was preserved.
 - Source trail was preserved or explicitly not applicable.
+- Lifecycle status was evaluated for durable knowledge changes.
+- Quality score or quality evaluation was performed when notes were created, substantially changed, or matured.
+- Knowledge gaps were opened, closed, or explicitly not found.
+- Roadmap impact was evaluated.
+- Continuous knowledge improvement was applied or explicitly not needed.
+- Archive action was completed or explicitly not needed.
 - Technical uncertainty is visible.
 - Links and indexes were updated when required.
 - Verification limits are stated.
-

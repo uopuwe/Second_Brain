@@ -49,3 +49,17 @@ This file is kept only as a stable Obsidian alias so old links do not break.
 - [[sampling_jitter_adc]]
 - [[ldo_psrr_notes]]
 - [[serdes_power_integrity]]
+
+## Batch 1 Alias Update - 2026-07-02
+
+The reusable phase-noise / jitter material extracted from the top-10 batch should be maintained in [[pll_phase_noise_jitter]]. The important additions from this batch are:
+
+- SerDes focuses on edge timing margin and BER impact; RF focuses more directly on spectral purity, close-in phase noise, EVM, and ACLR.
+- PLL noise shaping can be summarized as `S_out ~= |H_ref|^2*S_ref + |H_vco|^2*S_vco + in-loop noise terms`.
+- PCIe / SerDes jitter interpretation must include PLL, divider, clock tree, CDR tracking, supply noise, and ADC aperture jitter, not only oscillator phase noise.
+- CDR low-frequency tracking means low-frequency phase noise may be attenuated at the sampler, while high-frequency jitter more directly closes the horizontal eye.
+
+Source conversations:
+
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-15__SerDes_vs_RF_PLL_Jitter.md`
+- `../../00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md`

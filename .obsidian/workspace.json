@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
-                "mode": "source",
+                "file": "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "cdr_jitter_tolerance"
+              "title": "ti_sar_mismatch_calibration"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+                "file": "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for cdr_jitter_tolerance"
+              "title": "Backlinks for ti_sar_mismatch_calibration"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+                "file": "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from cdr_jitter_tolerance"
+              "title": "Outgoing links from ti_sar_mismatch_calibration"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+                "file": "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of cdr_jitter_tolerance"
+              "title": "Outline of ti_sar_mismatch_calibration"
             }
           },
           {
@@ -171,17 +171,17 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md"
+                "file": "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md"
               },
               "icon": "lucide-info",
-              "title": "File properties for cdr_jitter_tolerance"
+              "title": "File properties for ti_sar_mismatch_calibration"
             }
           }
         ]
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 297.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -196,28 +196,41 @@
   },
   "active": "a11c0bd3afa09d2b",
   "lastOpenFiles": [
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/library_files.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-005.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-004.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-003.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-002.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-001.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversations-000.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/conversation_asset_file_names.json",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/export_manifest.json",
-    "export_data/user_settings.json",
-    "export_data/user.json",
+    "01_AnalogIC_SerDes/ADC/ti_sar_adc_calibration.md",
+    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
+    "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md",
+    "01_AnalogIC_SerDes/ADC/adc_based_receiver.md",
     "export_data/index.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
-    "01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+    "99_Templates/decision_log_template.md",
+    "99_Templates/topic_note_template.md",
+    "90_Archive/README.md",
+    "80_MOCs/README.md",
+    "70_Indexes/README.md",
+    "06_Other_Affairs/other_affairs_master_note.md",
+    "05_Health_Medical/health_master_note.md",
+    "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_fundamentals.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "80_MOCs",
+    "70_Indexes",
+    "90_Archive",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
-    "01_AnalogIC_SerDes/SerDes_RX/pam4_adc_based_rx.md",
-    "03_Investing/investing_master_note.md",
-    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md"
+    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-03__SAR_ADC_面试题.md",
+    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2025-12-19__安省树木发芽时间.md",
+    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-28__SerDes_ADC书籍推荐.md",
+    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-21__CPPLL设计与KVCO选择.md",
+    "00_Inbox/processed_by_chatgpt/serdes_batch1_top10_2026-07-01.md",
+    "01_AnalogIC_SerDes - Copy/Study_Plans/synopsys_4_week_prep_plan.md",
+    "01_AnalogIC_SerDes - Copy/Study_Plans/daily_study_log.md",
+    "01_AnalogIC_SerDes - Copy/Study_Plans",
+    "01_AnalogIC_SerDes - Copy/SerDes_RX",
+    "01_AnalogIC_SerDes - Copy/SerDes",
+    "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking",
+    "01_AnalogIC_SerDes - Copy/Papers_Books",
+    "01_AnalogIC_SerDes - Copy/LDO_Bandgap",
+    "01_AnalogIC_SerDes - Copy/Interview_QA"
   ]
 }

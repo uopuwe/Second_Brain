@@ -230,10 +230,10 @@ Add links:
 ```markdown
 ## Related Notes
 
-- [PAM4 receiver basics](../SerDes/pam4_receiver_basics.md)
-- [ADC-based receiver](../ADC/adc_based_receiver.md)
-- [Sampling jitter in ADCs](../ADC/sampling_jitter_adc.md)
-- [CTLE, FFE, and DFE notes](../SerDes/ctle_ffe_dfe_notes.md)
+- [PAM4 receiver basics](../../01_AnalogIC_SerDes/SerDes/pam4_receiver_basics.md)
+- [ADC-based receiver](../../01_AnalogIC_SerDes/ADC/adc_based_receiver.md)
+- [Sampling jitter in ADCs](../../01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md)
+- [CTLE, FFE, and DFE notes](../../01_AnalogIC_SerDes/SerDes/ctle_ffe_dfe_notes.md)
 ```
 
 ## Questions for Deeper Reading
