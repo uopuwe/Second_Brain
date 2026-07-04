@@ -17,6 +17,9 @@ export_data/**/*.zip
 Thumbs.db
 desktop.ini
 
+# Local assistant settings
+.claude/
+
 # Python cache
 __pycache__/
 *.pyc

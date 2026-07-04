@@ -72,7 +72,7 @@ Derivations expanded because they teach reusable reasoning: (a) why only inter-c
 - Created `80_MOCs/ti_adc_calibration_moc.md`.
 - Updated `analog_ic_serdes_master_index.md` ADC section (added canonical note, MOC link, source note).
 - Added citation anchor section in `core_serdes_papers.md`.
-- Obsidian `[[wikilinks]]` added across the five touched notes to connect the cluster (clocking, supply, equalization neighbors).
+- Obsidian wikilinks added across the five touched notes to connect the cluster (clocking, supply, equalization neighbors).
 
 ## Archive Actions
 
