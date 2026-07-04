@@ -1,23 +1,20 @@
 ---
-
 title: "SerDes Architecture Overview"
 domain: "AnalogIC_SerDes"
 tags:
-
-* SerDes
-* Architecture
-* PAM4
-* PCIe7
-* Equalization
-* CDR
-* PLL
-* ADC
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - SerDes
+  - Architecture
+  - PAM4
+  - PCIe7
+  - Equalization
+  - CDR
+  - PLL
+  - ADC
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # SerDes Architecture Overview

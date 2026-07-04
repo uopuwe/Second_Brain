@@ -1,23 +1,20 @@
 ---
-
 title: "LDO PSRR Notes"
 domain: "AnalogIC_SerDes"
 tags:
-
-* LDO
-* PSRR
-* PowerIntegrity
-* SerDes
-* PLL
-* CDR
-* Jitter
-* SupplyNoise
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - LDO
+  - PSRR
+  - PowerIntegrity
+  - SerDes
+  - PLL
+  - CDR
+  - Jitter
+  - SupplyNoise
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # LDO PSRR Notes

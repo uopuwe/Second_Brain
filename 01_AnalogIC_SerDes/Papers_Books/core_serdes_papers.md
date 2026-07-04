@@ -1,23 +1,20 @@
 ---
-
 title: "Core SerDes Papers"
 domain: "AnalogIC_SerDes"
 tags:
-
-* Papers
-* Books
-* References
-* SerDes
-* PCIe7
-* PAM4
-* PLL
-* CDR
-* ADC
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and reading plan"
-  status: "active"
-
+  - Papers
+  - Books
+  - References
+  - SerDes
+  - PCIe7
+  - PAM4
+  - PLL
+  - CDR
+  - ADC
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and reading plan"
+status: "active"
 ---
 
 # Core SerDes Papers

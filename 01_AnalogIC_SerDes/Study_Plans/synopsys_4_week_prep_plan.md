@@ -1,23 +1,20 @@
 ---
-
 title: "Synopsys 4-Week Preparation Plan"
 domain: "AnalogIC_SerDes"
 tags:
-
-* Synopsys
-* PCIe7
-* SerDes
-* PLL
-* CDR
-* LDO
-* ADC
-* Clocking
-* StudyPlan
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT conversations and Synopsys role preparation"
-  status: "active"
-
+  - Synopsys
+  - PCIe7
+  - SerDes
+  - PLL
+  - CDR
+  - LDO
+  - ADC
+  - Clocking
+  - StudyPlan
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT conversations and Synopsys role preparation"
+status: "active"
 ---
 
 # Synopsys 4-Week Preparation Plan

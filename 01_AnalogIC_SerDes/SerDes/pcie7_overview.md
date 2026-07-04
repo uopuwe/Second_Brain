@@ -1,22 +1,19 @@
 ---
-
 title: "PCIe 7.0 Overview"
 domain: "AnalogIC_SerDes"
 tags:
-
-* PCIe7
-* SerDes
-* PAM4
-* Clocking
-* CDR
-* PLL
-* LDO
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "PCI-SIG official materials and ChatGPT technical notes"
-  status: "active"
-
+  - PCIe7
+  - SerDes
+  - PAM4
+  - Clocking
+  - CDR
+  - PLL
+  - LDO
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "PCI-SIG official materials and ChatGPT technical notes"
+status: "active"
 ---
 
 # PCIe 7.0 Overview

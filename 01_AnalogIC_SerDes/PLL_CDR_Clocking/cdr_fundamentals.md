@@ -1,23 +1,20 @@
 ---
-
 title: "CDR Fundamentals"
 domain: "AnalogIC_SerDes"
 tags:
-
-* CDR
-* Clocking
-* SerDes
-* PLL
-* PhaseNoise
-* Jitter
-* PAM4
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - CDR
+  - Clocking
+  - SerDes
+  - PLL
+  - PhaseNoise
+  - Jitter
+  - PAM4
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # CDR Fundamentals

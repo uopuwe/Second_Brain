@@ -1,23 +1,20 @@
 ---
-
 title: "Analog IC / SerDes Master Index"
 domain: "AnalogIC_SerDes"
 tags:
-
-* AnalogIC
-* SerDes
-* PCIe7
-* PLL
-* CDR
-* ADC
-* LDO
-* Bandgap
-* Interview
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT conversations, interview preparation, work notes"
-  status: "active"
-
+  - AnalogIC
+  - SerDes
+  - PCIe7
+  - PLL
+  - CDR
+  - ADC
+  - LDO
+  - Bandgap
+  - Interview
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT conversations, interview preparation, work notes"
+status: "active"
 ---
 
 # Analog IC / SerDes Master Index

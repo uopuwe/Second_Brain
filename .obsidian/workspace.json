@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-                "mode": "preview",
+                "file": "00_Inbox/README.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "pll_phase_noise_jitter"
+              "title": "README"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+                "file": "00_Inbox/README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for pll_phase_noise_jitter"
+              "title": "Backlinks for README"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+                "file": "00_Inbox/README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from pll_phase_noise_jitter"
+              "title": "Outgoing links from README"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+                "file": "00_Inbox/README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of pll_phase_noise_jitter"
+              "title": "Outline of README"
             }
           },
           {
@@ -171,10 +171,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md"
+                "file": "00_Inbox/README.md"
               },
               "icon": "lucide-info",
-              "title": "File properties for pll_phase_noise_jitter"
+              "title": "File properties for README"
             }
           }
         ]
@@ -194,19 +194,31 @@
       "bases:Create new base": false
     }
   },
-  "active": "a11c0bd3afa09d2b",
+  "active": "8d0deb6db06eb29a",
   "lastOpenFiles": [
+    "01_AnalogIC_SerDes/ADC/adc_based_receiver.md",
+    "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md",
+    "01_AnalogIC_SerDes/ADC/ti_sar_adc_calibration.md",
+    "01_AnalogIC_SerDes/Interview_QA/technical_story_bank.md",
+    "01_AnalogIC_SerDes/Interview_QA/synopsys_relevant_qa.md",
+    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
+    "01_AnalogIC_SerDes/LDO_Bandgap/serdes_power_integrity.md",
+    "01_AnalogIC_SerDes/LDO_Bandgap/ldo_stability_notes.md",
+    "01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md",
+    "01_AnalogIC_SerDes/LDO_Bandgap/bandgap_reference_notes.md",
+    "01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
     "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/ingest_report_2026-07-04.md",
     "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/A Study of Phase Noise in CMOS Oscillators BRMar96.pdf",
     "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators",
     "00_Inbox/incoming/papers/A Study of Phase Noise in CMOS Oscillators BRMar96.pdf",
     "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/Phase Noise and Jitter in Digital Electronics.pdf",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
     "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/ingest_report_2026-07-04.md",
     "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics",
     "90_Archive/processed/2026/papers",
@@ -215,22 +227,10 @@
     "00_Inbox/incoming/papers/Phase Noise and Jitter in Digital Electronics.pdf",
     "00_Inbox/README.md",
     "00_Inbox/incoming/misc",
-    "01_AnalogIC_SerDes/ADC/ti_sar_adc_calibration.md",
-    "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md",
-    "01_AnalogIC_SerDes/ADC/adc_based_receiver.md",
     "export_data/index.md",
     "99_Templates/decision_log_template.md",
     "99_Templates/topic_note_template.md",
     "90_Archive/README.md",
-    "80_MOCs/README.md",
-    "70_Indexes/README.md",
-    "06_Other_Affairs/other_affairs_master_note.md",
-    "05_Health_Medical/health_master_note.md",
-    "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-    "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_fundamentals.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-03__SAR_ADC_面试题.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2025-12-19__安省树木发芽时间.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-28__SerDes_ADC书籍推荐.md"
+    "80_MOCs/README.md"
   ]
 }

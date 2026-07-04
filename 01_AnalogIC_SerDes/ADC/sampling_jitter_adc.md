@@ -1,22 +1,19 @@
 ---
-
 title: "Sampling Jitter in ADCs"
 domain: "AnalogIC_SerDes"
 tags:
-
-* ADC
-* SamplingJitter
-* Clocking
-* SNDR
-* SerDes
-* PAM4
-* PLL
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - ADC
+  - SamplingJitter
+  - Clocking
+  - SNDR
+  - SerDes
+  - PAM4
+  - PLL
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # Sampling Jitter in ADCs

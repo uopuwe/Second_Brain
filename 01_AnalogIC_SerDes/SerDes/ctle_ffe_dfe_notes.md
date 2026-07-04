@@ -1,23 +1,20 @@
 ---
-
 title: "CTLE FFE DFE Notes"
 domain: "AnalogIC_SerDes"
 tags:
-
-* CTLE
-* FFE
-* DFE
-* Equalization
-* SerDes
-* PAM4
-* PCIe7
-* CDR
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - CTLE
+  - FFE
+  - DFE
+  - Equalization
+  - SerDes
+  - PAM4
+  - PCIe7
+  - CDR
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # CTLE FFE DFE Notes

@@ -1,23 +1,20 @@
 ---
-
 title: "Synopsys Relevant Q&A"
 domain: "AnalogIC_SerDes"
 tags:
-
-* Synopsys
-* Interview
-* Q&A
-* PCIe7
-* SerDes
-* PLL
-* CDR
-* LDO
-* ADC
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - Synopsys
+  - Interview
+  - Q&A
+  - PCIe7
+  - SerDes
+  - PLL
+  - CDR
+  - LDO
+  - ADC
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # Synopsys Relevant Q&A

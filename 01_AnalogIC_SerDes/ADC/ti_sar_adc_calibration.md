@@ -1,22 +1,19 @@
 ---
-
 title: "TI-SAR ADC Calibration"
 domain: "AnalogIC_SerDes"
 tags:
-
-* ADC
-* SAR
-* TimeInterleaving
-* Calibration
-* PAM4
-* SerDes
-* Receiver
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - ADC
+  - SAR
+  - TimeInterleaving
+  - Calibration
+  - PAM4
+  - SerDes
+  - Receiver
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # TI-SAR ADC Calibration

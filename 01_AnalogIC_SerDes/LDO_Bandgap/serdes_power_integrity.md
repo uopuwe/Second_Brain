@@ -1,24 +1,21 @@
 ---
-
 title: "SerDes Power Integrity"
 domain: "AnalogIC_SerDes"
 tags:
-
-* SerDes
-* PowerIntegrity
-* LDO
-* PSRR
-* PLL
-* CDR
-* Jitter
-* SupplyNoise
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - SerDes
+  - PowerIntegrity
+  - LDO
+  - PSRR
+  - PLL
+  - CDR
+  - Jitter
+  - SupplyNoise
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # SerDes Power Integrity

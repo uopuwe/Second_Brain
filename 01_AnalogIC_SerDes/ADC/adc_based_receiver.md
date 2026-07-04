@@ -1,23 +1,20 @@
 ---
-
 title: "ADC-Based Receiver"
 domain: "AnalogIC_SerDes"
 tags:
-
-* ADC
-* Receiver
-* SerDes
-* PAM4
-* DSP
-* Equalization
-* CDR
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - ADC
+  - Receiver
+  - SerDes
+  - PAM4
+  - DSP
+  - Equalization
+  - CDR
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # ADC-Based Receiver

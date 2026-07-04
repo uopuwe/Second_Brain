@@ -1,22 +1,19 @@
 ---
-
 title: "PLL Fundamentals"
 domain: "AnalogIC_SerDes"
 tags:
-
-* PLL
-* Clocking
-* PhaseNoise
-* Jitter
-* CDR
-* SerDes
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - PLL
+  - Clocking
+  - PhaseNoise
+  - Jitter
+  - CDR
+  - SerDes
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # PLL Fundamentals

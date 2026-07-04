@@ -1,22 +1,19 @@
 ---
-
 title: "Technical Story Bank"
 domain: "AnalogIC_SerDes"
 tags:
-
-* Interview
-* TechnicalStories
-* Synopsys
-* AnalogIC
-* SerDes
-* LDO
-* PLL
-* ADC
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and career preparation"
-  status: "active"
-
+  - Interview
+  - TechnicalStories
+  - Synopsys
+  - AnalogIC
+  - SerDes
+  - LDO
+  - PLL
+  - ADC
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and career preparation"
+status: "active"
 ---
 
 # Technical Story Bank

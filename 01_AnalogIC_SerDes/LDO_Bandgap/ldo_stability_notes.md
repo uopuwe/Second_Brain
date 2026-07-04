@@ -1,24 +1,21 @@
 ---
-
 title: "LDO Stability Notes"
 domain: "AnalogIC_SerDes"
 tags:
-
-* LDO
-* Stability
-* PhaseMargin
-* LoadTransient
-* PSRR
-* PowerIntegrity
-* SerDes
-* PLL
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - LDO
+  - Stability
+  - PhaseMargin
+  - LoadTransient
+  - PSRR
+  - PowerIntegrity
+  - SerDes
+  - PLL
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # LDO Stability Notes

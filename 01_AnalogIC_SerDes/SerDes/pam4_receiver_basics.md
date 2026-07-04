@@ -1,22 +1,19 @@
 ---
-
 title: "PAM4 Receiver Basics"
 domain: "AnalogIC_SerDes"
 tags:
-
-* PAM4
-* SerDes
-* Receiver
-* ADC
-* CDR
-* Equalization
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - PAM4
+  - SerDes
+  - Receiver
+  - ADC
+  - CDR
+  - Equalization
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # PAM4 Receiver Basics

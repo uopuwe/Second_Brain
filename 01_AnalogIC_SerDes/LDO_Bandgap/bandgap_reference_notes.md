@@ -1,25 +1,22 @@
 ---
-
 title: "Bandgap and Reference Notes"
 domain: "AnalogIC_SerDes"
 tags:
-
-* Bandgap
-* Reference
-* LDO
-* Bias
-* PSRR
-* Noise
-* SerDes
-* PLL
-* ADC
-* PCIe7
-* Synopsys
-  created: 2026-07-01
-  updated: 2026-07-01
-  source: "ChatGPT technical notes and Synopsys role preparation"
-  status: "active"
-
+  - Bandgap
+  - Reference
+  - LDO
+  - Bias
+  - PSRR
+  - Noise
+  - SerDes
+  - PLL
+  - ADC
+  - PCIe7
+  - Synopsys
+created: 2026-07-01
+updated: 2026-07-01
+source: "ChatGPT technical notes and Synopsys role preparation"
+status: "active"
 ---
 
 # Bandgap and Reference Notes
