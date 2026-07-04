@@ -40,6 +40,29 @@ The detailed ingestion stages below implement the capture and ingest portions of
 The repository may store intermediate reports for normal external ingestion under `00_Inbox/incoming/` until automation creates dedicated subfolders.
 Legacy ChatGPT export and conversation-processing folders under `00_Inbox/` are explicit-only lanes and are not scanned by this pipeline unless the user names them.
 
+## Ingest Level Control
+
+This pipeline supports three ingest levels defined in [ingest.md](ingest.md): Fast Ingest, Balanced Ingest, and Deep Ingest.
+The selected level must be recorded during source registration and carried through extraction, merge, archive, and reporting.
+
+Default:
+
+- Use Balanced Ingest when the user does not specify a level.
+
+Level effect:
+
+- Fast Ingest limits extraction to source identity, topic, short summary, key claims, useful links, and clearly reusable knowledge.
+- Balanced Ingest performs normal engineering extraction, canonical-note merge, important formula capture, concise derivation expansion, link updates, archive, and normal report generation.
+- Deep Ingest performs full technical extraction, careful formula explanation, derivation expansion, tradeoff and mistake capture, examples, interview material, implementation notes, broader canonical-note updates, index/MOC updates, and detailed reporting.
+
+Safety boundaries:
+
+- Never use Deep Ingest by default.
+- Ask before using Deep Ingest on a full book, long specification, or very large source packet unless the user explicitly requested it.
+- Do not let ingest level change the default scan root: normal external ingestion still scans only `00_Inbox/incoming/`.
+- Do not let ingest level bypass the rule that ChatGPT export processing is separate and explicit.
+- Do not create duplicate notes when a canonical note already exists.
+
 ## Archive Structure
 
 Use this archive structure when moving completed source packets:
@@ -165,6 +188,7 @@ Create a source record so the material can be tracked through the pipeline.
 
 - Source inventory entry.
 - Source ID.
+- Selected ingest level: Fast Ingest, Balanced Ingest, or Deep Ingest.
 - Processing status.
 - Initial source type.
 
@@ -172,6 +196,8 @@ Create a source record so the material can be tracked through the pipeline.
 
 Register every source that may be processed.
 For trivial one-line notes, registration may be embedded in the destination note's source section.
+If no ingest level is specified, register the source as Balanced Ingest.
+If Deep Ingest appears appropriate for a very large source, pause for confirmation unless the user already requested Deep Ingest.
 
 ### Automation Rules
 
@@ -193,6 +219,7 @@ Examples:
 
 - Source ID is unique.
 - Source path is exact.
+- Ingest level is recorded.
 - Source type is recorded.
 - Initial status is one of `new`, `extracting`, `triaged`, `promoted`, `rejected`, `archived`, or `blocked`.
 
@@ -208,6 +235,7 @@ Good:
 ```markdown
 - Source ID: `2026-07-04_jssc-paper_fractional-n-pll`
 - Path: `00_Inbox/incoming/papers/jssc_fractional_n_pll.pdf`
+- Ingest level: Balanced Ingest
 - Status: `new`
 - Initial type: JSSC paper
 ```

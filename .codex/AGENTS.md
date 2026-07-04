@@ -53,6 +53,24 @@ The stages are implemented by these documents:
 
 For a small edit that does not involve source material, apply only the relevant subset of the sequence, but do not skip quality evaluation, gap analysis, or reporting when the edit changes durable knowledge.
 
+## Ingest Levels
+
+Normal external knowledge ingestion has three levels.
+The level must be selected before extraction and recorded in the ingest report.
+
+| Level | Default use | Depth |
+| --- | --- | --- |
+| Fast Ingest | Blogs, short articles, Reddit/forum discussions, screenshots, simple slides, and lightweight references | Extract identity, topic, short summary, key claims, useful links, and only clearly reusable knowledge. |
+| Balanced Ingest | Default mode for ordinary papers, whitepapers, datasheets, technical articles, and useful slides | Extract reusable engineering knowledge, merge high-value content into canonical notes, capture important formulas, add concise insights, update useful links, archive, and report. |
+| Deep Ingest | User-explicit deep study, textbooks, PCIe specifications, cornerstone papers, and important JSSC/ISSCC papers | Perform full technical extraction, formula explanation, derivation expansion, tradeoff capture, examples, common mistakes, interview material, implementation notes, broad canonical-note updates, index/MOC updates, and detailed reporting. |
+
+Mandatory level rules:
+
+- Use Balanced Ingest when the user does not specify a level.
+- Never use Deep Ingest by default.
+- Ask before using Deep Ingest for a full book, long specification, or very large source unless the user explicitly requested Deep Ingest.
+- The level changes depth only; it does not change repository architecture, inbox lane rules, canonical-note merge rules, bilingual writing, provenance, archive, or reporting duties.
+
 ## Inbox Lanes
 
 `00_Inbox/` contains separate operating lanes.

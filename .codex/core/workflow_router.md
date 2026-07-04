@@ -13,6 +13,7 @@ Quality gates are in [quality_standards.md](quality_standards.md).
 | Bring new external source material into the vault | [../ingest.md](../ingest.md) |
 | Ingest papers, books, articles, screenshots, videos, datasheets, patents, slides, or technical references from `00_Inbox/incoming/` | [../ingest.md](../ingest.md) |
 | Process source material from `00_Inbox/incoming/` through final archive | [../knowledge_ingestion_pipeline.md](../knowledge_ingestion_pipeline.md) |
+| Choose Fast Ingest, Balanced Ingest, or Deep Ingest | [../ingest.md](../ingest.md) |
 | Process ChatGPT exports, conversation inventories, processed ChatGPT summaries, historical manual batches, or unprocessed conversation notes | Conversation-processing workflow; require explicit user instruction before scanning legacy folders |
 | Combine overlapping notes | [../merge_knowledge.md](../merge_knowledge.md) |
 | Turn a thin note into a durable note | [../expand_note.md](../expand_note.md) |
@@ -69,6 +70,25 @@ Stage routing:
 Use a subset only when the request is explicitly scoped, such as "review this note only" or "fix this link only."
 If a scoped request changes durable knowledge, still apply quality evaluation, gap analysis, and reporting.
 
+## Ingest Level Routing
+
+Every normal external knowledge ingest must select one ingest level before extraction.
+If the user does not name a level, route to Balanced Ingest.
+
+| Ingest level | Route when |
+| --- | --- |
+| Fast Ingest | The source is a blog post, short article, Reddit/forum discussion, screenshot, simple slide deck, or low-risk quick-reference item; the user asks for a quick or lightweight ingest; token use should be minimized. |
+| Balanced Ingest | The user does not specify a mode; the source is an ordinary paper, whitepaper, datasheet, technical article, useful slide deck, or moderate-size source that deserves reusable engineering extraction without full deep study. |
+| Deep Ingest | The user explicitly asks for deep study, or the source is a high-value textbook, PCIe specification, cornerstone paper, important JSSC/ISSCC paper, or source that should update multiple canonical notes with formulas, derivations, examples, mistakes, interview material, and implementation notes. |
+
+Routing safeguards:
+
+- Never select Deep Ingest by default.
+- For full books, long standards, large specifications, or very large source packets, ask before using Deep Ingest unless the user explicitly requested Deep Ingest.
+- Ingest level controls depth only; it does not permit duplicate notes, legacy-folder scanning, architecture changes, or unproven claims.
+- Fast Ingest may archive a source with little or no durable-note update when no clearly reusable knowledge is found.
+- Balanced and Deep Ingest must still avoid deep rewrites unless the source materially improves an existing canonical note.
+
 ## Inbox Routing Rules
 
 Default external knowledge ingestion scans only `00_Inbox/incoming/`.
@@ -107,20 +127,23 @@ Examples:
 
 1. If source material is raw external knowledge, start with capture and ingest from `00_Inbox/incoming/`.
 2. If the user says "ingest inbox", default to `00_Inbox/incoming/`.
-3. If source material exists only in legacy ChatGPT or conversation-processing folders, ask for confirmation before processing.
-4. If two notes overlap, start with merge.
-5. If one note is thin, start with expand.
-6. If the user asks for critique, start with review.
-7. If the task is navigation, start with links or indexing.
-8. If the task is note creation, choose the template by note type.
-9. After durable knowledge changes, run knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive decision, and report.
-10. If uncertain, inspect files and choose the least destructive workflow.
+3. If the user does not specify Fast, Balanced, or Deep Ingest, use Balanced Ingest.
+4. If the source is very large and Deep Ingest seems appropriate, ask before using Deep Ingest unless the user explicitly requested it.
+5. If source material exists only in legacy ChatGPT or conversation-processing folders, ask for confirmation before processing.
+6. If two notes overlap, start with merge.
+7. If one note is thin, start with expand.
+8. If the user asks for critique, start with review.
+9. If the task is navigation, start with links or indexing.
+10. If the task is note creation, choose the template by note type.
+11. After durable knowledge changes, run knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive decision, and report.
+12. If uncertain, inspect files and choose the least destructive workflow.
 
 ## Output Expectations
 
 Every workflow should end with:
 
 - Files changed or reviewed.
+- Ingest level selected when source material was processed.
 - Quality checks performed.
 - Lifecycle status decision.
 - Quality score or reason scoring was not needed.

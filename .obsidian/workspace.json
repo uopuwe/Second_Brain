@@ -196,8 +196,15 @@
   },
   "active": "a11c0bd3afa09d2b",
   "lastOpenFiles": [
-    "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/Phase Noise and Jitter in Digital Electronics.pdf",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
+    "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/ingest_report_2026-07-04.md",
+    "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/A Study of Phase Noise in CMOS Oscillators BRMar96.pdf",
+    "90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators",
+    "00_Inbox/incoming/papers/A Study of Phase Noise in CMOS Oscillators BRMar96.pdf",
+    "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/Phase Noise and Jitter in Digital Electronics.pdf",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
     "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
     "90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/ingest_report_2026-07-04.md",
@@ -208,9 +215,6 @@
     "00_Inbox/incoming/papers/Phase Noise and Jitter in Digital Electronics.pdf",
     "00_Inbox/README.md",
     "00_Inbox/incoming/misc",
-    "00_Inbox/incoming/slides",
-    "00_Inbox/incoming/patents",
-    "00_Inbox/incoming/datasheets",
     "01_AnalogIC_SerDes/ADC/ti_sar_adc_calibration.md",
     "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md",
     "01_AnalogIC_SerDes/ADC/adc_based_receiver.md",
@@ -225,11 +229,8 @@
     "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
     "01_AnalogIC_SerDes - Copy/PLL_CDR_Clocking/pll_fundamentals.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
     "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-03__SAR_ADC_面试题.md",
     "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2025-12-19__安省树木发芽时间.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-28__SerDes_ADC书籍推荐.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-21__CPPLL设计与KVCO选择.md"
+    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-28__SerDes_ADC书籍推荐.md"
   ]
 }

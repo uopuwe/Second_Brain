@@ -26,6 +26,11 @@ Quality gates live in [quality_standards.md](quality_standards.md).
 16. Report verification limits in final responses after vault edits.
 17. During normal incoming ingestion, never archive, move, delete, merge, or repurpose files from legacy chat-processing folders: `00_Inbox/conversation_inventory/`, `00_Inbox/manual_batches/`, `00_Inbox/processed_by_chatgpt/`, `00_Inbox/raw_chat_exports/`, or `00_Inbox/unprocessed_notes/`.
 18. During ingest, newly added or substantially rewritten durable explanatory content must use paragraph-level Chinese-English bilingual pairs unless the content is YAML frontmatter, a formula, code, path list, source table, or short navigation list.
+19. Every normal external knowledge ingest must run in exactly one ingest level: Fast Ingest, Balanced Ingest, or Deep Ingest.
+20. If the user does not specify an ingest level, use Balanced Ingest.
+21. Never use Deep Ingest by default. For very large sources such as full books, long specifications, or multi-hundred-page standards, ask before using Deep Ingest unless the user explicitly requested it.
+22. Ingest level changes the depth of extraction and reporting, not the repository architecture, canonical-note merge rule, provenance rule, bilingual writing rule, archive rule, or inbox lane safety rule.
+23. Normal ingest must scan only `00_Inbox/incoming/`; ChatGPT export and conversation-processing workflows remain separate explicit workflows.
 
 ## Conflict Resolution
 
@@ -49,6 +54,7 @@ Before finishing edits, confirm:
 - Continuous knowledge improvement was applied or explicitly not needed.
 - Archive action was completed or explicitly not needed.
 - Bilingual paragraph format was applied to durable explanatory content added or substantially rewritten during ingest.
+- Ingest level was selected, recorded, and applied; Balanced Ingest was used when unspecified.
 - Technical uncertainty is visible.
 - Links and indexes were updated when required.
 - Verification limits are stated.

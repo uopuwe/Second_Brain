@@ -1438,13 +1438,141 @@ Add these questions to PLL/CDR/clocking reviews:
 6. Is low-frequency wander due to thermal activity or environmental drift excluded, modeled, or bounded?
 7. Are FPGA/prototype clocking measurements treated as implementation-specific rather than directly portable to silicon SerDes?
 
-## 24. Source Provenance
+## 24. CMOS Oscillator Phase Noise Mechanisms
+
+Source update:
+
+- Razavi, "A Study of Phase Noise in CMOS Oscillators," IEEE Journal of Solid-State Circuits, Vol. 31, No. 3, March 1996.
+- Archived source: [A Study of Phase Noise in CMOS Oscillators BRMar96.pdf](<../../90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/A Study of Phase Noise in CMOS Oscillators BRMar96.pdf>)
+- Source confidence: high for the qualitative noise mechanisms, open-loop Q interpretation, simulation cautions, and measured 0.5 um CMOS ring/relaxation oscillator case studies. Numerical phase-noise values are technology-specific and should not be reused as modern-node design targets without re-derivation.
+
+### 24.1 Why This Source Matters
+
+Razavi 的 1996 JSSC paper 把理想 oscillator phase-noise theory 和实际 CMOS inductorless oscillator 连起来。对 SerDes clocking 来说，这个连接很有价值，因为很多 phase-generation block、ring VCO、relaxation oscillator、DCO-like delay cell、PI clock path 和 divider/buffer chain 都不是高 Q LC tank；如果只用 Leeson 模型的 LC 直觉，很容易低估 delay-cell 噪声、supply pushing、flicker upconversion 和 nonlinear mixing。
+
+Razavi's 1996 JSSC paper connects ideal oscillator phase-noise theory to practical CMOS inductorless oscillators. That connection matters for SerDes clocking because many phase-generation blocks, ring VCOs, relaxation oscillators, DCO-like delay cells, PI clock paths, and divider/buffer chains are not high-Q LC tanks; using only LC-style Leeson intuition can understate delay-cell noise, supply pushing, flicker upconversion, and nonlinear mixing.
+
+这篇 paper 的工程价值不是给现代 PCIe/SerDes PLL 一个可直接复制的相噪指标，而是给 design review 一个分类框架：先区分 additive noise、high-frequency multiplicative noise 和 low-frequency multiplicative noise，再检查这些机制怎样通过 topology、bias、swing、stage count、supply/substrate path 和 simulation method 进入最终 clock edge。
+
+The engineering value is not a directly reusable phase-noise number for a modern PCIe/SerDes PLL, but a review framework: separate additive noise, high-frequency multiplicative noise, and low-frequency multiplicative noise, then inspect how those mechanisms enter the final clock edge through topology, bias, swing, stage count, supply/substrate paths, and simulation method.
+
+### 24.2 Open-Loop Q As Phase-Slope Stiffness
+
+对没有显式 LC tank 的 oscillator，Q 仍然可以用 open-loop phase slope 来理解。直觉上，loop phase 对 frequency 越敏感，oscillator 对频率扰动越“硬”；同样大小的 injected noise 更难把 oscillation phase 拉开。这个定义把 resonator Q 的概念推广到 ring oscillator 和 relaxation oscillator，但它依赖 linearized loop model，不能自动包含强非线性 switching、cyclostationary noise 或 supply modulation。
+
+For an oscillator without an explicit LC tank, Q can still be interpreted through open-loop phase slope. Intuitively, the more sensitive loop phase is to frequency, the "stiffer" the oscillator is against frequency perturbation; the same injected noise produces less phase displacement. This definition extends resonator-Q intuition to ring and relaxation oscillators, but it relies on a linearized loop model and does not automatically include hard nonlinear switching, cyclostationary noise, or supply modulation.
+
+$$
+Q_{ol}=\frac{\omega_0}{2}\left|\frac{d\angle H(j\omega)}{d\omega}\right|_{\omega=\omega_0}
+$$
+
+其中 $Q_{ol}$ 是 open-loop Q，$\omega_0$ 是 oscillation angular frequency，$H(j\omega)$ 是打开 oscillator loop 后的 small-signal transfer function。这个公式的重点不是把 ring oscillator 伪装成 LC tank，而是把“phase slope”作为 noise shaping 强弱的可审查量。
+
+Here $Q_{ol}$ is open-loop Q, $\omega_0$ is the oscillation angular frequency, and $H(j\omega)$ is the small-signal transfer function after opening the oscillator loop. The point is not to pretend that a ring oscillator is an LC tank, but to use phase slope as a reviewable measure of noise-shaping strength.
+
+### 24.3 Three CMOS Oscillator Noise Mechanisms
+
+Razavi 的分类特别适合长期维护，因为它把“oscillator noise”拆成三种不同 debug 路径。相噪 plot 上相同的 dBc/Hz 斜率或 offset value，背后可能来自完全不同的物理机制；如果分类错了，后续优化会走错方向，例如盲目加 stage、只加 decap、或只提高 swing。
+
+Razavi's classification is useful for long-term maintenance because it splits "oscillator noise" into three different debug paths. The same dBc/Hz slope or offset value on a phase-noise plot can come from different physical mechanisms; if the classification is wrong, optimization can go in the wrong direction, such as blindly adding stages, adding only decap, or increasing only swing.
+
+| Mechanism | Physical source | Engineering implication |
+|---|---|---|
+| Additive noise | Device noise injected into oscillator signal nodes and shaped by oscillator feedback | Count noisy devices, swing, load, and loop phase slope; this often sets the broadband thermal contribution. |
+| High-frequency multiplicative noise | Nonlinear switching mixes high-frequency noise with the carrier and creates near-carrier products | Hard limiting and stage nonlinearity can double or otherwise raise the predicted noise relative to a purely linear stationary model. |
+| Low-frequency multiplicative noise | Tail-current, control-voltage, supply, or substrate noise modulates instantaneous frequency through sensitivity such as $K_{VCO}$ | Flicker and bias/control noise can dominate close-in phase noise even when high-offset thermal noise looks acceptable. |
+
+在 CMOS ring oscillator 中，additive noise 通常来自 differential pair、load 和 internal node 的 thermal noise；high-frequency multiplicative noise 来自 nonlinear mixing；low-frequency multiplicative noise 则常由 tail current、control node、supply 或 substrate 对 delay/frequency 的调制产生。一个严谨的 SerDes clocking review 应该分别追踪这三条路径，而不是只问“VCO phase noise 是多少”。
+
+In a CMOS ring oscillator, additive noise often comes from thermal noise in differential pairs, loads, and internal nodes; high-frequency multiplicative noise comes from nonlinear mixing; low-frequency multiplicative noise comes from tail-current, control-node, supply, or substrate modulation of delay/frequency. A rigorous SerDes clocking review should trace these three paths separately rather than asking only "what is the VCO phase noise?"
+
+### 24.4 Low-Frequency Modulation And FM Sensitivity
+
+low-frequency multiplicative noise 的核心是 frequency modulation：bias/control/supply 噪声先变成 instantaneous frequency error，然后 phase 作为 frequency 的积分把低频扰动放大到 close-in phase noise。这个机制解释了为什么 flicker noise、tail-current noise、LDO noise、substrate noise 和 control-line noise 会在 offset 很低的地方变得危险。
+
+The core of low-frequency multiplicative noise is frequency modulation: bias, control, or supply noise first becomes instantaneous frequency error, and phase then integrates frequency error into close-in phase noise. This mechanism explains why flicker noise, tail-current noise, LDO noise, substrate noise, and control-line noise become dangerous at low offset.
+
+$$
+\Delta\omega(t)=K_{x}n_x(t)
+$$
+
+$$
+\phi_n(t)=\int \Delta\omega(t)\,dt
+$$
+
+其中 $n_x(t)$ 可以是 control voltage、tail current、supply ripple 或 substrate disturbance，$K_x$ 是对应的 frequency sensitivity。这个表达式在 design review 中应转换为具体可测量项目：$K_{VCO}$、supply pushing、bias-current sensitivity、substrate injection sensitivity 和 LDO/PDN noise transfer。
+
+Here $n_x(t)$ can be control voltage, tail current, supply ripple, or substrate disturbance, and $K_x$ is the corresponding frequency sensitivity. In design review, this expression should be converted into measurable items: $K_{VCO}$, supply pushing, bias-current sensitivity, substrate-injection sensitivity, and LDO/PDN noise transfer.
+
+对 PCIe 6.0/7.0 或高速 SerDes，close-in oscillator noise 不能只按 integrated RMS jitter 做一次性数字比较。CDR loop 会跟踪或抑制一部分低频相位误差，但 supply/substrate-induced frequency modulation 也可能在多 lane 之间形成 correlated jitter 或 slow wander；因此必须同时看 phase-noise integration band、CDR transfer function、lane correlation 和 system-level jitter tolerance。
+
+For PCIe 6.0/7.0 or high-speed SerDes, close-in oscillator noise cannot be reduced to a single integrated RMS jitter number. The CDR loop may track or suppress part of the low-frequency phase error, but supply/substrate-induced frequency modulation can also create correlated jitter or slow wander across lanes; therefore the phase-noise integration band, CDR transfer function, lane correlation, and system-level jitter tolerance must be reviewed together.
+
+### 24.5 Power, Swing, And Stage-Count Tradeoffs
+
+这篇 paper 的一个重要提醒是：降低相噪通常要付出功耗、swing、area 或 tuning-range 代价。理想化地把 $N$ 个相同、同相 oscillator 输出相加时，carrier amplitude coherent addition 近似按 $N$ 增长，uncorrelated noise power 近似按 $N$ 增长，因此 relative phase noise 可以随总功耗近似改善；但这只是 tradeoff intuition，不是免费增益。
+
+One important reminder from the paper is that reducing phase noise usually costs power, swing, area, or tuning range. In an idealized sum of $N$ identical in-phase oscillators, carrier amplitude adds coherently roughly with $N$, while uncorrelated noise power grows roughly with $N$, so relative phase noise can improve with total power; this is tradeoff intuition, not free gain.
+
+$$
+\mathcal{L}_{rel}\propto\frac{1}{P}
+$$
+
+这个 proportionality 只应作为 first-order sanity check：如果某个方案声称在相同 topology、相同 swing、相同 supply sensitivity 和相同 bandwidth 下大幅降低相噪但没有功耗或 Q 的代价，需要追问噪声源是否被漏算、normalization 是否一致、measurement carrier power 是否稳定。
+
+This proportionality should be used only as a first-order sanity check: if a proposal claims a large phase-noise reduction with the same topology, swing, supply sensitivity, and bandwidth but without a power or Q cost, ask whether noise sources were omitted, normalization is inconsistent, or measured carrier power is unstable.
+
+stage count 也不是单调的相噪优化旋钮。Razavi 的分析显示，在某些 assumptions 下四级 ring VCO 相对三级没有显著相噪优势，主要价值可能是 quadrature phase；更多 stage 还可能提高 linear-model error、增加 noise contributors、改变 swing 和 supply sensitivity。
+
+Stage count is also not a monotonic phase-noise optimization knob. Razavi's analysis shows that under some assumptions a four-stage ring VCO has no major phase-noise advantage over a three-stage implementation, with quadrature phase as the main benefit; additional stages can also increase linear-model error, add noise contributors, change swing, and change supply sensitivity.
+
+### 24.6 Simulation And Measurement Cautions
+
+oscillator 是 time-varying nonlinear system，因此普通 small-signal AC analysis 不能直接给出 phase noise。paper 特别提醒 transient + FFT 也可能产生仿真假象：piecewise-linear pulse waveform、interpolation、record length 和 windowing 都可能制造 coherent sidebands，甚至让 sideband 不按 injected noise amplitude 缩放。现代 PSS/PNoise 工具更强，但这个警告仍然适用于 testbench setup、time-step、hidden periodic sources 和 post-processing。
+
+An oscillator is a time-varying nonlinear system, so ordinary small-signal AC analysis does not directly produce phase noise. The paper warns that transient plus FFT can also create simulation artifacts: piecewise-linear pulse waveforms, interpolation, record length, and windowing can create coherent sidebands and even make sidebands fail to scale with injected-noise amplitude. Modern PSS/PNoise tools are stronger, but the warning still applies to testbench setup, time step, hidden periodic sources, and post-processing.
+
+measurement normalization 也必须小心。paper 中提到 low-frequency flicker noise 会让 spectrum center 漂移；当 spectrum analyzer RBW 改变时，carrier power 的 apparent value 可能变化。工程上应把 phase-noise normalization、carrier amplitude measurement、RBW/VBW、offset band、instrument floor、cross-correlation 和 spur exclusion 记录清楚，否则跨 silicon、跨 lab 或跨 generation 的比较会失真。
+
+Measurement normalization also requires care. The paper notes that low-frequency flicker noise can make the spectrum center fluctuate; when spectrum-analyzer RBW changes, the apparent carrier power can change. In engineering practice, phase-noise normalization, carrier-amplitude measurement, RBW/VBW, offset band, instrument floor, cross-correlation, and spur exclusion must be recorded clearly, or comparisons across silicon, labs, or generations become misleading.
+
+### 24.7 Supply And Substrate Coupling In Differential CMOS Oscillators
+
+differential ring oscillator 并不会自动免疫 supply/substrate noise。mismatch 会破坏 common-mode rejection，common-source capacitance 和 bias path 会把 supply/substrate disturbance 变成 current 或 delay modulation，最后表现为 sideband、deterministic jitter 或 close-in noise。对 mixed-signal SerDes，这条路径经常比 schematic-level differential symmetry 更真实。
+
+A differential ring oscillator is not automatically immune to supply or substrate noise. Mismatch degrades common-mode rejection, and common-source capacitance plus bias paths can convert supply/substrate disturbance into current or delay modulation, which then appears as sidebands, deterministic jitter, or close-in noise. In a mixed-signal SerDes, this path is often more real than schematic-level differential symmetry suggests.
+
+设计审查时应把 oscillator supply、tail/bias generation、substrate guard strategy、LDO PSRR、PDN impedance、digital aggressor spectrum 和 lane-to-lane correlation 放在同一张表里。尤其是 PCIe 7.0/PAM4 系统，clock phase error 会直接吃掉 vertical eye margin 和 timing margin；相关 supply jitter 还可能让 averaging 或 per-lane random assumptions 失效。
+
+During design review, oscillator supply, tail/bias generation, substrate guard strategy, LDO PSRR, PDN impedance, digital aggressor spectrum, and lane-to-lane correlation should be put in the same table. In PCIe 7.0/PAM4 systems especially, clock phase error directly consumes vertical eye margin and timing margin; correlated supply jitter can also invalidate averaging or per-lane random assumptions.
+
+### 24.8 Design Review Additions From This Source
+
+用这篇 paper 更新 PLL/CDR/clocking review 时，最重要的变化是把“phase noise number”拆成 mechanism、transfer path 和 verification method。每个 claim 都应该能回答：噪声从哪里来，怎样被 oscillator 转成 phase，怎样经过 CDR/clock tree 到 sampler，怎样被 measurement 或 simulation 验证。
+
+When this paper updates a PLL/CDR/clocking review, the most important change is to split a "phase noise number" into mechanism, transfer path, and verification method. Every claim should answer: where the noise comes from, how the oscillator converts it into phase, how it travels through the CDR/clock tree to the sampler, and how measurement or simulation verifies it.
+
+| Review question | Why it matters |
+|---|---|
+| Is the dominant term additive, high-frequency multiplicative, or low-frequency multiplicative? | The correct fix differs: reduce device noise, reduce nonlinear mixing, or reduce sensitivity/filter modulation. |
+| Is open-loop phase slope or effective Q explicitly estimated? | Ring/relaxation oscillators need a stiffness metric even without an LC tank. |
+| Are $K_{VCO}$, supply pushing, and bias-current sensitivity measured or simulated? | Low-frequency modulation can dominate close-in noise and correlated jitter. |
+| Are nonlinear mixing and cyclostationary effects bounded? | Purely stationary linear models can underpredict hard-switching oscillators. |
+| Are transient FFT sidebands checked for simulation artifacts? | Numerical artifacts can look like real oscillator spurs. |
+| Are carrier normalization and RBW/VBW conditions documented? | Phase-noise comparisons become invalid if carrier power or analyzer settings move. |
+
+如果只能增加一个 checklist item，应增加这一条：不要把 oscillator 相噪当作单一来源的标量；必须按 additive、multiplicative、supply/substrate modulation 和 downstream clock distribution 分解。这个分解比单独追求某个 offset 的 dBc/Hz 数字更能指导实际 silicon debug。
+
+If only one checklist item can be added, add this: do not treat oscillator phase noise as a scalar from one source; decompose it into additive noise, multiplicative noise, supply/substrate modulation, and downstream clock distribution. This decomposition guides real silicon debug better than chasing one dBc/Hz number at one offset.
+
+## 25. Source Provenance
 
 | Source | Type | Status | Reusable knowledge promoted |
 |---|---|---|---|
 | Calosso and Rubiola, "Phase Noise and Jitter in Digital Electronics," arXiv:1701.00094v1, 2017 | Paper PDF | Ingested 2026-07-04; archived under `90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/` | Phase-type vs time-type noise, phase-time PSD conversion, digital threshold-noise conversion, aliasing in digital clocking, input chatter condition, internal PLL measurement lessons, thermal delay/wander model |
+| Razavi, "A Study of Phase Noise in CMOS Oscillators," IEEE Journal of Solid-State Circuits, Vol. 31, No. 3, March 1996 | Paper PDF | Ingested 2026-07-04; archived under `90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/` | Open-loop Q as phase-slope stiffness, CMOS oscillator additive/high-frequency multiplicative/low-frequency multiplicative noise classification, FM sensitivity of tail/control/supply noise, ring oscillator stage-count caution, simulation artifact warnings, measurement normalization cautions, supply/substrate coupling review items |
 
-## 25. Related Notes
+## 26. Related Notes
 
 - [[pcie7_clocking_notes]]
 - [[pcie7_gtps_vs_gbaud_ui]]

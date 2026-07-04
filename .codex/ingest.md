@@ -25,6 +25,141 @@ This workflow applies by default to external knowledge material placed under `00
 
 ChatGPT exports, conversation inventories, processed ChatGPT summaries, historical manual batches, and unprocessed conversation notes use the separate conversation-processing workflow and require explicit user instruction before processing.
 
+## Ingest Level
+
+Every normal external knowledge ingest must run in one of three levels.
+If the user does not specify a level, use Balanced Ingest.
+
+Ingest level controls extraction depth, merge depth, report length, and token budget.
+It does not change the canonical-note rule, inbox-lane safety rule, provenance requirement, bilingual writing requirement, or archive requirement.
+
+### Fast Ingest
+
+Use Fast Ingest for blogs, short articles, Reddit/forum discussions, screenshots, simple slides, quick web captures, and lightweight references.
+
+Purpose:
+
+- Minimize token use.
+- Preserve source provenance.
+- Extract only the material that is clearly useful.
+- Avoid turning low-density sources into large note expansions.
+
+Required actions:
+
+- Extract title, source, date if available, topic, short summary, key claims, useful links, and relevance.
+- Search for an existing canonical note before creating anything.
+- Update an existing canonical note only when the source contains clearly reusable knowledge.
+- Preserve source provenance in any note touched.
+- Archive the source after processing.
+- Generate a short ingest report.
+
+Limits:
+
+- Do not expand derivations.
+- Do not generate long interview sections.
+- Do not deeply rewrite existing notes.
+- Do not update indexes or MOCs unless a small link repair or obvious index entry is needed.
+- Do not create duplicate notes when a canonical note already exists.
+
+Good Fast Ingest examples:
+
+- A Reddit discussion with one useful lab-debug heuristic for reference-clock termination.
+- A screenshot of a conference slide showing an ADC timing-skew taxonomy.
+- A short blog post explaining a useful Python plotting trick for jitter histograms.
+
+Bad Fast Ingest behavior:
+
+- Expanding a full PLL handbook from a two-page blog post.
+- Creating a new `ring_vco_phase_noise.md` note when `pll_phase_noise_jitter.md` already covers the canonical topic.
+- Spending deep-study effort on a source whose only durable value is one link and one caution.
+
+### Balanced Ingest
+
+Balanced Ingest is the default mode.
+Use it for ordinary papers, whitepapers, datasheets, technical articles, useful slide decks, and moderate-size sources.
+
+Purpose:
+
+- Extract reusable engineering knowledge.
+- Merge high-value material into existing canonical notes.
+- Keep note growth disciplined.
+- Capture formulas and insights without turning every source into a full study project.
+
+Required actions:
+
+- Classify the topic and source type.
+- Identify existing canonical notes before creating any new note.
+- Merge only high-value material into existing canonical notes.
+- Extract important formulas into Markdown LaTeX.
+- Expand only important omitted derivations.
+- Add concise engineering insights, assumptions, limitations, and design implications.
+- Add Obsidian links where they improve retrieval.
+- Update indexes and MOCs only when useful.
+- Preserve source provenance.
+- Archive the source after successful ingestion.
+- Generate a normal ingest report.
+
+Limits:
+
+- Do not deeply rewrite large sections unless the source materially improves them.
+- Do not create long interview sections unless the source directly supports interview-quality knowledge.
+- Do not update every related note just because a link could exist.
+- Do not use Deep Ingest behavior unless the user requested it or approved it.
+
+Good Balanced Ingest examples:
+
+- A JSSC paper with two formulas, one design tradeoff, and one measurement caution that belong in an existing PLL note.
+- A datasheet that improves an LDO noise or ADC reference-drive note with practical limits.
+- A technical article that adds a compact DSP equalization insight and a source link.
+
+Bad Balanced Ingest behavior:
+
+- Copying a paper section-by-section into Markdown.
+- Expanding every equation in a source when only one is central to the vault.
+- Creating parallel source notes that duplicate canonical notes.
+
+### Deep Ingest
+
+Use Deep Ingest only for high-value sources such as textbooks, PCIe specifications, cornerstone papers, important JSSC/ISSCC papers, or explicit deep-study requests from the user.
+
+Purpose:
+
+- Perform full technical extraction.
+- Build durable engineering understanding, not just a summary.
+- Update every relevant canonical note that materially benefits from the source.
+- Preserve detailed derivations, tradeoffs, examples, mistakes, and implementation guidance.
+
+Required actions:
+
+- Perform full source triage and technical extraction.
+- Extract and explain formulas carefully in Markdown LaTeX.
+- Expand derivations when they teach reusable engineering reasoning.
+- Add engineering tradeoffs, common mistakes, examples, interview questions, implementation notes, and verification implications.
+- Update all relevant canonical notes while preserving the one-topic-one-canonical-note rule.
+- Update indexes, MOCs, and source trails when knowledge graph structure changes.
+- Record gaps and roadmap implications.
+- Generate a detailed ingest report.
+
+Limits and safety rules:
+
+- Never use Deep Ingest by default.
+- If the source is very large, such as a full book, long specification, or multi-hundred-page standard, ask before using Deep Ingest unless the user explicitly requested it.
+- Do not create duplicate handbook files when canonical notes already exist.
+- Do not promote unverifiable or copyrighted long passages into durable notes.
+- Higher token use is acceptable only when the source value justifies it.
+
+Good Deep Ingest examples:
+
+- A PCIe specification chapter that affects clocking, jitter tolerance, equalization, and compliance terminology.
+- A cornerstone JSSC/ISSCC paper that should update PLL, CDR, ADC, and SerDes verification notes.
+- A textbook chapter on sampled-data noise that needs formulas, derivations, examples, and interview questions.
+
+Bad Deep Ingest behavior:
+
+- Deep-processing every blog post by default.
+- Asking no confirmation before deeply processing a full book.
+- Rebuilding the repository architecture because one source is broad.
+
 ## Workflow
 
 The ingest workflow is no longer complete when content is merely promoted.
@@ -43,24 +178,25 @@ Capture
 ```
 
 1. Capture new external source material in `00_Inbox/incoming/` according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
-2. Inventory source path, source type, date if known, domains, and sensitivity.
-3. Search for existing canonical notes before creating new files.
-4. Classify fragments as concept, equation, tradeoff, debug, interview, source, career, raw, or not promoted.
-5. Screen technical claims for assumptions, units, source quality, and confidentiality.
-6. Choose destination using [knowledge_tree.md](knowledge_tree.md) and [knowledge_architecture.md](knowledge_architecture.md).
-7. Promote only durable content into domain notes.
-8. Write newly added or substantially rewritten explanatory content using the bilingual ingest writing standard: Chinese paragraph first, matching English paragraph immediately after.
-9. Record provenance in every destination note touched.
-10. Apply [knowledge_evolution.md](knowledge_evolution.md) to decide whether each output is a reference note, seed note, active permanent note, MOC candidate, handbook candidate, superseded item, or archive-only source.
-11. Apply [quality_score.md](quality_score.md) to durable notes that were created, substantially changed, or proposed for maturity.
-12. Apply [knowledge_gap.md](knowledge_gap.md) to record unresolved source, equation, standards, link, tradeoff, debug, or synthesis gaps.
-13. Apply [research_roadmap.md](research_roadmap.md) when a gap is high-priority, multi-note, source-dependent, or relevant to SerDes/PCIe7/PLL/CDR/ADC/LDO/DSP study direction.
-14. Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) to run the automatic post-ingest improvement pass: refactor changed notes, triage duplicates, optimize links, improve formulas, expand engineering insight, generate interview questions, detect research gaps, recommend reading, and check knowledge density.
-15. Add links using [build_links.md](build_links.md) when promoted material affects related notes or CKI identifies missing graph edges.
-16. Update indexes using [indexing.md](indexing.md) when notes become canonical, mature, MOC-worthy, source-index-worthy, roadmap-relevant, or CKI identifies retrieval gaps.
-17. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) only after CKI status is recorded.
-18. Write an ingest report for substantial batches using [core/template_contracts.md](core/template_contracts.md). The legacy path [reports/ingest_report_template.md](reports/ingest_report_template.md) remains available for compatibility.
-19. Verify against [core/quality_standards.md](core/quality_standards.md).
+2. Select and record the ingest level: Fast Ingest, Balanced Ingest, or Deep Ingest. Use Balanced Ingest when unspecified.
+3. Inventory source path, source type, date if known, domains, and sensitivity.
+4. Search for existing canonical notes before creating new files.
+5. Classify fragments as concept, equation, tradeoff, debug, interview, source, career, raw, or not promoted.
+6. Screen technical claims for assumptions, units, source quality, and confidentiality.
+7. Choose destination using [knowledge_tree.md](knowledge_tree.md) and [knowledge_architecture.md](knowledge_architecture.md).
+8. Promote only durable content into domain notes at the depth allowed by the selected ingest level.
+9. Write newly added or substantially rewritten explanatory content using the bilingual ingest writing standard: Chinese paragraph first, matching English paragraph immediately after.
+10. Record provenance in every destination note touched.
+11. Apply [knowledge_evolution.md](knowledge_evolution.md) to decide whether each output is a reference note, seed note, active permanent note, MOC candidate, handbook candidate, superseded item, or archive-only source.
+12. Apply [quality_score.md](quality_score.md) to durable notes that were created, substantially changed, or proposed for maturity.
+13. Apply [knowledge_gap.md](knowledge_gap.md) to record unresolved source, equation, standards, link, tradeoff, debug, or synthesis gaps.
+14. Apply [research_roadmap.md](research_roadmap.md) when a gap is high-priority, multi-note, source-dependent, or relevant to SerDes/PCIe7/PLL/CDR/ADC/LDO/DSP study direction.
+15. Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) to run the automatic post-ingest improvement pass at a depth consistent with the selected ingest level: minimal for Fast, normal for Balanced, detailed for Deep.
+16. Add links using [build_links.md](build_links.md) when promoted material affects related notes or CKI identifies missing graph edges.
+17. Update indexes using [indexing.md](indexing.md) when notes become canonical, mature, MOC-worthy, source-index-worthy, roadmap-relevant, or CKI identifies retrieval gaps.
+18. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) only after CKI status is recorded.
+19. Write an ingest report using [core/template_contracts.md](core/template_contracts.md): short for Fast, normal for Balanced, detailed for Deep. The legacy path [reports/ingest_report_template.md](reports/ingest_report_template.md) remains available for compatibility.
+20. Verify against [core/quality_standards.md](core/quality_standards.md).
 
 ## Destination Rules
 
