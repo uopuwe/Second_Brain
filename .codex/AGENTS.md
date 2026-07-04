@@ -85,6 +85,26 @@ If the user says "ingest inbox" without naming a legacy folder, process only `00
 If files are found only in legacy chat-processing folders, ask for confirmation before processing.
 Normal external knowledge ingestion must never scan, archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
 
+## Bilingual Ingest Writing
+
+Every normal ingest that updates durable knowledge must write newly added or substantially rewritten explanatory content as paragraph-level bilingual text.
+Use Chinese first, followed immediately by the matching English paragraph.
+
+Default pattern:
+
+```markdown
+中文：这里解释工程概念、假设、限制和设计意义。
+
+English: This paragraph gives the matching engineering explanation, assumptions, limits, and design implication.
+```
+
+This rule applies to durable note sections created or modified during ingest.
+It does not require duplicating YAML frontmatter, file paths, source tables, code blocks, equations, or very small navigation lists.
+When a formula, table, checklist, or code block is added, the surrounding explanation should still be bilingual.
+
+Existing legacy note text does not need to be rewritten solely for language formatting.
+However, if an ingest substantially edits an existing paragraph, the edited paragraph should be converted into the bilingual pattern.
+
 ## Core Documents
 
 The core layer is authoritative.

@@ -49,17 +49,18 @@ Capture
 5. Screen technical claims for assumptions, units, source quality, and confidentiality.
 6. Choose destination using [knowledge_tree.md](knowledge_tree.md) and [knowledge_architecture.md](knowledge_architecture.md).
 7. Promote only durable content into domain notes.
-8. Record provenance in every destination note touched.
-9. Apply [knowledge_evolution.md](knowledge_evolution.md) to decide whether each output is a reference note, seed note, active permanent note, MOC candidate, handbook candidate, superseded item, or archive-only source.
-10. Apply [quality_score.md](quality_score.md) to durable notes that were created, substantially changed, or proposed for maturity.
-11. Apply [knowledge_gap.md](knowledge_gap.md) to record unresolved source, equation, standards, link, tradeoff, debug, or synthesis gaps.
-12. Apply [research_roadmap.md](research_roadmap.md) when a gap is high-priority, multi-note, source-dependent, or relevant to SerDes/PCIe7/PLL/CDR/ADC/LDO/DSP study direction.
-13. Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) to run the automatic post-ingest improvement pass: refactor changed notes, triage duplicates, optimize links, improve formulas, expand engineering insight, generate interview questions, detect research gaps, recommend reading, and check knowledge density.
-14. Add links using [build_links.md](build_links.md) when promoted material affects related notes or CKI identifies missing graph edges.
-15. Update indexes using [indexing.md](indexing.md) when notes become canonical, mature, MOC-worthy, source-index-worthy, roadmap-relevant, or CKI identifies retrieval gaps.
-16. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) only after CKI status is recorded.
-17. Write an ingest report for substantial batches using [core/template_contracts.md](core/template_contracts.md). The legacy path [reports/ingest_report_template.md](reports/ingest_report_template.md) remains available for compatibility.
-18. Verify against [core/quality_standards.md](core/quality_standards.md).
+8. Write newly added or substantially rewritten explanatory content using the bilingual ingest writing standard: Chinese paragraph first, matching English paragraph immediately after.
+9. Record provenance in every destination note touched.
+10. Apply [knowledge_evolution.md](knowledge_evolution.md) to decide whether each output is a reference note, seed note, active permanent note, MOC candidate, handbook candidate, superseded item, or archive-only source.
+11. Apply [quality_score.md](quality_score.md) to durable notes that were created, substantially changed, or proposed for maturity.
+12. Apply [knowledge_gap.md](knowledge_gap.md) to record unresolved source, equation, standards, link, tradeoff, debug, or synthesis gaps.
+13. Apply [research_roadmap.md](research_roadmap.md) when a gap is high-priority, multi-note, source-dependent, or relevant to SerDes/PCIe7/PLL/CDR/ADC/LDO/DSP study direction.
+14. Apply [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md) to run the automatic post-ingest improvement pass: refactor changed notes, triage duplicates, optimize links, improve formulas, expand engineering insight, generate interview questions, detect research gaps, recommend reading, and check knowledge density.
+15. Add links using [build_links.md](build_links.md) when promoted material affects related notes or CKI identifies missing graph edges.
+16. Update indexes using [indexing.md](indexing.md) when notes become canonical, mature, MOC-worthy, source-index-worthy, roadmap-relevant, or CKI identifies retrieval gaps.
+17. Archive completed source packets according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) only after CKI status is recorded.
+18. Write an ingest report for substantial batches using [core/template_contracts.md](core/template_contracts.md). The legacy path [reports/ingest_report_template.md](reports/ingest_report_template.md) remains available for compatibility.
+19. Verify against [core/quality_standards.md](core/quality_standards.md).
 
 ## Destination Rules
 
@@ -91,6 +92,31 @@ Capture
 - If the user says "ingest inbox" without clarification, process `00_Inbox/incoming/` only.
 - If relevant files are found only in legacy folders, ask for confirmation before processing them.
 - During normal incoming ingestion, do not archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
+
+## Bilingual Writing Rules
+
+- Durable note content added during ingest must be paragraph-level bilingual: Chinese first, English second.
+- The English paragraph should be a precise technical counterpart, not a loose summary.
+- The Chinese paragraph should be natural engineering Chinese, not a literal machine translation.
+- Do not duplicate YAML frontmatter, file paths, source tables, code blocks, equations, or short link lists solely for bilingual format.
+- For formulas, write the surrounding explanation, assumptions, symbol meanings, and engineering implication bilingually.
+- For tables, either use bilingual column labels or add bilingual text before and after the table.
+- Existing legacy text can remain as-is unless the ingest substantially rewrites it.
+- If a paragraph is touched during ingest, leave it in bilingual-pair form before completing the task.
+
+Good bilingual ingest update:
+
+```markdown
+中文：数字时钟分布中的 threshold noise 会通过输入边沿斜率转换成采样时间误差；因此低摆幅或低 slew-rate 的参考时钟更容易出现 jitter 或 chatter。
+
+English: Threshold noise in digital clock distribution converts through input edge slew rate into sampling-time error, so low-amplitude or low-slew-rate reference clocks are more vulnerable to jitter or chatter.
+```
+
+Bad ingest update:
+
+```markdown
+Threshold noise causes jitter.
+```
 
 ## Good Example
 

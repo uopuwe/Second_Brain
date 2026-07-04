@@ -47,6 +47,8 @@ For every source:
 
 - add engineering insights
 
+- write durable note updates as paragraph-level Chinese-English bilingual pairs
+
 - update Obsidian links
 
 - update indexes and MOCs when needed

@@ -18,7 +18,7 @@ aliases:
   - phase_noise_jitter
   - Phase Noise and Jitter
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-04
 status: "active"
 ---
 
@@ -1220,7 +1220,231 @@ English: Timing jitter becomes voltage error through local signal slope; PAM4's 
 - [ ] 能解释为什么 PLL output jitter 不是 final sampler jitter。
 - [ ] 能讨论 supply、CDR、ADC aperture、lab pitfalls，且不 overclaim compliance。
 
-## 23. Related Notes
+## 23. Digital Clock Distribution Noise
+
+Source update:
+
+- Calosso and Rubiola, "Phase Noise and Jitter in Digital Electronics," arXiv:1701.00094v1, 2017.
+- Archived source: [Phase Noise and Jitter in Digital Electronics.pdf](<../../90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/Phase Noise and Jitter in Digital Electronics.pdf>)
+- Source confidence: high for phase-noise definitions, digital clock-distribution noise models, FPGA measurement examples, and qualitative design implications. Device-specific numerical results should not be generalized without technology and measurement-context review.
+
+### 23.1 Why This Source Matters
+
+Most SerDes clocking reviews focus on PLL/VCO phase noise, but the final sampling edge also contains noise from digital clock distribution: input threshold conversion, dividers, clock buffers, internal PLL blocks, FPGA-style distribution networks, supply-induced delay, and thermal delay drift. Calosso and Rubiola are useful because they separate two mechanisms that are easy to mix:
+
+- Phase-type noise, where the phase fluctuation is the natural invariant.
+- Time-type noise, where the time delay fluctuation is the natural invariant.
+
+That distinction matters whenever a clock is multiplied, divided, buffered, or compared across different carrier frequencies.
+
+### 23.2 Phase-Time Conversion
+
+For a clock at carrier frequency $\nu_0$, phase fluctuation $\phi(t)$ and time fluctuation $x(t)$ are related by:
+
+$$
+x(t)=\frac{\phi(t)}{2\pi\nu_0}
+$$
+
+and therefore:
+
+$$
+S_x(f)=\frac{S_\phi(f)}{4\pi^2\nu_0^2}
+$$
+
+where:
+
+- $x(t)$ is edge time fluctuation in seconds.
+- $\phi(t)$ is phase fluctuation in radians.
+- $S_x(f)$ is time-fluctuation PSD in $\mathrm{s^2/Hz}$.
+- $S_\phi(f)$ is phase-fluctuation PSD in $\mathrm{rad^2/Hz}$.
+- $\nu_0$ is the carrier frequency in hertz.
+
+For RMS time fluctuation over a defined offset band:
+
+$$
+J^2=\int_{f_L}^{f_H} S_x(f)\,df
+$$
+
+where $J$ is approximately the RMS jitter for the chosen measurement model, and $f_L$ and $f_H$ must be stated. In digital circuits, $f_H$ is often tied to the sampling/switching process, while $f_L$ depends on the observation interval or maximum differential delay of interest.
+
+Engineering implication:
+Do not compare jitter values unless carrier frequency, integration band, and measurement node are all known. The same $S_\phi(f)$ can map to a different time jitter after multiplication, division, or local buffering.
+
+### 23.3 Phase-Type and Time-Type Noise
+
+Phase-type noise is naturally described by $\phi(t)$. If the same phase process is observed at different $\nu_0$, the time jitter scales as:
+
+$$
+x(t)\propto\frac{1}{\nu_0}
+$$
+
+Time-type noise is naturally described by delay fluctuation $x(t)$. If the same delay process is observed at different $\nu_0$, the phase noise scales as:
+
+$$
+S_\phi(f)\propto \nu_0^2 S_x(f)
+$$
+
+This gives a practical review rule:
+
+| Observation | Likely interpretation | Review implication |
+|---|---|---|
+| $S_\phi(f)$ roughly constant as $\nu_0$ changes | phase-type behavior | input threshold or phase-like modulation may dominate |
+| $S_x(f)$ roughly constant as $\nu_0$ changes | time-type behavior | clock distribution delay noise may dominate |
+| White floor changes with clock rate | aliasing may be involved | confirm analog bandwidth and sampling assumptions |
+| Flicker changes with technology size | device volume and distribution complexity may matter | avoid assuming advanced nodes are automatically quieter |
+
+### 23.4 Threshold Noise and Slew-Rate Conversion
+
+For a digital input threshold with voltage noise $n(t)$ and input slew rate $\mathrm{SR}$, edge-time error is approximately:
+
+$$
+x(t)=\frac{n(t)}{\mathrm{SR}}
+$$
+
+For a sinusoidal input:
+
+$$
+v(t)=V_0\cos(2\pi\nu_0 t)
+$$
+
+the zero-crossing slew rate is:
+
+$$
+\mathrm{SR}=2\pi\nu_0 V_0
+$$
+
+so the phase fluctuation caused by threshold noise is:
+
+$$
+\phi(t)=\frac{n(t)}{V_0}
+$$
+
+where:
+
+- $V_0$ is the input sine amplitude.
+- $n(t)$ is input-referred threshold noise.
+- $\mathrm{SR}$ is edge slew rate at the switching threshold.
+
+Engineering implication:
+Low-slew clocks are vulnerable to threshold noise even if the downstream digital logic is fast. For SerDes clock distribution, this is one reason sinusoidal reference amplitude, buffer input conditions, and receiver threshold noise matter.
+
+### 23.5 Aliased White Noise In Digital Clocking
+
+Digital switching samples broadband noise at clock transitions. For phase-type white threshold noise with voltage-noise PSD coefficient $h_0$ and analog bandwidth $B$, the source gives:
+
+$$
+b_0=\frac{h_0B}{\nu_0V_0^2}
+$$
+
+and:
+
+$$
+k_0=\frac{h_0B}{4\pi^2\nu_0^3V_0^2}
+$$
+
+where:
+
+- $b_0$ is the white phase-noise coefficient in $\mathrm{rad^2/Hz}$.
+- $k_0$ is the white time-noise coefficient in $\mathrm{s^2/Hz}$.
+- $h_0$ is voltage-noise PSD in $\mathrm{V^2/Hz}$.
+- $B$ is analog bandwidth in hertz.
+
+For time-type white jitter represented by RMS fluctuation $J$, aliasing gives:
+
+$$
+k_0=\frac{J^2}{\nu_0}
+$$
+
+and:
+
+$$
+b_0=4\pi^2J^2\nu_0
+$$
+
+Engineering implication:
+The white floor in a clock-distribution phase-noise plot may not scale the way a pure oscillator-noise mental model predicts. When comparing divided clocks, multiplied clocks, FPGA clocks, or digital clock-tree outputs, check whether the observed scaling is phase-type, time-type, or aliased.
+
+### 23.6 Input Chatter And Multiple Crossings
+
+The paper highlights input chatter: multiple switching events can occur when wideband noise has enough slew rate near the threshold. A useful condition is:
+
+$$
+\langle \mathrm{SR}_n^2\rangle > \mathrm{SR}_v^2
+$$
+
+For noise PSD $S_n(f)$:
+
+$$
+\langle \mathrm{SR}_n^2\rangle =
+4\pi^2\int_0^\infty f^2S_n(f)\,df
+$$
+
+For white voltage noise $S_n(f)=h_0$ over bandwidth $B$:
+
+$$
+\langle \mathrm{SR}_n^2\rangle =
+\frac{4\pi^2}{3}h_0B^3
+$$
+
+With a sinusoidal input, the approximate chatter threshold is:
+
+$$
+\nu_0V_0=\sqrt{\frac{h_0B^3}{3}}
+$$
+
+Engineering implication:
+Input chatter is not just "more random jitter." It can create multiple edge decisions and deterministic-looking failures when the clock amplitude or slew rate is too low. This matters for reference-clock receivers, divider inputs, test setups, FPGA prototyping, and any SerDes lab setup where the reference clock is attenuated, filtered, or poorly terminated.
+
+### 23.7 Internal PLL And Digital Clock Distribution Lessons
+
+The source's FPGA PLL experiments are not a SerDes PLL signoff model, but they give useful debug instincts:
+
+- The dominant noise source can move between input comparator, phase detector, VCO, divider, and output buffer depending on frequency and configuration.
+- A PLL used as a "cleanup" clock can still expose phase-detector or in-loop noise if the loop passes that region.
+- A PLL used as a multiplier can turn time fluctuation at an internal comparison point into phase noise that scales with output frequency.
+- Output buffers and distribution chains can contribute meaningful flicker/time noise even when the oscillator itself looks clean.
+
+SerDes implication:
+Do not stop at the PLL macro output. Budget and measure divider, phase-generation, DCC, PI, clock-tree, and local sampler-clock contributions separately where possible.
+
+### 23.8 Thermal Delay And Low-Frequency Wander
+
+The paper models thermal delay transients as:
+
+$$
+x(t)=k'\Delta T\left(1-e^{-t/\tilde{\tau}}\right)+k''t
+$$
+
+where:
+
+- $x(t)$ is delay change.
+- $\Delta T$ is junction-temperature change relative to ambient.
+- $\tilde{\tau}$ is an effective thermal time constant.
+- $k'$ maps temperature change to delay.
+- $k''t$ represents slower environmental drift.
+
+Engineering implication:
+Digital activity can heat clock-distribution circuitry and create slow delay wander. In a mixed-signal SerDes, this shows up as a low-frequency timing term that may not appear in a short phase-noise plot. Treat activity-dependent thermal delay as a possible source of correlated lane drift, clock-tree skew drift, or long-time measurement instability.
+
+### 23.9 Design Review Additions From This Source
+
+Add these questions to PLL/CDR/clocking reviews:
+
+1. Is the observed noise phase-type, time-type, or aliased?
+2. Does the phase-noise scaling with carrier frequency match the assumed mechanism?
+3. Is the digital input slew rate high enough to avoid threshold-noise-driven chatter?
+4. Are dividers, buffers, and local clock distribution measured or simulated separately from the PLL core?
+5. Are internal PLL phase-detector and divider noise contributors separated from VCO noise?
+6. Is low-frequency wander due to thermal activity or environmental drift excluded, modeled, or bounded?
+7. Are FPGA/prototype clocking measurements treated as implementation-specific rather than directly portable to silicon SerDes?
+
+## 24. Source Provenance
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| Calosso and Rubiola, "Phase Noise and Jitter in Digital Electronics," arXiv:1701.00094v1, 2017 | Paper PDF | Ingested 2026-07-04; archived under `90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/` | Phase-type vs time-type noise, phase-time PSD conversion, digital threshold-noise conversion, aliasing in digital clocking, input chatter condition, internal PLL measurement lessons, thermal delay/wander model |
+
+## 25. Related Notes
 
 - [[pcie7_clocking_notes]]
 - [[pcie7_gtps_vs_gbaud_ui]]

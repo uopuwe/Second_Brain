@@ -25,6 +25,7 @@ Quality gates live in [quality_standards.md](quality_standards.md).
 15. Keep Markdown durable. Follow [../obsidian_style.md](../obsidian_style.md).
 16. Report verification limits in final responses after vault edits.
 17. During normal incoming ingestion, never archive, move, delete, merge, or repurpose files from legacy chat-processing folders: `00_Inbox/conversation_inventory/`, `00_Inbox/manual_batches/`, `00_Inbox/processed_by_chatgpt/`, `00_Inbox/raw_chat_exports/`, or `00_Inbox/unprocessed_notes/`.
+18. During ingest, newly added or substantially rewritten durable explanatory content must use paragraph-level Chinese-English bilingual pairs unless the content is YAML frontmatter, a formula, code, path list, source table, or short navigation list.
 
 ## Conflict Resolution
 
@@ -47,6 +48,7 @@ Before finishing edits, confirm:
 - Roadmap impact was evaluated.
 - Continuous knowledge improvement was applied or explicitly not needed.
 - Archive action was completed or explicitly not needed.
+- Bilingual paragraph format was applied to durable explanatory content added or substantially rewritten during ingest.
 - Technical uncertainty is visible.
 - Links and indexes were updated when required.
 - Verification limits are stated.
