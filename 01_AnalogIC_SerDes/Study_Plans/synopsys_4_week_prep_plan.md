@@ -456,7 +456,7 @@ Candidate story areas:
 Create or update:
 
 * `../ADC/adc_based_receiver.md`
-* `../ADC/ti_sar_adc_calibration.md`
+* `../ADC_TI_SAR/ti_sar_mismatch_calibration.md`
 * `../ADC/sampling_jitter_adc.md`
 * `../Interview_QA/technical_story_bank.md`
 * `../Interview_QA/synopsys_relevant_qa.md`
@@ -584,7 +584,7 @@ Use these gradually after joining.
 - `../PLL_CDR_Clocking/cdr_fundamentals.md`
 - `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
 - `../ADC/adc_based_receiver.md`
-- `../ADC/ti_sar_adc_calibration.md`
+- `../ADC_TI_SAR/ti_sar_mismatch_calibration.md`
 - `../ADC/sampling_jitter_adc.md`
 - `../LDO_Bandgap/serdes_power_integrity.md`
 - `../LDO_Bandgap/ldo_psrr_notes.md`

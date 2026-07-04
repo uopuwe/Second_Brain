@@ -285,6 +285,22 @@ Headline data rates, unverified marketing claims, missing test conditions, and c
 
 ---
 
+## 13. Ingested Books / Cornerstone References
+
+This section records source-backed material that has been ingested into the vault, so any durable note citing it has a single citation anchor.
+
+### B1. El-Chammas & Murmann — Background Calibration of Time-Interleaved Data Converters
+
+- **Citation:** M. El-Chammas and B. Murmann, *Background Calibration of Time-Interleaved Data Converters*, Analog Circuits and Signal Processing series, Springer, 2012. ISBN 978-1-4614-1510-7 (e-ISBN 978-1-4614-1511-4), DOI 10.1007/978-1-4614-1511-4. 138 pp.
+- **One-sentence value:** The definitive monograph on modeling and background-calibrating time-interleaved ADCs, with closed-form offset/gain/timing-skew bounds and a statistics-based cross-correlation timing-skew calibration demonstrated on a 5-bit, 12-GS/s flash ADC in 65 nm CMOS.
+- **Reading status:** Deep Ingest completed 2026-07-04 (Ch. 2 error analysis, Ch. 3 calibration algorithm, Appendices D–E). Ch. 4–6 (comparator power optimization, circuit design, measurements) reviewed at summary level.
+- **Chapter map:** Ch. 2 TI-ADC model + mismatch bounds; Ch. 3 background timing-skew calibration; Ch. 4 architecture/comparator-power optimization; Ch. 5 circuit design (bootstrapped T&H, dynamic comparator, delay line); Ch. 6 measurements; App. A WSCS signals; App. B comparator power; App. D comparator skew; App. E residual-skew/jitter extraction.
+- **Promoted into:** [[ti_sar_mismatch_calibration]] (bounds + calibration algorithm; canonical TI-SAR note), [[sampling_jitter_adc]] (quantization-referenced jitter bound, comparator skew), [[ti_adc_calibration_moc]] (MOC).
+- **Archived source:** `../../90_Archive/processed/2026/books/background_calibration_of_ti_data_converters/`.
+- **Verification note:** formulas re-derived here; the book's printed gain-mismatch numeric example is marked `待确认` pending primary-source recheck.
+
+---
+
 ## Last Updated
 
-2026-07-01
+2026-07-04

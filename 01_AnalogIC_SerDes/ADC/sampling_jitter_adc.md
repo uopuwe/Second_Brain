@@ -272,7 +272,7 @@ Not fully. Static timing skew may be calibrated, but random jitter is a noise pr
 ## 12. Related Notes
 
 * `adc_based_receiver.md`
-* `ti_sar_adc_calibration.md`
+* `../ADC_TI_SAR/ti_sar_mismatch_calibration.md`
 * `../PLL_CDR_Clocking/pll_phase_noise_jitter.md`
 * `../PLL_CDR_Clocking/pll_fundamentals.md`
 * `../PLL_CDR_Clocking/pcie7_clocking_notes.md`
@@ -340,6 +340,56 @@ A deterministic skew of hundreds of femtoseconds is small relative to the sub-AD
 
 ---
 
+## 15. Deep Ingest 2026-07-04: Quantization-Referenced Jitter Bound
+
+Source: El-Chammas & Murmann, *Background Calibration of Time-Interleaved Data Converters*, Springer 2012 (see [[core_serdes_papers]]; archived under `../../90_Archive/processed/2026/books/`). This complements the existing `-20log10(2π f_in σ_t)` relation with a bound referenced to quantization noise, and unifies jitter with timing skew.
+
+### 15.1 Jitter as the Infinite-Interleaving Limit of Timing Skew
+
+中文：本书给出一个漂亮的统一视角：随机采样 jitter 可以看作"通道数趋于无穷"的 TI-ADC timing skew——每个样本都用一个独立随机相位采一次，等价于每个"子 ADC"只采一次、且有随机 skew。于是 skew 的方差界在 `N → ∞` 取极限，就得到 jitter 的容许界。它与输入信号统计通过自相关曲率 `R''(0)` 相关，而不仅仅是单一频率。
+
+English: The book gives an elegant unification: random sampling jitter is the `N → ∞` limit of TI-ADC timing skew — each sample is taken once at an independent random phase, as if every "sub-ADC" samples exactly once with a random skew. Taking the skew-variance bound to `N → ∞` therefore yields the tolerable-jitter bound, tied to the input statistics through the autocorrelation curvature `R''(0)`, not merely a single frequency.
+
+For an ADC of resolution `B` bits, the tolerable RMS sampling jitter to stay at or above the quantization floor is:
+
+$$
+\sigma^2 \;\le\; \frac{2}{3\cdot 2^{2B}\,\lvert R''(0)\rvert}
+$$
+
+where `R''(0)` is the curvature of the input autocorrelation at zero lag (V²/s²). For a sine input, `R''(0) = -(2π f_in)²`, so this reduces to the familiar sine result:
+
+$$
+\sigma^2 \;\le\; \frac{2}{3\cdot 2^{2B}\,(2\pi f_{in})^2}
+$$
+
+中文：注意这与前面 `-20log10(2π f_in σ_t)` 是一致的——后者说的是 jitter 限制下的 SNR，前者说的是"要让 jitter 噪声不超过量化噪声"所允许的 σ。两者都表明高频、高 σ 更糟。用宽带信号的真实 `R''(0)`（而非最坏正弦 `f_in`）来定 jitter 预算，通常会得到更宽松、更真实的要求。
+
+English: This is consistent with the earlier `-20log10(2π f_in σ_t)` relation — that one gives the jitter-limited SNR, while this one gives the σ allowed for jitter noise to stay under quantization noise. Both say higher frequency and higher σ are worse. Budgeting jitter against a broadband signal's true `R''(0)` (rather than the worst-case sine `f_in`) generally yields a looser, more realistic requirement; the sine assumption over-constrains by up to 3× for a brick-wall-band-limited input.
+
+### 15.2 Comparator / Latch Skew Without a Track-and-Hold
+
+中文：附录 D 分析了 flash ADC 中比较器 latch 时刻的 skew（来自时钟分布和比较器晶体管失配）。它与随机 jitter 一样，误差正比于信号斜率。对无限分辨率、方差为 `σ_α²` 的比较器 skew，正弦输入下的 SNR 为 `SNR = 1/(2π f_in σ_α)²`。书中例子：10 GHz 输入、仅 2 ps 比较器 skew，ENOB 已跌到 3 bit 以下——这正是高速下必须用前端 track-and-hold 的原因：T/H 把输入保持住，使后面比较器的采样时刻 skew 几乎无害。
+
+English: Appendix D analyzes comparator latch-time skew in a flash ADC (from clock distribution and comparator transistor mismatch). Like random jitter, its error is proportional to signal slope. For an infinite-resolution ADC with comparator-skew variance `σ_α²` and a sine input, the SNR is:
+
+$$
+\mathrm{SNR} = \frac{1}{(2\pi f_{in}\,\sigma_\alpha)^2}
+$$
+
+The book's example: a 10 GHz input with only 2 ps of comparator skew drops ENOB below 3 bits. This is precisely why a front-end track-and-hold is important at high speed — the T/H holds the input constant so that skew in the following comparators' sampling instants becomes nearly harmless.
+
+### 15.3 Separating Deterministic Skew From Random Jitter in Measurements
+
+中文：残余确定性 skew 可以从 skew spur 的复幅度用伪逆法反解（见 [[ti_sar_mismatch_calibration]] 的 Appendix E 部分）。去掉 skew 谱线后，SNR 随输入频率的额外下降就只归因于随机 jitter，从而把二者分开估计。低频段用来标定量化+热噪声底，因为那里 jitter 和 skew 影响可忽略。
+
+English: Residual deterministic skew can be back-solved from the complex magnitudes of the skew spurs via a pseudo-inverse (see the Appendix E discussion in [[ti_sar_mismatch_calibration]]). After removing the skew spurs, any SNR degradation that grows with input frequency is attributed to random jitter, separating the two. Low-frequency inputs calibrate the quantization-plus-thermal noise floor, where jitter and skew are negligible.
+
+### 15.4 Source
+
+- El-Chammas & Murmann, Springer 2012, Ch. 2 (Eq. for jitter bound) and Appendices D–E. Formulas dimensionally checked; jitter/skew unification reproduced. See [[ti_sar_mismatch_calibration]] for the companion timing-skew bounds and background-calibration algorithm.
+
+---
+
 ## Last Updated
 
-2026-07-02
+2026-07-04

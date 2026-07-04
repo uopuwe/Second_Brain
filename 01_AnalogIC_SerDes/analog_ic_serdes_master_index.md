@@ -202,7 +202,7 @@ Use this area for:
 Important future files:
 
 * `adc_based_receiver.md`
-* `ti_sar_adc_calibration.md`
+* `../ADC_TI_SAR/ti_sar_mismatch_calibration.md`
 * `sampling_jitter_adc.md`
 * `sar_adc_interview_qa.md`
 * `adc_serdes_receiver_tradeoffs.md`
@@ -459,8 +459,12 @@ Focus:
 ## Active ADC / ADC-Based Receiver Notes
 
 - `ADC/adc_based_receiver.md`
-- `ADC/ti_sar_adc_calibration.md`
+- `ADC_TI_SAR/ti_sar_mismatch_calibration.md` (canonical TI-SAR ADC mismatch + calibration)
 - `ADC/sampling_jitter_adc.md`
+- `SerDes_RX/pam4_adc_based_rx.md`
+- MOC: `../80_MOCs/ti_adc_calibration_moc.md`
+
+Cornerstone source ingested 2026-07-04: El-Chammas & Murmann, *Background Calibration of Time-Interleaved Data Converters* (Springer 2012) — see `Papers_Books/core_serdes_papers.md` §13.
 
 ## Active LDO / Power Notes
 

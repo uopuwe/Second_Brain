@@ -268,7 +268,7 @@ It creates sample amplitude error, reducing SNDR and receiver margin.
 
 ## 12. Related Notes
 
-* `ti_sar_adc_calibration.md`
+* `../ADC_TI_SAR/ti_sar_mismatch_calibration.md`
 * `sampling_jitter_adc.md`
 * `../SerDes/pam4_receiver_basics.md`
 * `../SerDes/serdes_architecture_overview.md`
