@@ -3,7 +3,7 @@
 ## Purpose
 
 This document is the permanent standard workflow for moving knowledge through this repository.
-The pipeline starts in `00_Inbox/` and ends in `90_Archive/`.
+For normal external knowledge ingestion, the pipeline starts in `00_Inbox/incoming/` and ends in `90_Archive/`.
 
 It applies to books, ISSCC papers, JSSC papers, patents, conference slides, blog posts, YouTube transcripts, PDFs, images, screenshots, whitepapers, Reddit discussions, emails, Word documents, and Markdown notes.
 
@@ -37,7 +37,8 @@ Capture
 ```
 
 The detailed ingestion stages below implement the capture and ingest portions of the normal workflow, then hand off to [knowledge_evolution.md](knowledge_evolution.md), [quality_score.md](quality_score.md), [knowledge_gap.md](knowledge_gap.md), [research_roadmap.md](research_roadmap.md), [continuous_knowledge_improvement.md](continuous_knowledge_improvement.md), archive handling, and reporting.
-The repository may store intermediate reports under `00_Inbox/` until automation creates dedicated subfolders.
+The repository may store intermediate reports for normal external ingestion under `00_Inbox/incoming/` until automation creates dedicated subfolders.
+Legacy ChatGPT export and conversation-processing folders under `00_Inbox/` are explicit-only lanes and are not scanned by this pipeline unless the user names them.
 
 ## Archive Structure
 
@@ -73,7 +74,7 @@ Archive packets must retain enough metadata to trace durable notes back to sourc
 
 ### Purpose
 
-Capture incoming material exactly as received under `00_Inbox/` before interpretation, cleanup, summarization, or promotion.
+Capture incoming external material exactly as received under `00_Inbox/incoming/` before interpretation, cleanup, summarization, or promotion.
 
 ### Inputs
 
@@ -94,7 +95,7 @@ Capture incoming material exactly as received under `00_Inbox/` before interpret
 
 ### Outputs
 
-- Source file or packet stored under `00_Inbox/`.
+- Source file or packet stored under `00_Inbox/incoming/`.
 - Initial filename that preserves origin and date when possible.
 - No durable technical note yet.
 
@@ -133,7 +134,7 @@ Do not promote at this stage.
 Good:
 
 ```text
-00_Inbox/raw_sources/2026-07-04_isscc_adc_pam4_receiver.pdf
+00_Inbox/incoming/papers/2026-07-04_isscc_adc_pam4_receiver.pdf
 ```
 
 Bad:
@@ -206,7 +207,7 @@ Good:
 
 ```markdown
 - Source ID: `2026-07-04_jssc-paper_fractional-n-pll`
-- Path: `00_Inbox/raw_sources/jssc_fractional_n_pll.pdf`
+- Path: `00_Inbox/incoming/papers/jssc_fractional_n_pll.pdf`
 - Status: `new`
 - Initial type: JSSC paper
 ```
@@ -267,7 +268,7 @@ Classify as sensitive if it contains:
 
 ### Failure Recovery
 
-- If sensitivity is uncertain, keep the source in `00_Inbox/` and mark processing as blocked.
+- If sensitivity is uncertain, keep the source in `00_Inbox/incoming/` and mark processing as blocked.
 - If sensitive content was accidentally promoted, flag high severity and remove or generalize with user approval.
 
 ### Examples
@@ -490,7 +491,7 @@ Reject if:
 
 ### Failure Recovery
 
-- If classification is uncertain, create a short triage note and leave source in `00_Inbox/`.
+- If classification is uncertain, create a short triage note and leave source in `00_Inbox/incoming/`.
 - If a source was misclassified, re-register with corrected type and keep the history.
 
 ### Examples
@@ -822,8 +823,8 @@ Archive as `sensitive` when:
 
 ### Failure Recovery
 
-- If archive move fails, leave source in `00_Inbox/` and mark status `archive_failed`.
-- If links break after archiving, repair links or preserve a source registry in `00_Inbox/conversation_inventory/`.
+- If archive move fails, leave source in `00_Inbox/incoming/` and mark status `archive_failed`.
+- If links break after archiving, repair links or preserve a source registry in the ingest report or archive manifest.
 - If archive category was wrong, move between archive categories with a note in the manifest.
 
 ### Examples

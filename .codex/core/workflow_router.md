@@ -10,8 +10,10 @@ Quality gates are in [quality_standards.md](quality_standards.md).
 
 | User request | Use this document |
 | --- | --- |
-| Bring source material into the vault | [../ingest.md](../ingest.md) |
-| Process source material from `00_Inbox/` through final archive | [../knowledge_ingestion_pipeline.md](../knowledge_ingestion_pipeline.md) |
+| Bring new external source material into the vault | [../ingest.md](../ingest.md) |
+| Ingest papers, books, articles, screenshots, videos, datasheets, patents, slides, or technical references from `00_Inbox/incoming/` | [../ingest.md](../ingest.md) |
+| Process source material from `00_Inbox/incoming/` through final archive | [../knowledge_ingestion_pipeline.md](../knowledge_ingestion_pipeline.md) |
+| Process ChatGPT exports, conversation inventories, processed ChatGPT summaries, historical manual batches, or unprocessed conversation notes | Conversation-processing workflow; require explicit user instruction before scanning legacy folders |
 | Combine overlapping notes | [../merge_knowledge.md](../merge_knowledge.md) |
 | Turn a thin note into a durable note | [../expand_note.md](../expand_note.md) |
 | Review content without necessarily editing | [../review.md](../review.md) |
@@ -67,6 +69,27 @@ Stage routing:
 Use a subset only when the request is explicitly scoped, such as "review this note only" or "fix this link only."
 If a scoped request changes durable knowledge, still apply quality evaluation, gap analysis, and reporting.
 
+## Inbox Routing Rules
+
+Default external knowledge ingestion scans only `00_Inbox/incoming/`.
+This lane is for new papers, books, articles, screenshots, videos, datasheets, patents, slides, and miscellaneous technical references.
+
+Legacy ChatGPT and conversation-processing folders are not part of normal external knowledge ingestion:
+
+- `00_Inbox/conversation_inventory/`
+- `00_Inbox/manual_batches/`
+- `00_Inbox/processed_by_chatgpt/`
+- `00_Inbox/raw_chat_exports/`
+- `00_Inbox/unprocessed_notes/`
+
+Routing decisions:
+
+- If the user says "ingest inbox" without clarification, process only `00_Inbox/incoming/`.
+- If the user names a new paper, book, article, screenshot, video, datasheet, patent, slide deck, or technical reference, route to normal knowledge ingestion.
+- If the user names ChatGPT export cleanup, conversation inventory, raw chat export, processed ChatGPT summary, manual conversation batch, or historical conversation processing, route to the conversation-processing workflow.
+- If files are found only in legacy folders during a normal ingest request, ask for confirmation before processing them.
+- During normal incoming ingestion, do not archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
+
 ## Multi-Workflow Tasks
 
 Many tasks require multiple workflows.
@@ -74,6 +97,7 @@ Many tasks require multiple workflows.
 Examples:
 
 - Ingesting a paper must use capture, ingest, knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive, and report stages.
+- Processing a ChatGPT export must not use the default `00_Inbox/incoming/` assumption; it requires explicit conversation-processing scope.
 - Expanding a PLL note may use `expand_note.md`, `engineering_notes.md`, `formula_style.md`, and `build_links.md`.
 - Merging duplicate ADC notes may use `merge_knowledge.md`, `knowledge_tree.md`, `build_links.md`, and `indexing.md`.
 - Upgrading a note to mature status may use `knowledge_evolution.md`, `quality_score.md`, `review.md`, and `indexing.md`.
@@ -81,14 +105,16 @@ Examples:
 
 ## Default Decision Logic
 
-1. If source material is raw, start with capture and ingest.
-2. If two notes overlap, start with merge.
-3. If one note is thin, start with expand.
-4. If the user asks for critique, start with review.
-5. If the task is navigation, start with links or indexing.
-6. If the task is note creation, choose the template by note type.
-7. After durable knowledge changes, run knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive decision, and report.
-8. If uncertain, inspect files and choose the least destructive workflow.
+1. If source material is raw external knowledge, start with capture and ingest from `00_Inbox/incoming/`.
+2. If the user says "ingest inbox", default to `00_Inbox/incoming/`.
+3. If source material exists only in legacy ChatGPT or conversation-processing folders, ask for confirmation before processing.
+4. If two notes overlap, start with merge.
+5. If one note is thin, start with expand.
+6. If the user asks for critique, start with review.
+7. If the task is navigation, start with links or indexing.
+8. If the task is note creation, choose the template by note type.
+9. After durable knowledge changes, run knowledge evolution, quality evaluation, gap analysis, roadmap decision, continuous knowledge improvement, archive decision, and report.
+10. If uncertain, inspect files and choose the least destructive workflow.
 
 ## Output Expectations
 

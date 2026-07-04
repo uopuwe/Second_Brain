@@ -53,6 +53,38 @@ The stages are implemented by these documents:
 
 For a small edit that does not involve source material, apply only the relevant subset of the sequence, but do not skip quality evaluation, gap analysis, or reporting when the edit changes durable knowledge.
 
+## Inbox Lanes
+
+`00_Inbox/` contains separate operating lanes.
+Do not collapse them.
+
+External knowledge ingestion is the default lane for new papers, books, articles, screenshots, videos, datasheets, patents, slides, and miscellaneous technical references.
+Its only default scan root is:
+
+```text
+00_Inbox/incoming/
+```
+
+ChatGPT conversation export processing is a separate explicit workflow.
+These legacy folders are for historical ChatGPT export cleanup and conversation processing:
+
+```text
+00_Inbox/conversation_inventory/
+00_Inbox/processed_by_chatgpt/
+00_Inbox/raw_chat_exports/
+00_Inbox/unprocessed_notes/
+```
+
+Manual batch processing is also explicit-only:
+
+```text
+00_Inbox/manual_batches/
+```
+
+If the user says "ingest inbox" without naming a legacy folder, process only `00_Inbox/incoming/`.
+If files are found only in legacy chat-processing folders, ask for confirmation before processing.
+Normal external knowledge ingestion must never scan, archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
+
 ## Core Documents
 
 The core layer is authoritative.

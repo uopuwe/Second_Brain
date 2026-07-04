@@ -2,10 +2,13 @@
 
 ## Purpose
 
-Use this workflow when bringing raw or semi-processed material into the vault.
+Use this workflow when bringing new external knowledge material into the vault.
 Global policy is in [core/mandatory_rules.md](core/mandatory_rules.md).
 Quality gates are in [core/quality_standards.md](core/quality_standards.md).
 The end-to-end source pipeline is defined in [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
+
+For normal knowledge ingestion, the default inbox root is `00_Inbox/incoming/`.
+The phrase "ingest everything in `00_Inbox`" means ingest only `00_Inbox/incoming/` unless the user explicitly names a legacy ChatGPT or conversation-processing folder.
 
 ## Active Roles
 
@@ -18,7 +21,9 @@ Role responsibilities are defined in [core/roles.md](core/roles.md).
 
 ## Inputs
 
-This workflow applies to chat exports, manual source packets, processed AI summaries, paper excerpts, book notes, interview notes, work or design notes, and Python analysis snippets.
+This workflow applies by default to external knowledge material placed under `00_Inbox/incoming/`, including papers, books, articles, screenshots, videos, datasheets, patents, slides, technical references, interview notes, work or design notes, and Python analysis snippets.
+
+ChatGPT exports, conversation inventories, processed ChatGPT summaries, historical manual batches, and unprocessed conversation notes use the separate conversation-processing workflow and require explicit user instruction before processing.
 
 ## Workflow
 
@@ -37,7 +42,7 @@ Capture
   -> Report
 ```
 
-1. Capture source material in `00_Inbox/` according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
+1. Capture new external source material in `00_Inbox/incoming/` according to [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md).
 2. Inventory source path, source type, date if known, domains, and sensitivity.
 3. Search for existing canonical notes before creating new files.
 4. Classify fragments as concept, equation, tradeoff, debug, interview, source, career, raw, or not promoted.
@@ -58,19 +63,39 @@ Capture
 
 ## Destination Rules
 
-- Raw chat exports: `00_Inbox/raw_chat_exports/`
-- Manual source packets: `00_Inbox/manual_batches/`
-- Processed summaries: `00_Inbox/processed_by_chatgpt/`
-- Conversation inventories: `00_Inbox/conversation_inventory/`
+- New papers: `00_Inbox/incoming/papers/`
+- New books: `00_Inbox/incoming/books/`
+- New articles and blog posts: `00_Inbox/incoming/articles/`
+- New screenshots and images: `00_Inbox/incoming/screenshots/`
+- New videos and transcripts: `00_Inbox/incoming/videos/`
+- New datasheets: `00_Inbox/incoming/datasheets/`
+- New patents: `00_Inbox/incoming/patents/`
+- New slide decks: `00_Inbox/incoming/slides/`
+- New uncategorized external material: `00_Inbox/incoming/misc/`
+- Legacy raw chat exports, explicit workflow only: `00_Inbox/raw_chat_exports/`
+- Legacy manual source packets, explicit workflow only: `00_Inbox/manual_batches/`
+- Legacy processed ChatGPT summaries, explicit workflow only: `00_Inbox/processed_by_chatgpt/`
+- Legacy conversation inventories, explicit workflow only: `00_Inbox/conversation_inventory/`
+- Legacy unprocessed conversation notes, explicit workflow only: `00_Inbox/unprocessed_notes/`
 - Durable technical notes: `01_AnalogIC_SerDes/`
 - Work context: `02_Synopsys_Work/`
 - Agent operating documents: `.codex/`
 - Completed source packets: `90_Archive/`
 
+## Inbox Lane Rules
+
+- `00_Inbox/incoming/` is the only default scan target for new external knowledge ingestion.
+- `00_Inbox/conversation_inventory/`, `00_Inbox/manual_batches/`, `00_Inbox/processed_by_chatgpt/`, `00_Inbox/raw_chat_exports/`, and `00_Inbox/unprocessed_notes/` are legacy ChatGPT export and conversation-processing lanes.
+- Normal paper, book, article, screenshot, video, datasheet, patent, slide, or technical-reference ingestion must never scan legacy chat-processing folders.
+- ChatGPT export ingestion must be requested explicitly and handled as conversation processing, not as default external knowledge ingestion.
+- If the user says "ingest inbox" without clarification, process `00_Inbox/incoming/` only.
+- If relevant files are found only in legacy folders, ask for confirmation before processing them.
+- During normal incoming ingestion, do not archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
+
 ## Good Example
 
 ```markdown
-Source packet about PCIe 7.0 clocking is preserved under `00_Inbox/manual_batches/`.
+Source packet about PCIe 7.0 clocking is preserved under `00_Inbox/incoming/papers/` or `00_Inbox/incoming/slides/`.
 Durable clocking concepts are promoted to `01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md`.
 Exact compliance numbers remain marked as requiring current primary-source verification.
 ```
@@ -79,6 +104,10 @@ Exact compliance numbers remain marked as requiring current primary-source verif
 
 ```markdown
 A full AI conversation is pasted into a PLL note and treated as source-backed technical truth.
+```
+
+```markdown
+The user says "ingest inbox", and the assistant scans `00_Inbox/raw_chat_exports/` without explicit confirmation.
 ```
 
 ## Edge Cases

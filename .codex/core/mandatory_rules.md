@@ -10,7 +10,7 @@ Quality gates live in [quality_standards.md](quality_standards.md).
 
 1. Preserve user work. Do not delete, overwrite, revert, or reorganize user-created content unless explicitly requested.
 2. Read before editing. Inspect the target file, relevant nearby files, the matching workflow, and applicable quality standard.
-3. Keep raw sources separate. Raw chat exports, source packets, and unfiltered material belong in `00_Inbox/` or source-specific locations.
+3. Keep raw sources separate. New external knowledge material belongs in `00_Inbox/incoming/`; legacy ChatGPT exports and conversation-processing material must remain in their existing `00_Inbox/` legacy folders unless explicitly processed.
 4. Preserve provenance. Durable notes must identify source history, source quality, and verification status.
 5. Mark uncertainty. Do not make unverified claims sound certain.
 6. Do not invent sources, citations, standards requirements, paper results, employer details, measurement conditions, or user experience.
@@ -24,6 +24,7 @@ Quality gates live in [quality_standards.md](quality_standards.md).
 14. Do not create broken knowledge graphs. Follow [../build_links.md](../build_links.md).
 15. Keep Markdown durable. Follow [../obsidian_style.md](../obsidian_style.md).
 16. Report verification limits in final responses after vault edits.
+17. During normal incoming ingestion, never archive, move, delete, merge, or repurpose files from legacy chat-processing folders: `00_Inbox/conversation_inventory/`, `00_Inbox/manual_batches/`, `00_Inbox/processed_by_chatgpt/`, `00_Inbox/raw_chat_exports/`, or `00_Inbox/unprocessed_notes/`.
 
 ## Conflict Resolution
 

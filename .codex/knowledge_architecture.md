@@ -119,20 +119,34 @@ Create them when maintaining vault-wide navigation.
 ### `00_Inbox/`
 
 Purpose:
-Unprocessed or semi-processed source material.
+Unprocessed or semi-processed source material, split into separate operating lanes.
 
 Contains:
 
-- Raw chat exports.
-- Manual batches.
-- Extracted source packets.
-- Conversation inventories.
-- Temporary triage notes.
+- `incoming/`: default lane for new external knowledge materials.
+- `incoming/papers/`: ISSCC, JSSC, arXiv, conference, and technical paper PDFs.
+- `incoming/books/`: book exports, book notes, and chapter packets.
+- `incoming/articles/`: articles, blog posts, whitepapers, and saved web references.
+- `incoming/screenshots/`: screenshots, images, figures, and visual captures.
+- `incoming/videos/`: video links, transcripts, and lecture captures.
+- `incoming/datasheets/`: datasheets, manuals, and component references.
+- `incoming/patents/`: patent PDFs, patent exports, and claim notes.
+- `incoming/slides/`: conference slides, webinars, and presentation decks.
+- `incoming/misc/`: external materials that do not yet fit another incoming category.
+- `conversation_inventory/`: legacy ChatGPT conversation inventory.
+- `manual_batches/`: legacy manual conversation/source batches.
+- `processed_by_chatgpt/`: legacy processed ChatGPT summaries.
+- `raw_chat_exports/`: legacy raw ChatGPT exports.
+- `unprocessed_notes/`: legacy unprocessed conversation notes.
 
 Rules:
 
 - Do not store final technical knowledge here.
 - Do not delete source packets after promotion.
+- Normal external knowledge ingestion scans only `00_Inbox/incoming/`.
+- "Ingest inbox" means `00_Inbox/incoming/` unless the user explicitly names a legacy folder.
+- Legacy ChatGPT export and conversation-processing folders require explicit user instruction before scanning or processing.
+- Normal incoming ingestion must never archive, move, delete, merge, or repurpose files from legacy chat-processing folders.
 - Use [knowledge_ingestion_pipeline.md](knowledge_ingestion_pipeline.md) for processing.
 
 ### `70_Indexes/`
@@ -306,7 +320,9 @@ Source notes
 ### Source Notes
 
 Raw or extracted source material.
-Usually lives in `00_Inbox/`, `Papers_Books/`, `Patents/`, or `90_Archive/`.
+For normal external ingestion, new material lives in `00_Inbox/incoming/`.
+Legacy ChatGPT exports and conversation batches remain in their existing `00_Inbox/` legacy lanes until explicitly processed.
+Reference notes may later live in `Papers_Books/`, `Patents/`, or `90_Archive/` depending on source type and maturity.
 
 ### Reference Notes
 
