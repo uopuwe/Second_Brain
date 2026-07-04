@@ -25,15 +25,47 @@ Use this for new external knowledge materials such as papers, books, articles, s
 ### Daily Command To Copy Into Codex
 
 ```text
-Execute the workflow defined in .codex/ingest.md for every file under 00_Inbox/incoming/.
+Execute the workflow defined in .codex/ingest.md for every file under:
+
+00_Inbox/incoming/
 
 Follow .codex/AGENTS.md and all mandatory rules.
 
-Merge extracted knowledge into existing canonical notes.
+For every source:
 
-Do not create duplicate notes.
+- classify the topic
 
-Generate an ingest report.
+- identify the existing canonical note
+
+- merge reusable knowledge into the canonical note
+
+- never create a duplicate note if a canonical note already exists
+
+- extract formulas into Markdown LaTeX
+
+- expand omitted derivations when valuable
+
+- add engineering insights
+
+- update Obsidian links
+
+- update indexes and MOCs when needed
+
+- preserve source provenance
+
+- archive the original source after successful ingestion
+
+Finally generate an Ingest Report summarizing:
+
+- processed files
+
+- updated canonical notes
+
+- new notes (if absolutely necessary)
+
+- archive actions
+
+- manual review items
 ```
 
 ### Expected Outputs
