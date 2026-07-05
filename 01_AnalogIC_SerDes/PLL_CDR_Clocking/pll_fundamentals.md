@@ -11,7 +11,7 @@ tags:
   - PCIe7
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-05
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -974,6 +974,261 @@ Q = Im(Z) / Re(Z)
 
 ---
 
+## 27. Balanced Ingest 2026-07-05 - CPPLL and PLL Architecture Sources
+
+Source update:
+
+- Hanumolu, Brownlee, Mayaram, and Moon, "Analysis of Charge-Pump Phase-Locked Loops," IEEE TCAS-I, Vol. 51, No. 9, September 2004.
+- Nguyen and Pham, "An Overview of Phase-Locked Loop: From Fundamentals to the Frontier," Sensors, 2025.
+- Dutta et al., "Exploring the Landscape of Phase-Locked Loop Architectures: A Comprehensive Review," review PDF.
+- Archived source packet: [PLL oscillator sources 2026-07-05](<../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/>)
+- Source confidence: high for Hanumolu et al. CPPLL discrete-time/state-space analysis; moderate for the two broad overview papers because they are useful for taxonomy and vocabulary but should not be treated as primary formula authority.
+
+### 27.1 Why This Batch Belongs Here
+
+中文：这批资料的共同价值是把 PLL 从“方框图”推进到 design-review 层级：CPPLL 不是连续时间二阶环路的简单延伸，architecture taxonomy 也不能替代具体的 loop dynamics、noise transfer、reference update rate、charge-pump nonideality 和 clocking application constraint。对 SerDes 来说，最重要的不是记住更多 PLL 类型，而是知道每种架构改变了哪些 noise path、locking behavior、spur mechanism 和 verification burden。
+
+English: The shared value of this batch is to move PLL knowledge from block diagrams to design-review depth: a CPPLL is not just a continuous-time second-order loop with one more component, and architecture taxonomy cannot replace specific loop dynamics, noise transfer, reference update rate, charge-pump nonideality, and clocking application constraints. For SerDes, the important skill is not memorizing more PLL types, but knowing which noise paths, locking behaviors, spur mechanisms, and verification burdens each architecture changes.
+
+### 27.2 Third-Order CPPLL Is A Sampled-Data Loop
+
+中文：Hanumolu 等人的 CPPLL analysis 强调：third-order charge-pump PLL 同时有 large-signal lock acquisition 和 small-signal tracking 行为，且 PFD/CP action 是 reference-rate sampled event。连续时间近似对 intuition 很有用，但当 loop bandwidth 接近 reference update rate 时，sampled-data delay 会引入额外 phase shift，可能让 continuous-time Bode phase-margin 看起来可接受的 loop 在 z-domain pole location 上失稳。
+
+English: Hanumolu et al.'s CPPLL analysis emphasizes that a third-order charge-pump PLL has both large-signal lock acquisition and small-signal tracking behavior, and the PFD/CP action is a reference-rate sampled event. Continuous-time approximations are useful for intuition, but when loop bandwidth approaches the reference update rate, sampled-data delay adds phase shift and can make a loop that looks acceptable in continuous-time Bode phase margin unstable in z-domain pole location.
+
+中文：一个实用 review rule 是：不要只问 loop bandwidth 和 phase margin，也要问 reference frequency / PFD update rate 与 loop bandwidth 的比例。paper 的 example 显示某个 CPPLL 在 update-rate-to-loop-bandwidth ratio 约为 3 左右会遇到 sampled-data stability limit；这个数字不是通用规格，但它很好地提醒 designer：reference-rate sampling 本身是 stability constraint。
+
+English: A practical review rule is: do not ask only for loop bandwidth and phase margin; also ask for the ratio between reference frequency or PFD update rate and loop bandwidth. The paper's example shows a sampled-data stability limit around an update-rate-to-loop-bandwidth ratio near 3 for that CPPLL; this number is not a universal specification, but it is an excellent reminder that reference-rate sampling itself is a stability constraint.
+
+### 27.3 CPPLL Loop Filter Ripple And Third Pole
+
+中文：third-order CPPLL 中，loop-filter resistor 引入稳定零点，但 charge-pump pulse 会在 control voltage 上产生 ripple；额外 capacitor 可以降低 ripple，却也引入第三个 pole，降低 phase margin。这个 tradeoff 在 SerDes PLL 中很实际：减小 ripple / spur 的动作可能同时改变 loop stability、settling、jitter peaking 和 VCO control-line noise transfer。
+
+English: In a third-order CPPLL, the loop-filter resistor introduces a stabilizing zero, but the charge-pump pulse creates ripple on the control voltage; an added capacitor can reduce ripple, but it also introduces a third pole and reduces phase margin. This tradeoff is very practical in SerDes PLLs: an action that reduces ripple or spur can also change loop stability, settling, jitter peaking, and VCO control-line noise transfer.
+
+中文：因此 CPPLL design review 应把 `R`, `C1`, `C2`, charge-pump current, divider ratio, VCO gain, reference frequency, reset delay, CP pulse width, and parasitic pole 放在同一张表里。只给一个 `f_BW` 或一个 damping factor 不够，因为 spur、ripple、noise transfer 和 sampled-data stability 都可能由被隐藏的实现细节决定。
+
+English: Therefore a CPPLL design review should put `R`, `C1`, `C2`, charge-pump current, divider ratio, VCO gain, reference frequency, reset delay, CP pulse width, and parasitic poles in the same table. A single `f_BW` or damping factor is not enough, because spur, ripple, noise transfer, and sampled-data stability can be set by hidden implementation details.
+
+### 27.4 Architecture Taxonomy Is A Starting Point
+
+中文：两篇 overview / taxonomy paper 对长期 Second Brain 的价值主要是分类：APLL、DPLL、ADPLL、integer-N、fractional-N、sub-sampling PLL、injection-locked PLL、DLL、low-power PLL 和 specialized clock-recovery loops。分类有助于检索和面试表达，但不能直接给出 signoff conclusion；同一类 PLL 的 phase noise、spur、lock time 和 power 可能被 topology、process、frequency plan、reference source、divider、layout 和 supply isolation 完全改变。
+
+English: The main value of the two overview/taxonomy papers for this long-term Second Brain is classification: APLL, DPLL, ADPLL, integer-N, fractional-N, sub-sampling PLL, injection-locked PLL, DLL, low-power PLL, and specialized clock-recovery loops. Classification helps retrieval and interview language, but it does not directly produce signoff conclusions; phase noise, spur, lock time, and power within the same PLL class can be completely changed by topology, process, frequency plan, reference source, divider, layout, and supply isolation.
+
+中文：工程使用这些 review papers 时，应把它们当作 routing map，而不是 formula source。真正进入 design note 的结论必须来自 primary paper、textbook derivation、simulation result、measurement data 或明确的 project requirement。
+
+English: In engineering use, these review papers should be treated as routing maps, not formula sources. Conclusions promoted into design notes should come from primary papers, textbook derivations, simulation results, measurement data, or explicit project requirements.
+
+### 27.5 Added CPPLL Review Questions
+
+中文：这批 source 给 `pll_fundamentals` 增加的最有用 review question 是：continuous-time loop analysis 和 sampled-data loop analysis 是否都通过？如果没有这个问题，designer 很容易只看 analog loop-gain Bode plot，而漏掉 PFD update rate、z-domain pole migration、CP pulse timing 和 reference-rate sampling 对 stability 的影响。
+
+English: The most useful review question added by this source batch is: have both continuous-time loop analysis and sampled-data loop analysis passed? Without this question, a designer can look only at an analog loop-gain Bode plot and miss the effects of PFD update rate, z-domain pole migration, CP pulse timing, and reference-rate sampling on stability.
+
+| Review item | Why it matters |
+|---|---|
+| Reference update rate versus loop bandwidth | Bounds sampled-data stability and loop delay sensitivity. |
+| Third pole from ripple-suppression capacitor | Can reduce spur/ripple while degrading phase margin. |
+| CP pulse width and reset delay | Affects dead zone, CP noise duty cycle, ripple, and spur. |
+| VCO gain and divider ratio | Sets loop gain and converts control noise into phase noise. |
+| Continuous-time and z-domain checks | Prevents a false sense of stability from continuous-time approximations alone. |
+| Architecture label versus implementation detail | Prevents overgeneralizing from taxonomy papers. |
+
+### 27.6 Source Provenance Added
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| Hanumolu, Brownlee, Mayaram, and Moon, "Analysis of Charge-Pump Phase-Locked Loops," IEEE TCAS-I, 2004 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/` | Third-order CPPLL sampled-data/state-space framing, continuous-time versus z-domain stability caution, reference-update-rate versus loop-bandwidth review item, loop-filter ripple/third-pole tradeoff |
+| Nguyen and Pham, "An Overview of Phase-Locked Loop: From Fundamentals to the Frontier," Sensors, 2025 | Review paper PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/` | PLL architecture taxonomy and broad trend vocabulary; not used as primary formula authority |
+| Dutta et al., "Exploring the Landscape of Phase-Locked Loop Architectures: A Comprehensive Review" | Review paper PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/` | PLL taxonomy and comparison vocabulary; source confidence treated as moderate because the PDF appears review-oriented and formula/detail claims require primary-source confirmation |
+
+---
+
+## 28. Deep Ingest 2026-07-05 - Rhee and Yu PLL System and Circuit Design
+
+Source update:
+
+- Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024.
+- Archived source packet: [Rhee and Yu PLL book 2026-07-05](<../../90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/>)
+- Source confidence: high for textbook-level PLL loop equations, CPPLL architecture, PFD/CP tradeoffs, fractional-N/DPLL taxonomy, and CDR metric framing; final silicon signoff still requires project-specific models and simulation.
+
+### 28.1 Why This Book Belongs in the PLL Canon
+
+中文：Rhee 和 Yu 这本书的长期价值在于它把 PLL 作为完整 feedback system，而不是一组孤立 building blocks。它从 continuous-time loop model、transient response、spectral purity、PFD/CP/VCO/divider circuit design，一直延伸到 fractional-N PLL、digital-intensive PLL 和 CDR PLL。对 SerDes/PCIe clocking 来说，这种 system-to-circuit-to-system 的视角比单独背诵 loop bandwidth 或 phase-noise formula 更重要。
+
+English: The long-term value of Rhee and Yu's book is that it treats a PLL as a complete feedback system, not as isolated building blocks. It moves from continuous-time loop models, transient response, spectral purity, and PFD/CP/VCO/divider circuit design into fractional-N PLLs, digital-intensive PLLs, and CDR PLLs. For SerDes/PCIe clocking, this system-to-circuit-to-system view is more valuable than memorizing isolated loop-bandwidth or phase-noise formulas.
+
+中文：本次 Deep Ingest 没有把整本书复制进一个新 handbook，而是把知识拆到 canonical notes：本文件保留 loop dynamics 与 CPPLL system model；[[pfd_charge_pump_notes]] 承接 PFD/CP 电路细节；[[pll_phase_noise_jitter]] 承接 spectral purity、spur 与 jitter conversion；[[pll_fractional_n_digital]] 承接 fractional-N、DSM、DPLL、BBPLL 和 HPLL；[[cdr_fundamentals]] 承接 CDR JGEN/JTRAN/JTOL。
+
+English: This Deep Ingest did not copy the whole book into a new handbook. The knowledge was split into canonical notes: this file keeps loop dynamics and CPPLL system modeling; [[pfd_charge_pump_notes]] owns PFD/CP circuit detail; [[pll_phase_noise_jitter]] owns spectral purity, spurs, and jitter conversion; [[pll_fractional_n_digital]] owns fractional-N, DSM, DPLL, BBPLL, and HPLL; [[cdr_fundamentals]] owns CDR JGEN/JTRAN/JTOL.
+
+### 28.2 Linear Model and Transfer Functions
+
+中文：PLL 的 basic linear model 可以从 open-loop gain 开始。若 phase detector gain 为 $K_d$，VCO gain 为 $K_v$，loop filter 为 $F(s)$，则不含 divider 的 open-loop transfer function 为：
+
+English: The basic PLL linear model starts from open-loop gain. If the phase-detector gain is $K_d$, VCO gain is $K_v$, and loop filter is $F(s)$, the open-loop transfer function without a divider is:
+
+$$
+G(s)=\frac{K_dK_vF(s)}{s}
+$$
+
+中文：对应 closed-loop phase transfer 和 phase-error transfer 为：
+
+English: The corresponding closed-loop phase transfer and phase-error transfer are:
+
+$$
+H(s)=\frac{G(s)}{1+G(s)}
+=
+\frac{K_dK_vF(s)}{s+K_dK_vF(s)}
+$$
+
+$$
+H_e(s)=\frac{1}{1+G(s)}
+=
+\frac{s}{s+K_dK_vF(s)}
+$$
+
+中文：这个 pair 是 PLL intuition 的核心：reference/in-loop source 通常被 low-pass shaped，VCO free-running phase noise 通常被 high-pass shaped。loop bandwidth 不是孤立指标，而是 noise partition、settling、spur rejection、jitter peaking 和 acquisition robustness 的共同结果。
+
+English: This pair is the core PLL intuition: reference and in-loop sources are usually low-pass shaped, while free-running VCO phase noise is usually high-pass shaped. Loop bandwidth is not an isolated metric; it is the joint result of noise partition, settling, spur rejection, jitter peaking, and acquisition robustness.
+
+### 28.3 Type-I and Type-II Loop Parameters
+
+中文：一阶 Type-I PLL 的 loop filter 可视为 constant gain，open-loop gain 为：
+
+English: A first-order Type-I PLL can treat the loop filter as a constant gain, giving:
+
+$$
+G(s)=\frac{K_dK_fK_v}{s}
+$$
+
+$$
+K=K_dK_fK_v
+$$
+
+$$
+H(s)=\frac{K}{s+K}
+$$
+
+中文：因此 unity-gain frequency 近似就是 $K$。这个模型简单，但因为没有额外 integrator，对 static frequency error、reference spur、noise shaping 和 acquisition 的能力有限。
+
+English: Thus the unity-gain frequency is approximately $K$. This model is simple, but without an additional integrator it has limited ability for static frequency error, reference spur, noise shaping, and acquisition.
+
+中文：二阶 Type-II active-loop model 可以写成 proportional-plus-integral control：
+
+English: A second-order Type-II active-loop model can be written as proportional-plus-integral control:
+
+$$
+F(s)=\frac{1+s/\omega_z}{s/\omega_p}
+$$
+
+$$
+F(s)=\alpha+\frac{\beta}{s}
+$$
+
+中文：对应 closed-loop denominator 可映射到标准二阶形式：
+
+English: The closed-loop denominator maps to the standard second-order form:
+
+$$
+H(s)=
+\frac{\omega_n^2(1+s/\omega_z)}
+{s^2+2\zeta\omega_ns+\omega_n^2}
+$$
+
+$$
+\omega_n=\sqrt{K\omega_z}
+$$
+
+$$
+\zeta=\frac{1}{2}\frac{\omega_n}{\omega_z}
+$$
+
+$$
+K=2\zeta\omega_n
+$$
+
+中文：Rhee 和 Yu 的 practical reminder 是：电路设计者很少只为“critical damping”而设计。真实 loop 会为了 spur、settling、noise、VCO gain variation、reference frequency、divider ratio 和 loop-filter realizability 有意选择 underdamped 或 overdamped behavior。实际 review 中，loop gain $K$ 往往比单独引用 $\omega_n$ 更接近 designer 调参的手柄。
+
+English: Rhee and Yu's practical reminder is that circuit designers rarely design only for “critical damping.” Real loops intentionally choose underdamped or overdamped behavior to balance spur, settling, noise, VCO gain variation, reference frequency, divider ratio, and loop-filter realizability. In review, loop gain $K$ is often closer to the designer's control knob than $\omega_n$ alone.
+
+### 28.4 CPPLL First-Pass Sizing
+
+中文：charge-pump PLL 的有效 detector gain 通常写成 current-domain form：
+
+English: The effective detector gain of a charge-pump PLL is usually written in current-domain form:
+
+$$
+K'_d=\frac{I_{CP}}{2\pi}
+$$
+
+中文：对基本 $R_1$-$C_1$ loop filter，open-loop transfer function 为：
+
+English: For a basic $R_1$-$C_1$ loop filter, the open-loop transfer function is:
+
+$$
+G(s)=\frac{I_{CP}K_v(1+sR_1C_1)}{2\pi C_1s^2}
+$$
+
+中文：常用 first-pass parameters 为：
+
+English: Common first-pass parameters are:
+
+$$
+\omega_u \approx \frac{I_{CP}R_1K_v}{2\pi}
+$$
+
+$$
+\omega_z=\frac{1}{R_1C_1}
+$$
+
+$$
+\omega_n=\sqrt{\frac{I_{CP}K_v}{2\pi C_1}}
+$$
+
+$$
+\zeta=\frac{R_1}{2}\sqrt{\frac{I_{CP}C_1K_v}{2\pi}}
+$$
+
+中文：这些公式的使用边界必须明确。它们适合第一轮 sizing 和 design conversation，但不能替代 sampled-data analysis、transistor-level PFD/CP waveform、实际 $K_v$ 曲线、loop-filter parasitic、divider latency、VCO control-line ripple 和 PVT corner 验证。
+
+English: The boundary of these equations must be explicit. They are appropriate for first-pass sizing and design conversation, but they do not replace sampled-data analysis, transistor-level PFD/CP waveforms, actual $K_v$ curves, loop-filter parasitics, divider latency, VCO control-line ripple, and PVT-corner verification.
+
+### 28.5 Continuous-Time Approximation Boundary
+
+中文：本书给出的一个 useful rule 是：当 loop bandwidth 小于 reference frequency 大约十分之一时，continuous-time approximation 通常适合作为 intuition 和 first-order design；若 bandwidth 更接近 reference update rate，就必须使用 sampled/discrete-time analysis。这个规则和 Hanumolu CPPLL paper 的 sampled-data caution 一致。
+
+English: A useful rule from the book is that when loop bandwidth is below about one-tenth of the reference frequency, a continuous-time approximation is usually suitable for intuition and first-order design; if bandwidth approaches the reference update rate, sampled/discrete-time analysis is required. This is consistent with the sampled-data caution from the Hanumolu CPPLL paper.
+
+中文：另一个 practical rule 是：若 loop delay 小于 loop time constant 大约五十分之一，delay 影响通常可以先忽略；否则 delay 会明显消耗 phase margin。对 high-speed SerDes PLL，divider、PFD reset、digital calibration path、DTC/TDC path 和 clock-distribution feedback path 都可能引入不可忽略 delay。
+
+English: Another practical rule is that loop delay is often negligible if it is below about one-fiftieth of the loop time constant; otherwise it consumes phase margin. In high-speed SerDes PLLs, divider delay, PFD reset, digital calibration paths, DTC/TDC paths, and clock-distribution feedback can all introduce non-negligible delay.
+
+### 28.6 Design Review Additions
+
+中文：这本书把 PLL design review 的问题从“环路是否稳定”扩展成“哪些近似在这个设计中仍然成立”。review checklist 应明确列出 continuous-time approximation、sampled-data effects、loop delay、CP pulse shape、VCO gain range、divider ratio、loop-filter high-frequency poles 和 acquisition mode。
+
+English: This book expands PLL design review from “is the loop stable” to “which approximations remain valid in this design.” A review checklist should explicitly include continuous-time approximation, sampled-data effects, loop delay, CP pulse shape, VCO gain range, divider ratio, loop-filter high-frequency poles, and acquisition mode.
+
+| Review item | Deep-ingest question |
+|---|---|
+| Loop model | Are $K_d$, $K_v$, $F(s)$, divider ratio, and units defined consistently? |
+| Loop approximation | Is loop bandwidth safely below reference update rate, or is sampled analysis required? |
+| Delay | Is total loop delay small relative to loop time constant? |
+| CPPLL sizing | Are $I_{CP}$, $R_1$, $C_1$, $C_2$, and $K_v$ checked across PVT? |
+| Third-order pole | Does ripple suppression preserve phase margin and settling? |
+| Acquisition | Is large-signal acquisition verified separately from small-signal tracking? |
+| Architecture split | Are PFD/CP, fractional-N, DPLL, and CDR-specific effects routed to the right canonical notes? |
+
+### 28.7 Source Provenance Added
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived in `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | Linear PLL transfer functions, Type-I and Type-II loop dynamics, CPPLL first-pass sizing equations, continuous-time approximation boundary, loop-delay caution, system-to-circuit review workflow |
+
+---
+
 ## Last Updated
 
-2026-07-02
+2026-07-05

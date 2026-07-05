@@ -12,7 +12,7 @@ tags:
   - Bandgap
   - Interview
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-05
 source: "ChatGPT conversations, interview preparation, work notes"
 status: "active"
 ---
@@ -167,7 +167,10 @@ Important future files:
 * `pll_phase_noise_jitter.md`
 * `pcie7_clocking_notes.md`
 * `pfd_charge_pump_notes.md`
+* `pll_fractional_n_digital.md`
 * `clocking_interview_qa.md`
+
+Source-backed PLL updates ingested 2026-07-05: CPPLL sampled-data/state-space analysis, oscillator ISF phase-noise theory, jitter-power lower bounds, ring-oscillator supply-sensitivity tradeoffs, sub-sampling PLL in-band noise scaling, PFD/charge-pump design rules, fractional-N/DSM/DPLL models, and CDR JGEN/JTRAN/JTOL framing were promoted into `PLL_CDR_Clocking/pll_fundamentals.md`, `PLL_CDR_Clocking/pll_phase_noise_jitter.md`, `PLL_CDR_Clocking/pfd_charge_pump_notes.md`, `PLL_CDR_Clocking/pll_fractional_n_digital.md`, and `PLL_CDR_Clocking/cdr_fundamentals.md`; see `Papers_Books/core_serdes_papers.md` Sections 14 and 15.
 
 Key questions:
 
@@ -455,6 +458,8 @@ Focus:
 - `PLL_CDR_Clocking/pll_fundamentals.md`
 - `PLL_CDR_Clocking/cdr_fundamentals.md`
 - `PLL_CDR_Clocking/pcie7_clocking_notes.md`
+- `PLL_CDR_Clocking/pfd_charge_pump_notes.md`
+- `PLL_CDR_Clocking/pll_fractional_n_digital.md`
 
 ## Active ADC / ADC-Based Receiver Notes
 
@@ -511,7 +516,7 @@ Cornerstone source ingested 2026-07-04: El-Chammas & Murmann, *Background Calibr
 
 ## Last Updated
 
-2026-07-01
+2026-07-05
 ## Active Study Plans
 
 - `Study_Plans/synopsys_4_week_prep_plan.md`

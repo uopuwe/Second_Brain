@@ -12,7 +12,7 @@ tags:
   - PCIe7
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-05
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -1144,6 +1144,265 @@ CDR jitter generation can come from:
 
 ---
 
+## 33. Deep Ingest 2026-07-05 - Rhee and Yu CDR PLL Metrics and Architectures
+
+Source update:
+
+- Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024.
+- Archived source packet: [Rhee and Yu PLL book 2026-07-05](<../../90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/>)
+- Related promoted notes: [[pll_fundamentals]], [[pll_phase_noise_jitter]], [[pfd_charge_pump_notes]], [[pll_fractional_n_digital]].
+
+### 33.1 CDR Is a PLL with Data-Dependent Phase Information
+
+中文：Rhee 和 Yu 把 CDR PLL 的核心 tradeoff 归纳为三类指标：jitter generation、jitter transfer 和 jitter tolerance。对 SerDes 来说，这比只讨论“CDR bandwidth 几 MHz”更准确，因为同一个 bandwidth 可以改善 VCO noise、恶化 input jitter tracking、改变 pattern-dependent jitter、影响 acquisition，并且改变 receiver 对 SSC、frequency offset 和 channel-induced jitter 的容忍度。
+
+English: Rhee and Yu frame a CDR PLL around three metrics: jitter generation, jitter transfer, and jitter tolerance. For SerDes, this is more precise than asking only “what is the CDR bandwidth,” because the same bandwidth can improve VCO noise, worsen input-jitter tracking, change pattern-dependent jitter, affect acquisition, and change receiver tolerance to SSC, frequency offset, and channel-induced jitter.
+
+中文：CDR 与 clock-generation PLL 的关键差异是 phase information 来自数据 transition，而不是干净 periodic reference。NRZ/PAM4 transition density、ISI、equalizer residual、sampler noise、decision error 和 long CID 都会改变 phase-detector output。因此 CDR loop 必须和 data pattern、equalization、slicer/ADC front-end 一起建模。
+
+English: The key difference between a CDR and a clock-generation PLL is that phase information comes from data transitions rather than a clean periodic reference. NRZ/PAM4 transition density, ISI, equalizer residue, sampler noise, decision error, and long CIDs all change the phase-detector output. Therefore a CDR loop must be modeled together with data pattern, equalization, and the slicer/ADC front end.
+
+### 33.2 Jitter Generation
+
+中文：jitter generation 是 CDR 自己产生的 output jitter，包括 VCO/DCO noise、phase detector noise、bang-bang limit cycle、PI quantization、digital loop truncation、supply noise、clock buffer noise 和 pattern-dependent jitter。与 clock multiplier PLL 不同，CDR 通常没有 feedback divider，因此 divider noise 不是主要项；但 data-dependent detector behavior 会成为独特噪声源。
+
+English: Jitter generation is output jitter produced by the CDR itself, including VCO/DCO noise, phase-detector noise, bang-bang limit cycle, PI quantization, digital-loop truncation, supply noise, clock-buffer noise, and pattern-dependent jitter. Unlike a clock-multiplying PLL, a CDR often has no feedback divider, so divider noise is not a main term; however, data-dependent detector behavior becomes a unique noise source.
+
+中文：宽 CDR bandwidth 可以压低 VCO/DCO close-in noise，但也会让 phase-detector noise、data-dependent jitter 和 quantization error 更容易进入 recovered clock。窄 bandwidth 可以滤掉高频 input/data-dependent components，但可能留下更多 local oscillator noise 并降低 tracking ability。
+
+English: Wider CDR bandwidth can suppress VCO/DCO close-in noise, but it also passes phase-detector noise, data-dependent jitter, and quantization error more easily into the recovered clock. Narrower bandwidth can filter high-frequency input/data-dependent components, but it can leave more local oscillator noise and reduce tracking ability.
+
+### 33.3 Jitter Transfer
+
+中文：Type-II CP CDR 的 jitter transfer 可以写成类似 second-order PLL 的形式：
+
+English: The jitter transfer of a Type-II CP CDR can be written in a form similar to a second-order PLL:
+
+$$
+H_{JTRAN}(s)=
+\frac{\omega_n^2(1+s/\omega_z)}
+{s^2+2\zeta\omega_ns+\omega_n^2}
+$$
+
+中文：在 overdamped approximation 下，jitter-transfer 3 dB bandwidth 通常接近 unity-gain frequency：
+
+English: Under an overdamped approximation, the jitter-transfer 3 dB bandwidth is often close to unity-gain frequency:
+
+$$
+\omega_{3dB}\approx\omega_u
+$$
+
+中文：jitter peaking 可以用 damping factor 估计：
+
+English: Jitter peaking can be estimated from damping factor:
+
+$$
+JP\approx
+20\log_{10}
+\left(
+1+\frac{1}{4\zeta^2}
+\right)
+$$
+
+中文：当 damping 较大时，可以近似为：
+
+English: For larger damping, this can be approximated as:
+
+$$
+JP\approx\frac{8.686}{4\zeta^2}
+$$
+
+中文：这给 review 一个明确问题：CDR bandwidth 不只是 tracking speed，也决定 input jitter 在某些频段是否被 peaking 放大。对 PCIe/PAM4，必须确认 jitter-transfer peaking 和 compliance mask / receiver timing margin 的关系，而不能沿用 SONET 或其它 legacy system 的固定数值。
+
+English: This gives review a concrete question: CDR bandwidth is not only tracking speed; it also determines whether input jitter is amplified by peaking in some frequency band. For PCIe/PAM4, jitter-transfer peaking must be checked against the applicable compliance mask and receiver timing margin, not inherited from SONET or another legacy system.
+
+### 33.4 Jitter Tracking and Jitter Tolerance
+
+中文：CDR residual phase error 与 jitter transfer 互补：
+
+English: CDR residual phase error is complementary to jitter transfer:
+
+$$
+H_{JTRACK}(s)=1-H_{JTRAN}(s)
+$$
+
+中文：如果 NRZ decision 需要 residual phase error 小于 $0.5\,\mathrm{UI}$，则 jitter tolerance 可以用 residual-error transfer 的倒数近似：
+
+English: If an NRZ decision requires residual phase error below $0.5\,\mathrm{UI}$, jitter tolerance can be approximated from the inverse of the residual-error transfer:
+
+$$
+H_{JTOL}(s)=\frac{0.5}{H_{JTRACK}(s)}
+$$
+
+中文：对 second-order CDR，可写成：
+
+English: For a second-order CDR, this can be written as:
+
+$$
+H_{JTOL}(s)=
+\frac{s^2+2\zeta\omega_ns+\omega_n^2}{2s^2}
+$$
+
+中文：这个公式给出 intuition：低频 jitter 更容易被 CDR tracking，因此 tolerance 高；高频 jitter 无法被 loop 追踪，因此 residual error 直接打到 sampling point。对 PAM4，实际 tolerance 还会受 vertical noise margin、equalizer residual、decision threshold、ADC aperture 和 FEC/BER target 影响。
+
+English: This equation gives intuition: low-frequency jitter is easier for the CDR to track, so tolerance is high; high-frequency jitter cannot be tracked by the loop and appears directly at the sampling point. For PAM4, actual tolerance also depends on vertical noise margin, equalizer residue, decision thresholds, ADC aperture, and FEC/BER target.
+
+### 33.5 Hogge and Alexander Detector Tradeoffs
+
+中文：linear NRZ phase detectors 通过 data transition 生成 timing information，但 long CID 和 transition-density variation 会降低有效 gain 并产生 pattern-dependent jitter。Hogge detector 是经典 linear CDR PD，它同时做 retiming 和 phase detection，在没有 transition 时保持 neutral；但它的 gain 依赖 transition density，并且 DFF delay mismatch 会引入 offset 与 pattern dependency。
+
+English: Linear NRZ phase detectors generate timing information from data transitions, but long CIDs and transition-density variation reduce effective gain and create pattern-dependent jitter. The Hogge detector is a classic linear CDR PD that performs retiming and phase detection and stays neutral when no transition is present; however, its gain depends on transition density, and DFF delay mismatch introduces offset and pattern dependency.
+
+中文：Alexander detector 是 2x oversampling bang-bang detector。它只输出 early/late decision，不输出线性 phase error magnitude。优点是结构简单、适合数字实现，并且 no-transition 时可以 neutral；缺点是 loop gain 依赖 input jitter statistics，容易出现 limit cycle，并且 loop latency 会放大 jitter peaking 与 limit-cycle jitter。
+
+English: The Alexander detector is a 2x oversampling bang-bang detector. It outputs only an early/late decision, not a linear phase-error magnitude. Its strengths are simple structure, digital compatibility, and neutral behavior on no-transition events; its risks are loop gain dependence on input-jitter statistics, limit cycles, and latency-induced jitter peaking or limit-cycle jitter.
+
+中文：bang-bang detector 的统计线性 gain 常随 input jitter 的 RMS 值变化：
+
+English: The statistically linearized gain of a bang-bang detector often varies with input RMS jitter:
+
+$$
+K_{BBPD}\approx\frac{V_{DD}}{\sigma_t\sqrt{2\pi}}
+$$
+
+中文：因此 BB-CDR 的 “loop bandwidth” 不是固定常数；它会随 channel condition、equalizer state、noise、transition density 和 slicer error statistics 改变。这一点在 ADC-based or DSP-assisted PAM4 RX 中尤其重要。
+
+English: Therefore the “loop bandwidth” of a BB-CDR is not a fixed constant; it changes with channel condition, equalizer state, noise, transition density, and slicer-error statistics. This is especially important in ADC-based or DSP-assisted PAM4 receivers.
+
+### 33.6 Frequency Acquisition and Dynamic Bandwidth
+
+中文：CDR 常需要 frequency detector、reference-aided acquisition loop 或 wide-band acquisition mode。关键规则是：辅助 acquisition path 必须在正常 data-tracking mode 中退出 critical jitter path，否则它会成为额外 noise/spur source。
+
+English: A CDR often needs a frequency detector, reference-aided acquisition loop, or wide-band acquisition mode. The key rule is that the auxiliary acquisition path must leave the critical jitter path during normal data-tracking mode; otherwise it becomes an extra noise/spur source.
+
+中文：dynamic bandwidth 可以加快 acquisition，但 wide-to-normal bandwidth transition 不能太突兀，否则会引入 overshoot、cycle slip 或 extra settling。SerDes bring-up 中常见的问题不是最终 lock 不住，而是 mode transition、coefficient handoff 或 PI/DCO code handoff 造成隐藏 timing hit。
+
+English: Dynamic bandwidth can speed acquisition, but the transition from wide to normal bandwidth cannot be too abrupt; otherwise it can introduce overshoot, cycle slip, or extra settling. In SerDes bring-up, the common issue is often not final lock failure but hidden timing hits from mode transition, coefficient handoff, or PI/DCO-code handoff.
+
+### 33.7 DLL-Assisted CDR
+
+中文：DLL-assisted CDR 或 D/PLL 结构可以把 jitter transfer 和 jitter tracking 的 corner 分开。一个重要 intuition 是：通过 DLL/VCDL path 处理 tracking，可以在不引入传统 second-order peaking 的情况下获得较宽 tracking bandwidth。
+
+English: A DLL-assisted CDR or D/PLL architecture can separate the jitter-transfer and jitter-tracking corners. One important intuition is that using a DLL/VCDL path for tracking can provide wide tracking bandwidth without the conventional second-order peaking.
+
+中文：D/PLL 的 jitter transfer 可近似写成：
+
+English: The D/PLL jitter transfer can be approximated as:
+
+$$
+H_{JTRAN}(s)=
+\frac{1}
+{s^2C/(K_dK_v)+sK_{vd}/K_v+1}
+$$
+
+中文：在 overdamped condition 下，两个 pole 可近似为：
+
+English: Under an overdamped condition, the two poles can be approximated as:
+
+$$
+\omega_{PL}\approx\frac{K_v}{K_{vd}}
+$$
+
+$$
+\omega_{PH}\approx\frac{K_{vd}K_d}{C}
+$$
+
+中文：工程意义是可以把 narrow JTRAN 与 wide JTOL 分开调节。代价是 VCDL power/range、ISI if data path is delayed、PVT sensitivity、delay-line nonlinearity 和 calibration complexity。
+
+English: The engineering meaning is that narrow JTRAN and wide JTOL can be tuned separately. The cost is VCDL power/range, ISI if the data path is delayed, PVT sensitivity, delay-line nonlinearity, and calibration complexity.
+
+### 33.8 Burst-Mode and Frequency-Offset Tracking
+
+中文：burst-mode CDR 中，frequency offset 会在 burst 间快速累积 phase error。若 phase margin 为 $\phi_m$ UI，bit rate 为 $R_b$，frequency offset 为 $\Delta f$，可容忍 consecutive identical digits 或 burst gap 的量级可估算为：
+
+English: In a burst-mode CDR, frequency offset rapidly accumulates phase error between bursts. If phase margin is $\phi_m$ UI, bit rate is $R_b$, and frequency offset is $\Delta f$, the tolerable consecutive-identical-digit length or burst gap scale can be estimated as:
+
+$$
+N_{CID}=\frac{\phi_mR_b}{\Delta f}
+$$
+
+中文：这个公式在 PCIe continuous link 中不一定直接作为 specification 使用，但它提醒我们：transition density、frequency offset 和 phase margin 是绑定的。任何 CDR 架构都必须说明 long-CID、SSC、frequency offset 和 retimer/repeater scenarios 下的 tracking strategy。
+
+English: This equation is not necessarily a direct PCIe continuous-link specification, but it reminds us that transition density, frequency offset, and phase margin are tied together. Any CDR architecture must explain its tracking strategy under long-CID, SSC, frequency offset, and retimer/repeater scenarios.
+
+### 33.9 Review Questions Added
+
+| Review item | Deep-ingest question |
+|---|---|
+| JGEN | Which blocks dominate generated jitter: VCO/DCO, detector, PI, digital loop, supply, or pattern dependency? |
+| JTRAN | Is jitter peaking quantified, and is it checked against the relevant system mask? |
+| JTOL | Is residual phase error evaluated over frequency, not only as a single bandwidth number? |
+| Detector | Is the PD linear, bang-bang, Hogge, Alexander, ADC/DSP-based, or hybrid? |
+| BB loop | Is loop gain tied to input jitter statistics and transition density? |
+| Acquisition | Does the acquisition path exit the normal jitter path after lock? |
+| DLL-assisted CDR | Are VCDL range, power, ISI, and PVT calibration included? |
+
+### 33.10 Source Provenance Added
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived in `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | CDR JGEN/JTRAN/JTOL metric framing, Type-II CDR jitter-transfer equations, jitter peaking estimate, jitter tolerance transfer, Hogge and Alexander detector tradeoffs, BBPD gain dependence, acquisition-path caution, DLL-assisted CDR intuition |
+
+---
+
+## 34. Balanced Ingest 2026-07-05 - Da Dalt BBPLL Lessons for CDR
+
+Source update:
+
+- Nicola Da Dalt, *Theory and Implementation of Digital Bang-Bang Frequency Synthesizers for High Speed Serial Data Communications*, Ph.D. dissertation, RWTH Aachen, 2007.
+- Archived source packet: `90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007/`.
+- Canonical detailed destination: [[pll_fractional_n_digital]].
+
+### 34.1 Why This Source Affects CDR
+
+中文：Da Dalt 的 dissertation 不是传统 data CDR paper，而是面向高速串行通信 clock generation 的 digital bang-bang frequency synthesizer。它仍然应该影响 CDR note，因为 BBPD CDR 和 BBPLL frequency synthesizer 共享同一个核心问题：binary phase detector 不提供误差幅度，loop 在低噪声下容易形成 limit cycle，而 loop latency 会直接增加 deterministic timing jitter。
+
+English: Da Dalt's dissertation is not a conventional data-CDR paper; it is a digital bang-bang frequency-synthesizer study for high-speed serial communication clock generation. It should still affect the CDR note because BBPD CDRs and BBPLL frequency synthesizers share the same core issue: a binary phase detector does not provide error magnitude, the loop can form limit cycles under low-noise conditions, and loop latency directly increases deterministic timing jitter.
+
+中文：对 CDR review 来说，最可复用的结论是：不能只给一个“linearized CDR bandwidth”。如果 receiver input jitter、loop-generated jitter、transition density 和 slicer noise 使 BBPD 进入 high-noise statistical regime，线性模型比较有用；如果系统处于 low-noise deterministic regime，limit-cycle/orbit model 更能解释 jitter tones、peaking 和 residual timing error。
+
+English: For CDR review, the reusable conclusion is that a single “linearized CDR bandwidth” is not enough. If receiver input jitter, loop-generated jitter, transition density, and slicer noise put the BBPD into a high-noise statistical regime, a linear model is useful; if the system is in a low-noise deterministic regime, a limit-cycle/orbit model better explains jitter tones, peaking, and residual timing error.
+
+### 34.2 Latency Rule for BB-CDR
+
+中文：Da Dalt 的 first-order BBPLL analysis shows that normalized peak-to-peak timing jitter grows with loop delay. In one simplified low-noise case:
+
+English: Da Dalt's first-order BBPLL analysis shows that normalized peak-to-peak timing jitter grows with loop delay. In one simplified low-noise case:
+
+$$
+\tau_{pp}=1+2D
+$$
+
+中文：在 nonzero frequency-offset approximation 中：
+
+English: In a nonzero frequency-offset approximation:
+
+$$
+\tau_{pp}=2(1+D)
+$$
+
+中文：这里的 $D$ 是 normalized loop latency。对 CDR，这个式子不应直接当作 PCIe/PAM4 jitter budget，但它是非常强的 design warning：sampler decision latency、retiming latency、digital loop-filter delay、PI update latency、DCO code latency 和 clock feedback path 都会增加 bang-bang loop 的 deterministic jitter risk。
+
+English: Here $D$ is normalized loop latency. For a CDR, this equation should not be used directly as a PCIe/PAM4 jitter budget, but it is a strong design warning: sampler decision latency, retiming latency, digital loop-filter delay, PI update latency, DCO-code latency, and clock-feedback path all increase deterministic jitter risk in a bang-bang loop.
+
+### 34.3 CDR Review Additions
+
+| Review item | Added question |
+|---|---|
+| BBPD regime | Is the loop operating in low-noise limit-cycle regime or high-noise linearized regime? |
+| Loop latency | How many UI/reference cycles exist from phase decision to phase actuator update? |
+| Jitter tones | Are observed spurs/tones consistent with BBPD limit-cycle period? |
+| Gain estimate | Is BBPD gain estimated from untracked jitter including loop-generated jitter? |
+| SSC tracking | Does the loop meet modulation tracking without excessive peaking or limit-cycle growth? |
+
+### 34.4 Source Provenance Added
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| Nicola Da Dalt, *Theory and Implementation of Digital Bang-Bang Frequency Synthesizers for High Speed Serial Data Communications*, Ph.D. dissertation, RWTH Aachen, 2007 | Dissertation PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007/` | BBPLL/BB-CDR nonlinear limit-cycle framing, loop-latency jitter warning, low-noise nonlinear versus high-noise linearized model selection, BBPD gain dependence on untracked jitter |
+
+---
+
 ## Last Updated
 
-2026-07-02
+2026-07-05

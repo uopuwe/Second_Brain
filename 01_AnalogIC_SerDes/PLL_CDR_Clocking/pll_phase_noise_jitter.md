@@ -18,7 +18,7 @@ aliases:
   - phase_noise_jitter
   - Phase Noise and Jitter
 created: 2026-07-01
-updated: 2026-07-04
+updated: 2026-07-05
 status: "active"
 ---
 
@@ -1565,20 +1565,639 @@ When this paper updates a PLL/CDR/clocking review, the most important change is 
 
 If only one checklist item can be added, add this: do not treat oscillator phase noise as a scalar from one source; decompose it into additive noise, multiplicative noise, supply/substrate modulation, and downstream clock distribution. This decomposition guides real silicon debug better than chasing one dBc/Hz number at one offset.
 
-## 25. Source Provenance
+## 25. Jitter-Power and Ring-Oscillator Design Limits
+
+Source update:
+
+- Razavi, "Jitter-Power Trade-Offs in PLLs," IEEE TCAS-I, Vol. 68, No. 4, April 2021.
+- Razavi, "The Ring Oscillator," IEEE Solid-State Circuits Magazine, Fall 2019.
+- Archived source packet: [PLL oscillator sources 2026-07-05](<../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/>)
+- Source confidence: high for first-order jitter-power scaling, LC VCO lower-bound assumptions, ADC jitter penalty derivation, and ring-oscillator supply-sensitivity tradeoffs. Numerical examples are technology/topology dependent and should be used as sanity checks, not design promises.
+
+### 25.1 Why This Source Matters
+
+中文：Razavi 2021 的核心价值是把“低 jitter”从愿望变成 power-scaling constraint。对 SerDes 和 ADC-based receiver 来说，几十 fs 以内的 clock jitter 不是单纯靠 layout polish 就能得到；当 reference noise、charge-pump noise、VCO phase noise 和 ADC aperture constraint 同时进入预算时，PLL power 可能出现非常陡的增长。
+
+English: The core value of Razavi 2021 is that it turns "low jitter" from a wish into a power-scaling constraint. For SerDes and ADC-based receivers, clock jitter below a few tens of femtoseconds is not obtained merely by layout polish; once reference noise, charge-pump noise, VCO phase noise, and ADC aperture constraints enter the budget together, PLL power can rise very steeply.
+
+中文：Ring oscillator source 的核心价值是补齐 ring VCO 的 practical design intuition：ring oscillator 面积小、tuning range 大、多相输出方便，但它用 supply sensitivity、flicker upconversion、swing limitation 和 phase-noise penalty 交换了这些优势。它特别适合提醒 SerDes designer：ring VCO / PI / delay-cell clocking 不能只看频率范围，也要看 $K_{VDD}$、LDO noise、phase spacing 和 integrated jitter。
+
+English: The ring-oscillator source adds practical design intuition for ring VCOs: a ring oscillator is compact, wide range, and convenient for multiphase outputs, but it pays with supply sensitivity, flicker upconversion, swing limits, and phase-noise penalty. It is especially useful for reminding SerDes designers that ring-VCO, PI, and delay-cell clocking cannot be judged only by frequency range; $K_{VDD}$, LDO noise, phase spacing, and integrated jitter matter.
+
+### 25.2 VCO-Only Jitter-Power Scaling
+
+中文：在只考虑 VCO phase noise 的 optimistic case 中，Razavi 给出一个 first-order lower-bound scaling：VCO power 与 RMS jitter 的平方倒数成正比。直觉上，把 jitter 减半需要约 4 倍 VCO power；这已经很贵，但还不是最坏情况，因为它暂时忽略了 reference、charge pump、divider 和 flicker noise。
+
+English: In the optimistic case where only VCO phase noise is considered, Razavi gives a first-order lower-bound scaling: VCO power is proportional to the inverse square of RMS jitter. Intuitively, halving jitter requires roughly 4 times the VCO power; this is already expensive, but it is not the worst case because reference, charge pump, divider, and flicker noise are temporarily ignored.
+
+$$
+P_{VCO}=\frac{kT(1+\gamma)}{\pi Q^2 f_2}\frac{1}{\sigma_j^2}
+$$
+
+其中 $P_{VCO}$ 是 VCO power，$Q$ 是 oscillator tank/effective quality factor，$f_2$ 是近似 PLL bandwidth / VCO-noise corner，$\sigma_j$ 是 RMS time jitter。这个公式的使用边界很重要：它是 LC VCO optimistic lower-bound style model，不应直接套到 ring VCO、DCO、injection-locked clock 或 heavily nonlinear oscillator。
+
+Here $P_{VCO}$ is VCO power, $Q$ is oscillator tank or effective quality factor, $f_2$ is the approximate PLL bandwidth or VCO-noise corner, and $\sigma_j$ is RMS time jitter. The boundary of this formula matters: it is an optimistic LC-VCO lower-bound style model and should not be applied directly to ring VCOs, DCOs, injection-locked clocks, or heavily nonlinear oscillators.
+
+### 25.3 Reference and Charge-Pump Noise Make Scaling Steeper
+
+中文：当 reference phase noise 也进入最优带宽选择时，tradeoff 变得更陡：$P_{VCO}$ 近似随 $1/\sigma_j^4$ 增长。工程直觉是：loop bandwidth 不能无限加宽，因为 reference noise 会被传进去；为了同时压低 VCO noise 和 reference contribution，PLL 被迫选择更窄 bandwidth 和更低 VCO noise，导致 power 急剧上升。
+
+English: When reference phase noise also enters the optimum bandwidth choice, the tradeoff becomes steeper: $P_{VCO}$ scales approximately with $1/\sigma_j^4$. The engineering intuition is that loop bandwidth cannot be increased without limit because reference noise passes through; to reduce both VCO noise and reference contribution, the PLL is forced toward narrower bandwidth and lower VCO noise, causing power to rise sharply.
+
+$$
+P_{VCO}=\frac{kT(1+\gamma)S_{REF}}{\pi^2Q^2f_{REF}^2}\frac{1}{\sigma_j^4}
+$$
+
+其中 $S_{REF}$ 是 reference phase-noise density，$f_{REF}$ 是 reference frequency。这个表达式说明高品质 reference 不是“辅助项”，而是低 jitter PLL 的根本约束之一；提高 reference frequency 只有在 $S_{REF}$ 没有按比例变差时才真正有帮助。
+
+Here $S_{REF}$ is reference phase-noise density and $f_{REF}$ is reference frequency. This expression shows that a high-quality reference is not an accessory; it is one of the fundamental constraints of a low-jitter PLL. Raising reference frequency helps only if $S_{REF}$ does not degrade proportionally.
+
+中文：charge-pump noise 可以按 input-referred phase-noise term 合并到 reference contribution 中。若 CP UP/DN current sources 只在每个 reference cycle 的一小段时间导通，白噪声仍会按 duty-cycle folding 进入有效 phase-noise budget；低 CP power 不代表低 CP noise impact。
+
+English: Charge-pump noise can be merged into the reference contribution as an input-referred phase-noise term. Even if the CP UP/DN current sources conduct for only a small fraction of each reference cycle, white noise still enters the effective phase-noise budget through duty-cycle folding; low CP power does not imply low CP noise impact.
+
+$$
+S_{CP}(f)=8\pi^2\frac{T_{CP}}{T_{REF}}\frac{\overline{i_n^2}}{I_P^2}
+$$
+
+其中 $T_{CP}$ 是 CP effective on-time，$T_{REF}$ 是 reference period，$\overline{i_n^2}$ 是 current-source noise density，$I_P$ 是 charge-pump current。这个公式应转化为 design checklist：CP pulse width、UP/DN mismatch、current-source overdrive、regulator impedance、control ripple 和 spur/noise tradeoff 必须一起审查。
+
+Here $T_{CP}$ is effective CP on-time, $T_{REF}$ is reference period, $\overline{i_n^2}$ is current-source noise density, and $I_P$ is charge-pump current. This formula should become a design checklist: CP pulse width, UP/DN mismatch, current-source overdrive, regulator impedance, control ripple, and spur/noise tradeoff must be reviewed together.
+
+### 25.4 ADC Sampling Jitter Can Dominate The Clock-Generator Budget
+
+中文：对 ADC-based SerDes receiver，clock generation power 可能比直觉更危险。Razavi 将 ADC jitter penalty 写成 sampling-time error 造成的 input-dependent noise，并给出 resolution 与 sampling rate 的强 scaling。对高分辨率、高速 ADC，clock jitter spec 可能让 PLL/VCO power 成为系统瓶颈，而不是 ADC core 本身。
+
+English: For ADC-based SerDes receivers, clock-generation power can be more dangerous than intuition suggests. Razavi expresses ADC jitter penalty as input-dependent noise caused by sampling-time error and shows strong scaling with resolution and sampling rate. For high-resolution high-speed ADCs, the clock jitter specification can make PLL/VCO power the system bottleneck rather than the ADC core itself.
+
+$$
+\sigma_j^2=\frac{10^{m/10}-1}{3\pi^2 f_{in}^2 2^{2M+1}}
+$$
+
+如果 $f_{in}\approx f_{CK}/2$，可写成：
+
+If $f_{in}\approx f_{CK}/2$, this can be written as:
+
+$$
+\sigma_j^2=\frac{10^{m/10}-1}{3\pi^2 f_{CK}^2 2^{2M-1}}
+$$
+
+其中 $M$ 是 ADC resolution，$m$ 是允许的 SNR penalty in dB，$f_{in}$ 是 input frequency，$f_{CK}$ 是 sampling clock。这个推导说明：增加 ADC bit 数或 sampling rate 时，clock jitter budget 会急剧收紧；DSP 不能恢复采样瞬间已经由 jitter 转成的 voltage error。
+
+Here $M$ is ADC resolution, $m$ is the allowed SNR penalty in dB, $f_{in}$ is input frequency, and $f_{CK}$ is sampling clock. This derivation shows that increasing ADC bits or sampling rate sharply tightens the clock jitter budget; DSP cannot recover voltage error that has already been created by jitter at the sampling instant.
+
+### 25.5 Ring Oscillator Delay, Power, And Supply Sensitivity
+
+中文：inverter ring oscillator 的基本周期来自 delay accumulation：边沿绕过 $N$ 个 inverter 回来翻转一次形成半周期。因此：
+
+English: The basic period of an inverter ring oscillator comes from delay accumulation: an edge passes through $N$ inverters and returns inverted, forming one half-period. Therefore:
+
+$$
+T_0=2NT_D
+$$
+
+中文：其中 $T_D$ 是每级 large-signal delay。这个公式很简单，但它把 ring oscillator 的频率、supply sensitivity 和 layout loading 绑在一起：任何改变 inverter drive strength、load capacitance 或 supply voltage 的因素都会改变 delay，进而改变 oscillation frequency 和 phase。
+
+English: Here $T_D$ is the large-signal delay per stage. The formula is simple, but it ties ring-oscillator frequency, supply sensitivity, and layout loading together: anything that changes inverter drive strength, load capacitance, or supply voltage changes delay and therefore oscillation frequency and phase.
+
+中文：对每个 node 有 load capacitance $C_L$ 的 inverter ring，平均 dynamic power 的 first-order estimate 是：
+
+English: For an inverter ring with load capacitance $C_L$ at each node, the first-order dynamic-power estimate is:
+
+$$
+P\approx N f_0 C_L V_{DD}^2
+$$
+
+中文：这个表达式解释了为什么 linear scaling 可以降低 phase noise 但不能免费：把 devices 按比例放大可以降低噪声，但 power 和 area 也按比例上升，而且 layout parasitic 是否随理想 scaling 变化必须重新验证。
+
+English: This expression explains why linear scaling can reduce phase noise but is not free: scaling devices up can reduce noise, but power and area also rise proportionally, and the assumption that layout parasitics scale ideally must be re-verified.
+
+### 25.6 Supply Noise To Ring-Oscillator Phase Noise
+
+中文：Ring oscillator 的 supply sensitivity 可以用 $K_{VDD}$ 表示。supply noise 先调制 oscillation frequency，再经积分成为 phase noise；这使 LDO output noise、PDN impedance 和 digital aggressor spectrum 直接进入 clock jitter budget。
+
+English: Ring-oscillator supply sensitivity can be represented by $K_{VDD}$. Supply noise first modulates oscillation frequency and then integrates into phase noise; this makes LDO output noise, PDN impedance, and digital aggressor spectrum direct contributors to the clock jitter budget.
+
+$$
+\phi_{VDD}(t)=K_{VDD}\int v_n(t)\,dt
+$$
+
+$$
+S_{\phi,VDD}(f)=\frac{K_{VDD}^2}{(2\pi f)^2}S_{VDD}(f)
+$$
+
+中文：这个表达式给出一个 practical review rule：如果 oscillator 通过 linear scaling 把 intrinsic phase noise 降低 20 dB，那么 allowable supply-noise density 也可能被同步推低 20 dB。换句话说，降低 intrinsic oscillator noise 后，原来“足够安静”的 LDO/PDN 可能突然成为 dominant jitter source。
+
+English: This expression gives a practical review rule: if oscillator linear scaling lowers intrinsic phase noise by 20 dB, the allowable supply-noise density may also be pushed down by 20 dB. In other words, after intrinsic oscillator noise is reduced, an LDO/PDN that used to be "quiet enough" can suddenly become the dominant jitter source.
+
+中文：Razavi 的 ring oscillator comparison 也说明 topology choice 与 noise region 有关。Inverter ring 可能在 high-offset thermal regime 因更大 swing 有优势，但 $K_{VDD}$ 很高且 flicker upconversion 明显；differential ring 通常 supply sensitivity 低得多、flicker upconversion 较轻，但 high-offset thermal phase noise 可能因 swing 较小而更差。
+
+English: Razavi's ring-oscillator comparison also shows that topology choice depends on the noise region. An inverter ring may benefit in the high-offset thermal regime because of larger swing, but it has high $K_{VDD}$ and strong flicker upconversion; a differential ring usually has much lower supply sensitivity and less flicker upconversion, but its high-offset thermal phase noise can be worse because of smaller swing.
+
+### 25.7 Design Review Additions From These Sources
+
+中文：这批 source 给 PLL/CDR/clocking review 增加的核心问题是：低 jitter claim 有没有对应的 power lower bound、reference-quality assumption、CP noise assumption、ring-oscillator supply-noise allowance 和 ADC sampling penalty？如果没有，几十 fs 或 sub-10-fs jitter claim 很容易只是未闭合的预算愿望。
+
+English: The core review question added by these sources is: does the low-jitter claim have a corresponding power lower bound, reference-quality assumption, CP-noise assumption, ring-oscillator supply-noise allowance, and ADC sampling penalty? Without these, a tens-of-femtoseconds or sub-10-fs jitter claim can easily be only an unclosed budget wish.
+
+| Review item | Added question |
+|---|---|
+| VCO-only lower bound | If jitter is halved, where is the roughly 4x VCO-power cost paid? |
+| Reference-limited lower bound | If reference noise is included, has the potential $1/\sigma_j^4$ scaling been considered? |
+| Charge pump | Is CP current noise input-referred and added to the reference noise budget? |
+| ADC-based RX | Is allowable aperture jitter derived from ADC resolution, input spectrum, and allowed SNR penalty? |
+| Ring oscillator | Are $K_{VDD}$, intrinsic phase noise, LDO noise, and topology-dependent flicker/thermal regimes reviewed together? |
+| SerDes system | Is final sampler jitter budget separated from standalone PLL output jitter? |
+
+## 26. ISF Theory and Sub-Sampling PLL In-Band Noise
+
+Source update:
+
+- Hajimiri and Lee, "A General Theory of Phase Noise in Electrical Oscillators," IEEE JSSC, Vol. 33, No. 2, February 1998.
+- Gao, Klumperink, Bohsali, and Nauta, "A Low Noise Sub-Sampling PLL in Which Divider Noise is Eliminated and PD/CP Noise is Not Multiplied by $N^2$," IEEE JSSC, Vol. 44, No. 12, December 2009.
+- Archived source packet: [Hajimiri and Gao PLL sources 2026-07-05](<../../90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/>)
+- Source confidence: high for oscillator ISF theory, qualitative flicker-upconversion guidance, sub-sampling PLL loop-noise mechanism, and reported silicon measurements. Use the measured numerical results as historical silicon evidence, not as portable PCIe 7.0 design targets.
+
+### 26.1 Why These Sources Matter
+
+中文：Hajimiri/Lee 1998 的核心价值是把 oscillator phase noise 从简单的 LTI filter picture 提升为周期时变系统问题。对 PLL、CDR、ring VCO、LC VCO 和 clock distribution 来说，同一个噪声脉冲在波形不同相位注入时会产生不同的 phase error；因此“噪声有多大”不够，必须同时问“噪声在 limit cycle 的哪个相位进入、该节点的 phase sensitivity 是多少、波形是否对称、flicker noise 是否通过 ISF 的 dc 分量上变频”。
+
+English: The core value of Hajimiri/Lee 1998 is that it moves oscillator phase noise from a simple LTI filter picture to a periodically time-varying system problem. For PLLs, CDRs, ring VCOs, LC VCOs, and clock distribution, the same noise impulse creates different phase error depending on where it is injected on the waveform; therefore "how much noise exists" is not enough. The review must also ask where the noise enters on the limit cycle, what the phase sensitivity of that node is, whether the waveform is symmetric, and whether flicker noise upconverts through the dc component of the ISF.
+
+中文：Gao/Nauta sub-sampling PLL 论文的核心价值是说明传统整数倍频 PLL 的 in-band noise penalty 不是不可避免的。传统 PFD/CP 的 phase detection gain 被 division ratio $N$ 降低，所以 PD/CP 噪声在输出端表现为 $N^2$ power penalty；sub-sampling PD 直接采样高频 VCO 边沿，用 VCO slew rate 建立高检测增益，在锁定状态下不需要 divider，因此 divider noise 可以被移除，PD/CP noise 也不再按 $N^2$ 放大。
+
+English: The core value of the Gao/Nauta sub-sampling PLL paper is that the in-band noise penalty of a conventional integer-multiplying PLL is not inevitable. In a conventional PFD/CP loop, phase-detection gain is reduced by the division ratio $N$, so PD/CP noise appears at the output with an $N^2$ power penalty. A sub-sampling PD samples the high-frequency VCO edge directly and uses VCO slew rate to create high detection gain; in lock, the divider is not needed, so divider noise can be removed and PD/CP noise is no longer multiplied by $N^2$.
+
+### 26.2 Impulse Sensitivity Function
+
+中文：ISF 的基本思想是把某个节点上的电流噪声脉冲转换成 excess phase step。Hajimiri/Lee 定义的 phase impulse response 是：
+
+English: The basic idea of the ISF is to convert a current-noise impulse at a circuit node into an excess-phase step. The phase impulse response defined by Hajimiri/Lee is:
+
+$$
+h_{\phi}(t,\tau)=\frac{\Gamma(\omega_0\tau)}{q_{\max}}u(t-\tau)
+$$
+
+中文：其中 $\Gamma(\omega_0\tau)$ 是 impulse sensitivity function，$q_{\max}$ 是该节点的 maximum charge displacement，$u(t-\tau)$ 是 unit step。这个式子表达了一个重要事实：phase error 不像 amplitude error 会被 limiter 恢复；一旦噪声脉冲造成 phase step，这个 phase error 会长期保留并表现为 phase noise 或 jitter。
+
+English: Here $\Gamma(\omega_0\tau)$ is the impulse sensitivity function, $q_{\max}$ is the maximum charge displacement at the node, and $u(t-\tau)$ is the unit step. This expression captures an important fact: phase error does not recover like amplitude error under limiting. Once a noise impulse creates a phase step, that phase error persists and appears as phase noise or jitter.
+
+中文：对任意注入电流 $i(\tau)$，excess phase 可以由 superposition integral 得到：
+
+English: For an arbitrary injected current $i(\tau)$, the excess phase follows from the superposition integral:
+
+$$
+\phi(t)=\frac{1}{q_{\max}}\int_{-\infty}^{t}\Gamma(\omega_0\tau)i(\tau)\,d\tau
+$$
+
+中文：因为 $\Gamma$ 是周期函数，它可以展开为 Fourier series：
+
+English: Because $\Gamma$ is periodic, it can be expanded as a Fourier series:
+
+$$
+\Gamma(\omega_0\tau)=\frac{c_0}{2}+\sum_{n=1}^{\infty}c_n\cos(n\omega_0\tau+\theta_n)
+$$
+
+中文：这个展开把 oscillator phase noise 的机制讲清楚了：低频噪声主要通过 $c_0$ 转换成 close-in phase noise；靠近 $n\omega_0$ 的噪声会通过 $c_n$ 折叠到 carrier 附近。也就是说，不同频率的 device noise 不是被同一个固定 transfer function 处理，而是被 ISF 的不同 Fourier coefficient 加权。
+
+English: This expansion makes the mechanism clear: low-frequency noise mainly converts to close-in phase noise through $c_0$, while noise near $n\omega_0$ folds near the carrier through $c_n$. Device noise at different frequencies is therefore not processed by one fixed transfer function; it is weighted by different Fourier coefficients of the ISF.
+
+### 26.3 White Noise, Flicker Upconversion, and Symmetry
+
+中文：对一个节点上的白电流噪声，Hajimiri/Lee 给出 $1/f^2$ phase-noise region 的单边带表达。若 $\overline{i_n^2}/\Delta f$ 表示电流噪声功率谱密度，则：
+
+English: For white current noise at one node, Hajimiri/Lee gives the single-sideband expression for the $1/f^2$ phase-noise region. If $\overline{i_n^2}/\Delta f$ denotes the current-noise power spectral density, then:
+
+$$
+\mathcal{L}\{\Delta\omega\}=
+10\log\left(
+\frac{\Gamma_{\mathrm{rms}}^2}{q_{\max}^2}
+\frac{\overline{i_n^2}/\Delta f}{4\Delta\omega^2}
+\right)
+$$
+
+中文：这个公式的工程意义是：降低 oscillator phase noise 不只是降低器件噪声，还可以降低 $\Gamma_{\mathrm{rms}}$ 或增加有效 swing $q_{\max}$。这解释了为什么更大的 tank swing、更平滑的 switching、更合理的 biasing 和更低的 phase-sensitive injection path 都会改善 phase noise。
+
+English: The engineering meaning is that reducing oscillator phase noise is not only about reducing device noise; it can also come from reducing $\Gamma_{\mathrm{rms}}$ or increasing effective swing $q_{\max}$. This explains why larger tank swing, smoother switching, better biasing, and lower phase-sensitive injection paths improve phase noise.
+
+中文：对 flicker noise，低频噪声通过 $c_0$ 上变频到 close-in phase noise，形成 $1/f^3$ region：
+
+English: For flicker noise, low-frequency noise upconverts through $c_0$ into close-in phase noise, forming the $1/f^3$ region:
+
+$$
+\mathcal{L}\{\Delta\omega\}=
+10\log\left(
+\frac{c_0^2}{q_{\max}^2}
+\frac{\overline{i_n^2}/\Delta f}{8\Delta\omega^2}
+\frac{\omega_{1/f}}{\Delta\omega}
+\right)
+$$
+
+中文：对应的 $1/f^3$ corner 为：
+
+English: The corresponding $1/f^3$ corner is:
+
+$$
+\omega_{1/f^3}=
+\omega_{1/f}\frac{c_0^2}{2\Gamma_{\mathrm{rms}}^2}
+\approx
+\omega_{1/f}\left(\frac{c_0}{c_1}\right)^2
+$$
+
+中文：这条结果非常适合转成 design-review checklist：device flicker corner 不等于 oscillator phase-noise corner。只要 waveform 和 ISF 有足够对称性，$c_0$ 可以很小，phase-noise corner 可以远低于 device flicker corner；反过来，rise/fall asymmetry、tail-current modulation、single-ended switching 或 duty-cycle distortion 会放大 $c_0$，让 close-in noise 明显恶化。
+
+English: This result is ideal for a design-review checklist: the device flicker corner is not the same as the oscillator phase-noise corner. If the waveform and ISF are sufficiently symmetric, $c_0$ can be small and the phase-noise corner can be far below the device flicker corner. Conversely, rise/fall asymmetry, tail-current modulation, single-ended switching, or duty-cycle distortion increases $c_0$ and worsens close-in noise.
+
+### 26.4 Sub-Sampling PLL CP Noise Scaling
+
+中文：Gao/Nauta 论文把 CP noise contribution 写成 CP feedback gain $\beta_{CP}$ 的函数。PLL bandwidth 内，charge-pump current noise 对输出 in-band phase noise 的近似贡献为：
+
+English: The Gao/Nauta paper expresses CP noise contribution as a function of CP feedback gain $\beta_{CP}$. Inside the PLL bandwidth, charge-pump current noise contributes approximately:
+
+$$
+\mathcal{L}_{\mathrm{in-band,CP}}
+\approx
+\frac{S_{iCP,n}}{2\beta_{CP}^{2}}
+$$
+
+中文：传统 three-state PFD/CP 的 CP feedback gain 被 division ratio 降低：
+
+English: In a conventional three-state PFD/CP, CP feedback gain is reduced by the division ratio:
+
+$$
+\beta_{CP,PFD}
+=
+\frac{I_{CP}}{2\pi}\frac{1}{N}
+=
+\frac{K_d}{N}
+$$
+
+中文：sub-sampling PLL 的关键优势是 $\beta_{CP,SS}$ 不含 $N$。在 ideal locking point 附近，VCO 正弦波被 reference clock 采样，phase error 被 VCO slew rate 转成 voltage error，再由 transconductor 转成 CP current：
+
+English: The key advantage of the sub-sampling PLL is that $\beta_{CP,SS}$ does not contain $N$. Near the ideal locking point, the reference clock samples the VCO sine wave, phase error is converted into voltage error by VCO slew rate, and a transconductor converts that voltage error into CP current:
+
+$$
+\beta_{CP,SS}
+=
+K_d
+\approx
+A_{VCO}g_m
+$$
+
+中文：若 CP current source 近似为 square-law MOS transistor，论文进一步写成：
+
+English: If the CP current source is approximated as a square-law MOS transistor, the paper rewrites this as:
+
+$$
+\beta_{CP,SS}
+=
+A_{VCO}\frac{2I_{CP}}{V_{gs,\mathrm{eff}}}
+$$
+
+中文：对相同 CP bias current，sub-sampling PLL 与传统 PFD/CP PLL 的 CP feedback gain ratio 为：
+
+English: For the same CP bias current, the CP feedback-gain ratio between the sub-sampling PLL and the conventional PFD/CP PLL is:
+
+$$
+\frac{\beta_{CP,SS}}{\beta_{CP,PFD}}
+=
+4\pi N\frac{A_{VCO}}{V_{gs,\mathrm{eff}}}
+$$
+
+中文：由于 CP noise contribution 与 $1/\beta_{CP}^2$ 成正比，这个 gain advantage 直接变成 in-band noise advantage。考虑传统 CP 只在 $\tau_{PFD}$ 时间内导通，而 SSPLL CP 持续导通，论文给出总的 CP in-band noise 改善因子：
+
+English: Since CP noise contribution scales with $1/\beta_{CP}^2$, this gain advantage directly becomes an in-band noise advantage. Accounting for the fact that the conventional CP conducts only for $\tau_{PFD}$ while the SSPLL CP conducts continuously, the paper gives the total CP in-band noise improvement factor:
+
+$$
+\frac{\mathcal{L}_{\mathrm{in-band,CP,PFD}}}
+{\mathcal{L}_{\mathrm{in-band,CP,SS}}}
+=
+\left(
+4\pi N\frac{A_{VCO}}{V_{gs,\mathrm{eff}}}
+\right)^2
+\left(
+\frac{\tau_{PFD}}{T_{ref}}
+\right)
+$$
+
+$$
+=
+\left(
+4\pi\frac{A_{VCO}}{V_{gs,\mathrm{eff}}}\sqrt{\tau_{PFD}}
+\right)^2
+\frac{f_{VCO}^{2}}{f_{ref}}
+$$
+
+中文：这个结果的 design insight 是：高输出频率、较低 reference frequency、较大 VCO swing 和较小 CP overdrive 都会强化 SSPLL 的 CP-noise 优势。但这不是免费午餐；sub-sampling loop 需要解决 frequency acquisition、false lock、sampler kickback、reference buffer noise、reference spur、sampler-to-VCO isolation 和 aperture/timing sensitivity。
+
+English: The design insight is that high output frequency, lower reference frequency, larger VCO swing, and smaller CP overdrive strengthen the SSPLL CP-noise advantage. This is not free: the sub-sampling loop must still solve frequency acquisition, false lock, sampler kickback, reference-buffer noise, reference spur, sampler-to-VCO isolation, and aperture/timing sensitivity.
+
+### 26.5 Jitter Integration and Reference-Buffer Limit
+
+中文：Gao/Nauta 用标准 phase-noise integration 把 measured phase-noise spectrum 转成 RMS time jitter：
+
+English: Gao/Nauta use standard phase-noise integration to convert the measured phase-noise spectrum into RMS time jitter:
+
+$$
+\sigma_t^2=
+\frac{2\int_{f_l}^{f_h}\mathcal{L}(f)\,df}
+{(2\pi f_{out})^2}
+$$
+
+中文：论文中的 silicon result 是 0.18 um CMOS、约 2.21 GHz 输出、division ratio 40、4.2 mA from 1.8 V，200 kHz offset 的 in-band phase noise 约 $-126\,\mathrm{dBc/Hz}$，10 kHz 到 40 MHz integrated jitter 约 $0.15\,\mathrm{ps}_{rms}$。这些数字应作为 sub-sampling PLL 架构潜力的历史证据，而不是现代 SerDes 目标值。
+
+English: The silicon result in the paper is a 0.18 um CMOS PLL with about 2.21 GHz output, division ratio 40, 4.2 mA from 1.8 V, about $-126\,\mathrm{dBc/Hz}$ in-band phase noise at 200 kHz offset, and about $0.15\,\mathrm{ps}_{rms}$ integrated jitter from 10 kHz to 40 MHz. These numbers should be treated as historical evidence of the sub-sampling PLL architecture's potential, not as modern SerDes targets.
+
+中文：一旦 divider noise 被移除且 PD/CP noise 不再按 $N^2$ 放大，reference path 会变得非常重要。论文指出 reference buffer 可以成为 dominant in-band noise source，其 input-referred effect 仍然被 $N^2$ 放大：
+
+English: Once divider noise is removed and PD/CP noise is no longer multiplied by $N^2$, the reference path becomes very important. The paper notes that the reference buffer can become the dominant in-band noise source, and its input-referred effect is still multiplied by $N^2$:
+
+$$
+\mathcal{L}_{\mathrm{in-band,RefBuff}}
+\approx
+\frac{1}{2}N^2S_{\phi,\mathrm{RefBuff},n}
+$$
+
+$$
+=
+4\pi^2N^2f_{ref}
+\frac{\overline{v_{out,n}^{2}}}{SR_{out}^{2}}
+$$
+
+中文：若 reference buffer 由 sine-wave reference drive，且 output slew rate 近似为 $SR_{out}=G_vA_{ref}2\pi f_{ref}$，则：
+
+English: If the reference buffer is driven by a sine-wave reference and the output slew rate is approximated by $SR_{out}=G_vA_{ref}2\pi f_{ref}$, then:
+
+$$
+\mathcal{L}_{\mathrm{in-band,RefBuff}}
+=
+4\pi^2N^2f_{ref}
+\frac{\overline{v_{out,n}^{2}}}
+{(G_vA_{ref}2\pi f_{ref})^2}
+$$
+
+中文：这条公式应该直接变成 lab/debug checklist：reference amplitude 太小、reference edge 太慢、buffer input noise 太高或 clock source spur 太多，都会吞掉 SSPLL 原本从 PD/CP 和 divider 得到的优势。对 PCIe/SerDes clocking，不能只问 PLL core 的 noise；还要问 reference path、buffer slew、package coupling 和 SSC/reference spur 如何进入最终 sampler jitter。
+
+English: This formula should directly become a lab/debug checklist: too little reference amplitude, too slow a reference edge, too much buffer input noise, or too many clock-source spurs can consume the advantage that the SSPLL gained from PD/CP and divider noise reduction. For PCIe/SerDes clocking, it is not enough to ask about PLL-core noise; the review must also ask how the reference path, buffer slew, package coupling, and SSC/reference spurs enter final sampler jitter.
+
+### 26.6 Design Review Additions From These Sources
+
+中文：这两篇论文把 PLL phase-noise review 从“选一个好 VCO”扩展成“控制 oscillator sensitivity function 与 loop in-band noise architecture”。Hajimiri/Lee 告诉我们应检查 ISF、waveform symmetry、$c_0$、$\Gamma_{\mathrm{rms}}$ 和 effective swing；Gao/Nauta 告诉我们应检查 PD/CP gain scaling、divider noise、reference-buffer noise 和 acquisition loop 是否真的在 locked state 退出 critical noise path。
+
+English: These two papers expand PLL phase-noise review from "choose a good VCO" into "control the oscillator sensitivity function and loop in-band noise architecture." Hajimiri/Lee tell us to inspect ISF, waveform symmetry, $c_0$, $\Gamma_{\mathrm{rms}}$, and effective swing. Gao/Nauta tell us to inspect PD/CP gain scaling, divider noise, reference-buffer noise, and whether the acquisition loop truly leaves the critical noise path in lock.
+
+| Review item | Added question |
+|---|---|
+| Oscillator waveform | Is the waveform/limit-cycle symmetry good enough to suppress $c_0$ and flicker upconversion? |
+| Noise injection phase | Which circuit nodes and waveform phases have the largest ISF magnitude? |
+| Effective swing | Is $q_{\max}$ or equivalent voltage/flux swing large enough for the target phase noise? |
+| Sub-sampling PLL | Is the PD/CP noise advantage proven by $\beta_{CP}$, not merely by removing a physical divider? |
+| Reference path | After PD/CP and divider noise are reduced, does reference-buffer noise dominate? |
+| Acquisition loop | Does the FLL or auxiliary divider disengage in lock without adding measurable jitter? |
+| SerDes clocking | Does the final jitter budget include PLL core, reference path, clock distribution, PI/CDR, and sampler aperture? |
+
+中文：对长期 Second Brain 来说，这批 source 的知识增长方向很明确：未来如果继续 ingest sub-sampling PLL、injection-locked PLL、digital PLL 或 multiplying DLL 论文，应优先比较它们如何改变 in-band noise multiplication、reference-noise transfer、acquisition robustness 和 spur behavior，而不是只比较一个 integrated jitter 数字。
+
+English: For the long-term Second Brain, the growth direction from these sources is clear: future ingests of sub-sampling PLLs, injection-locked PLLs, digital PLLs, or multiplying DLLs should prioritize how they change in-band noise multiplication, reference-noise transfer, acquisition robustness, and spur behavior, rather than only comparing one integrated-jitter number.
+
+## 27. Deep Ingest 2026-07-05 - Rhee and Yu Spectral Purity, Spur, and Jitter
+
+Source update:
+
+- Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024.
+- Archived source packet: [Rhee and Yu PLL book 2026-07-05](<../../90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/>)
+- Related promoted notes: [[pll_fundamentals]], [[pfd_charge_pump_notes]], [[pll_fractional_n_digital]], [[cdr_fundamentals]].
+
+### 27.1 Why This Update Belongs Here
+
+中文：Rhee 和 Yu 的 spectral purity 章节把 phase noise、spur、frequency modulation 和 time-domain jitter 放在同一个 engineering framework 中。对 SerDes/PCIe clocking 来说，这一点很重要，因为 spur 不是频谱图上的“尖刺”而已；它可以变成 deterministic timing error、CDR residual phase error、sampler aperture error 和 PAM4 horizontal eye closure。
+
+English: Rhee and Yu's spectral-purity chapters put phase noise, spurs, frequency modulation, and time-domain jitter into one engineering framework. This matters for SerDes/PCIe clocking because a spur is not just a “spike” on a spectrum plot; it can become deterministic timing error, CDR residual phase error, sampler aperture error, and PAM4 horizontal eye closure.
+
+中文：本次更新把 book 中的 spur-to-DJ conversion、phase-noise integration convention、divider/multiplier spur scaling、reference-spur scaling 和 optimum bandwidth intuition 加入本 canonical note。PFD/CP leakage 和 dead-zone 细节放入 [[pfd_charge_pump_notes]]，fractional-N spur 和 DSM noise shaping 放入 [[pll_fractional_n_digital]]。
+
+English: This update adds the book's spur-to-DJ conversion, phase-noise integration convention, divider/multiplier spur scaling, reference-spur scaling, and optimum-bandwidth intuition into this canonical note. PFD/CP leakage and dead-zone detail belongs in [[pfd_charge_pump_notes]], and fractional-N spurs plus DSM noise shaping belongs in [[pll_fractional_n_digital]].
+
+### 27.2 Narrowband FM Spur Model
+
+中文：很多 PLL spur 可以用 narrowband FM intuition 建模。若 instantaneous frequency 为：
+
+English: Many PLL spurs can be modeled with narrowband FM intuition. If the instantaneous frequency is:
+
+$$
+f(t)=f_o+\Delta f_{pk}\cos(2\pi f_mt+\theta_c)
+$$
+
+中文：对应 phase modulation peak 为：
+
+English: The corresponding peak phase modulation is:
+
+$$
+m=\frac{\Delta f_{pk}}{f_m}=\Delta\theta_{pk}
+$$
+
+中文：当 modulation index 很小时，单边 spur level 近似为：
+
+English: For small modulation index, the single-sideband spur level is approximately:
+
+$$
+P_{spur}=20\log_{10}\left(\frac{m}{2}\right)
+$$
+
+中文：若 spur 来自 VCO control voltage 上的 sinusoidal ripple，且 ripple peak 为 $\Delta V_{pk}$，则：
+
+English: If the spur comes from sinusoidal ripple on the VCO control voltage with peak amplitude $\Delta V_{pk}$, then:
+
+$$
+\Delta f_{pk}=K_v\Delta V_{pk}
+$$
+
+$$
+P_{spur}=20\log_{10}
+\left(
+\frac{K_v\Delta V_{pk}}{2f_m}
+\right)
+$$
+
+中文：这个关系把 layout/circuit disturbance 直接连接到 spectrum。较大的 $K_v$ 虽然让 tuning range 更容易满足，却会把同样 control ripple 放大成更大的 phase spur。
+
+English: This relationship directly connects layout/circuit disturbance to the spectrum. A larger $K_v$ may make tuning range easier, but it converts the same control ripple into a larger phase spur.
+
+### 27.3 Spur-to-Deterministic-Jitter Conversion
+
+中文：narrowband FM spur 对应的 deterministic jitter 可以写成：
+
+English: The deterministic jitter corresponding to a narrowband FM spur can be written as:
+
+$$
+DJ=\frac{mT_{CK}}{\pi}
+$$
+
+中文：若归一化到 UI：
+
+English: Normalized to UI:
+
+$$
+DJ=\frac{m}{\pi}\;\mathrm{UI}
+$$
+
+中文：因此若希望某个 isolated spur 贡献小于 $0.01\,\mathrm{UI}$ deterministic jitter，则 $m<0.01\pi$，对应 spur level 约为 $-36\,\mathrm{dBc}$；留 3 dB margin 时，$-40\,\mathrm{dBc}$ 是一个有用的 engineering warning line。这个数值不是 PCIe 7.0 规范，也不应该作为 universal pass/fail mask；它只是把 spur 与 UI-level timing error 联系起来。
+
+English: Therefore, if an isolated spur should contribute less than $0.01\,\mathrm{UI}$ deterministic jitter, then $m<0.01\pi$, corresponding to a spur level of about $-36\,\mathrm{dBc}$; with 3 dB margin, $-40\,\mathrm{dBc}$ is a useful engineering warning line. This number is not a PCIe 7.0 specification and should not be used as a universal pass/fail mask; it simply connects a spur to UI-level timing error.
+
+### 27.4 Division and Multiplication Scaling
+
+中文：frequency divider 会把 phase spur 或 phase noise 以 $20\log_{10}N$ 的方式降低，但 absolute time jitter in seconds 近似保持不变。原因是 phase deviation 以 radian 归一化到更低 output frequency 后变小，但 edge time displacement 本身没有被 divider magically 消除。
+
+English: A frequency divider reduces phase spur or phase noise by $20\log_{10}N$, but absolute time jitter in seconds is approximately unchanged. The reason is that phase deviation in radians becomes smaller when normalized to a lower output frequency, but the edge-time displacement itself is not magically removed by division.
+
+中文：frequency multiplication 的方向相反：相同 input time jitter 在更高 output frequency 上对应更大的 phase deviation，因此 phase noise/spur 通常增加 $20\log_{10}M$。这就是为什么 clock multiplication PLL 不能只看 output spectrum；必须追踪 input reference time jitter、multiplication factor、loop transfer 和 output carrier frequency。
+
+English: Frequency multiplication works in the opposite direction: the same input time jitter corresponds to larger phase deviation at higher output frequency, so phase noise/spur usually increases by $20\log_{10}M$. This is why a clock-multiplication PLL cannot be judged only by output spectrum; input reference time jitter, multiplication factor, loop transfer, and output carrier frequency must all be tracked.
+
+### 27.5 Phase-Noise Integration Convention
+
+中文：单边 phase noise $\mathcal{L}(f_m)$ 与 double-sideband phase-noise density 的 convention 必须写清楚。Rhee 和 Yu 使用的常见关系是：
+
+English: The convention between single-sideband phase noise $\mathcal{L}(f_m)$ and double-sideband phase-noise density must be explicit. Rhee and Yu use the common relationship:
+
+$$
+S_\theta(f_m)=2\mathcal{L}(f_m)
+$$
+
+中文：因此 integrated RMS phase noise 为：
+
+English: Therefore the integrated RMS phase noise is:
+
+$$
+\Delta\theta_n=
+\sqrt{\int_a^b2\mathcal{L}(f_m)\,df_m}
+$$
+
+中文：换算到 degrees：
+
+English: Converted to degrees:
+
+$$
+\Delta\theta_n[deg]=
+\frac{180}{\pi}
+\sqrt{\int_a^b2\mathcal{L}(f_m)\,df_m}
+$$
+
+中文：换算到 RMS time jitter 时，必须除以 carrier angular frequency：
+
+English: To convert to RMS time jitter, divide by carrier angular frequency:
+
+$$
+\sigma_t=
+\frac{\Delta\theta_n}{2\pi f_0}
+$$
+
+中文：任何 jitter number 都必须同时注明 carrier frequency、integration limits、spur inclusion policy、measurement node 和 single-sideband/double-sideband convention。没有这些条件的 “100 fs jitter” 不具备 design-review 意义。
+
+English: Every jitter number must specify carrier frequency, integration limits, spur-inclusion policy, measurement node, and single-sideband/double-sideband convention. A “100 fs jitter” number without these conditions has little design-review meaning.
+
+### 27.6 Reference Spur Suppression Versus Phase Margin
+
+中文：reference spur 常通过 loop-filter high-frequency poles 抑制。若 reference spur frequency 位于 additional poles 之外，pole suppression 可粗略写成：
+
+English: Reference spur is often suppressed by high-frequency loop-filter poles. If the reference spur frequency lies beyond the added poles, pole suppression can be roughly expressed as:
+
+$$
+\Delta P_{spur}
+=
+20\log_{10}\left(\frac{f_{ref}}{f_{p1}}\right)
++
+20\log_{10}\left(\frac{f_{ref}}{f_{p2}}\right)
+$$
+
+中文：但这些 pole 会消耗 phase margin：
+
+English: But these poles consume phase margin:
+
+$$
+\Delta\phi_M=
+\tan^{-1}\left(\frac{f_u}{f_{p1}}\right)
++
+\tan^{-1}\left(\frac{f_u}{f_{p2}}\right)
+$$
+
+中文：因此 spur reduction 不能只靠“加电容”。每个 added pole 都必须和 unity-gain frequency、phase margin、jitter peaking、settling time 和 sampled-data stability 一起评估。
+
+English: Therefore spur reduction cannot be reduced to “add more capacitance.” Every added pole must be evaluated together with unity-gain frequency, phase margin, jitter peaking, settling time, and sampled-data stability.
+
+### 27.7 Optimum Loop Bandwidth Is a Source-Crossover Problem
+
+中文：optimum PLL bandwidth 通常靠近 output-referred low-pass noise sources 与 VCO high-pass noise 的交点。reference、PD、CP、divider 和 digital/TDC in-loop noise 往往被 loop low-pass shaped；VCO intrinsic noise 往往被 high-pass shaped。若 bandwidth 太窄，VCO close-in noise 留得太多；若 bandwidth 太宽，reference/PFD/CP/divider noise 和 spur 被传到输出。
+
+English: Optimum PLL bandwidth is usually near the crossover between output-referred low-pass noise sources and VCO high-pass noise. Reference, PD, CP, divider, and digital/TDC in-loop noise are often low-pass shaped by the loop; VCO intrinsic noise is high-pass shaped. If bandwidth is too narrow, too much VCO close-in noise remains; if bandwidth is too wide, reference/PFD/CP/divider noise and spurs are passed to the output.
+
+中文：这条原则对 SerDes 尤其重要，因为 final timing margin 可能不是由 PLL core 自身的 integrated jitter 单独决定。clock tree、PI、CDR、ADC aperture、sampler supply 和 package resonance 都可能重新加权某些 offset frequency 的 jitter。
+
+English: This principle is especially important for SerDes because final timing margin may not be set by PLL-core integrated jitter alone. Clock tree, PI, CDR, ADC aperture, sampler supply, and package resonances can reweight jitter at specific offset frequencies.
+
+### 27.8 Review Questions Added
+
+| Review item | Deep-ingest question |
+|---|---|
+| Spur metric | Is the spur reported in dBc, radian modulation index, seconds, or UI? |
+| Spur-to-jitter | Has isolated spur contribution been translated to deterministic jitter when relevant? |
+| Integration convention | Are SSB/DSB, carrier frequency, and integration limits documented? |
+| Loop bandwidth | Is the chosen bandwidth near the true output-referred source crossover? |
+| Spur suppression | Do added poles reduce spur without breaking phase margin and settling? |
+| SerDes impact | Does the spur fall inside a CDR tracking band, clock-tree resonance, or sampler-sensitive region? |
+
+### 27.9 Balanced Ingest 2026-07-05 - Low-Power Inverse-Class-F DCO Case Study
+
+Source update:
+
+- Peng Chen, Xi Meng, Jun Yin, Pui-In Mak, Rui P. Martins, and Robert Bogdan Staszewski, "A 529-uW Fractional-N All-Digital PLL Using TDC Gain Auto-Calibration and an Inverse-Class-F DCO in 65-nm CMOS," IEEE TCAS-I, Vol. 69, No. 1, January 2022.
+- Canonical ADPLL destination: [[pll_fractional_n_digital]].
+
+中文：Chen 等人的 ADPLL paper 对 phase-noise note 的主要价值是 inverse-class-F DCO 的 waveform-shaping insight。该 DCO 使用 transformer tank 让 fundamental resonance 与 second-harmonic resonance 自然对齐，目标是抑制 negative-$g_m$ transistor noise contribution 和 flicker-noise upconversion。用 Hajimiri/Lee ISF 语言说，就是让 effective ISF 的 DC component 更小，从而降低 $1/f^3$ phase-noise corner 的风险。
+
+English: The main value of Chen et al.'s ADPLL paper for this phase-noise note is the waveform-shaping insight of the inverse-class-F DCO. The DCO uses a transformer tank to naturally align the fundamental resonance and second-harmonic resonance, aiming to suppress negative-$g_m$ transistor noise contribution and flicker-noise upconversion. In Hajimiri/Lee ISF language, the goal is to reduce the DC component of the effective ISF and thus reduce the risk of a high $1/f^3$ phase-noise corner.
+
+中文：paper 给出的 harmonic-alignment condition 可以写成：
+
+English: The paper's harmonic-alignment condition can be written as:
+
+$$
+16\xi^2+(100k^2-68)\xi+16=0
+$$
+
+中文：其中 $k$ 是 transformer coupling coefficient，$\xi=L_SC_S/(L_PC_P)$。paper 的设计选择是接近 $k=0.6$、$\xi=1$，使 $\omega_H/\omega_L$ 对 capacitor variation 不敏感，并避免传统 waveform-shaping oscillator 需要的 two-dimensional capacitor tuning。工程意义是：oscillator FoM 不只由 tank Q 和 bias current 决定，也由 harmonic alignment 对 PVT/mismatch 的 sensitivity 决定。
+
+English: Here $k$ is the transformer coupling coefficient and $\xi=L_SC_S/(L_PC_P)$. The paper chooses near $k=0.6$ and $\xi=1$ so that $\omega_H/\omega_L$ is less sensitive to capacitor variation, avoiding the two-dimensional capacitor tuning required by some waveform-shaping oscillators. The engineering meaning is that oscillator FoM is not set only by tank Q and bias current; it is also set by the sensitivity of harmonic alignment to PVT and mismatch.
+
+中文：该 paper 报告 200 uW DCO、约 196 dB peak oscillator FoM、250 kHz 到 300 kHz measured $1/f^3$ PN corner、以及 ±30% capacitor variation 下小于约 0.8 dB 的 simulated FoM degradation。对 SerDes/PCIe，这些数值不应直接当作目标；更可复用的是设计原则：如果 waveform-shaping oscillator 的 harmonic alignment 需要复杂 tuning，它的 lab robustness 可能比 ideal schematic FoM 更重要。
+
+English: The paper reports a 200 uW DCO, about 196 dB peak oscillator FoM, measured $1/f^3$ PN corner around 250 kHz to 300 kHz, and simulated FoM degradation below about 0.8 dB under ±30% capacitor variation. For SerDes/PCIe, these numbers should not be used directly as targets; the reusable design principle is that if a waveform-shaping oscillator requires complex harmonic tuning, lab robustness may matter more than ideal schematic FoM.
+
+---
+
+## 28. Source Provenance
 
 | Source | Type | Status | Reusable knowledge promoted |
 |---|---|---|---|
 | Calosso and Rubiola, "Phase Noise and Jitter in Digital Electronics," arXiv:1701.00094v1, 2017 | Paper PDF | Ingested 2026-07-04; archived under `90_Archive/processed/2026/papers/phase_noise_and_jitter_in_digital_electronics/` | Phase-type vs time-type noise, phase-time PSD conversion, digital threshold-noise conversion, aliasing in digital clocking, input chatter condition, internal PLL measurement lessons, thermal delay/wander model |
 | Razavi, "A Study of Phase Noise in CMOS Oscillators," IEEE Journal of Solid-State Circuits, Vol. 31, No. 3, March 1996 | Paper PDF | Ingested 2026-07-04; archived under `90_Archive/processed/2026/papers/a_study_of_phase_noise_in_cmos_oscillators/` | Open-loop Q as phase-slope stiffness, CMOS oscillator additive/high-frequency multiplicative/low-frequency multiplicative noise classification, FM sensitivity of tail/control/supply noise, ring oscillator stage-count caution, simulation artifact warnings, measurement normalization cautions, supply/substrate coupling review items |
+| Razavi, "Jitter-Power Trade-Offs in PLLs," IEEE TCAS-I, Vol. 68, No. 4, April 2021 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/` | VCO-only $1/\sigma_j^2$ lower-bound scaling, reference-limited $1/\sigma_j^4$ scaling, charge-pump noise as reference-like contribution, ADC sampling jitter penalty, low-jitter power-review checklist |
+| Razavi, "The Ring Oscillator," IEEE Solid-State Circuits Magazine, Fall 2019 | Magazine tutorial PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/` | Ring oscillator delay/power formulas, inverter versus differential ring supply sensitivity, linear-scaling power/noise tradeoff, $K_{VDD}$ supply-noise-to-phase-noise model, quadrature-ring penalty intuition |
+| Hajimiri and Lee, "A General Theory of Phase Noise in Electrical Oscillators," IEEE JSSC, Vol. 33, No. 2, February 1998 | IEEE JSSC paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/` | ISF phase impulse response, white-noise $1/f^2$ phase-noise expression, flicker upconversion through $c_0$, phase-noise corner versus device flicker corner, oscillator waveform-symmetry review rules |
+| Gao, Klumperink, Bohsali, and Nauta, "A Low Noise Sub-Sampling PLL in Which Divider Noise is Eliminated and PD/CP Noise is Not Multiplied by $N^2$," IEEE JSSC, Vol. 44, No. 12, December 2009 | IEEE JSSC paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/` | Sub-sampling PLL PD/CP gain scaling, divider-noise elimination in locked state, CP noise not multiplied by $N^2$, reference-buffer noise limit, acquisition-loop review items, measured 0.15 ps rms jitter example |
+| Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived under `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | Narrowband FM spur model, spur-to-deterministic-jitter conversion, phase-noise integration convention, division/multiplication scaling, reference-spur suppression versus phase-margin tradeoff, optimum bandwidth source-crossover intuition |
+| Peng Chen et al., "A 529-uW Fractional-N All-Digital PLL Using TDC Gain Auto-Calibration and an Inverse-Class-F DCO in 65-nm CMOS," IEEE TCAS-I, Vol. 69, No. 1, January 2022 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022/` | Inverse-class-F DCO waveform-shaping case study, transformer harmonic-alignment condition, effective-ISF flicker-upconversion intuition, PVT-robust oscillator FoM lesson |
 
-## 26. Related Notes
+## 29. Related Notes
 
 - [[pcie7_clocking_notes]]
 - [[pcie7_gtps_vs_gbaud_ui]]
 - [[pll_fundamentals]]
 - [[pll_loop_bandwidth]]
 - [[pll_phase_noise_to_jitter]]
+- [[pfd_charge_pump_notes]]
+- [[pll_fractional_n_digital]]
 - [[cdr_jitter_tolerance]]
 - [[cdr_fundamentals]]
 - [[pam4_adc_based_rx]]

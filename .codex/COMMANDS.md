@@ -27,47 +27,26 @@ If no mode is specified, use Balanced Ingest.
 
 ```text
 Execute the workflow defined in .codex/ingest.md for every file under:
-
 00_Inbox/incoming/
-
 Mode: Fast Ingest.
-
 Follow .codex/AGENTS.md and all mandatory rules.
-
 For every source:
-
 - classify the topic
-
 - identify the existing canonical note
-
 - merge only clearly reusable knowledge into the canonical note
-
 - never create a duplicate note if a canonical note already exists
-
 - extract title, source, date if available, topic, short summary, key claims, and useful links
-
 - minimize token use
-
 - do not expand derivations
-
 - do not generate long interview sections
-
 - do not deeply rewrite existing notes
-
 - preserve source provenance
-
 - archive the original source after processing
-
 Finally generate a short Ingest Report summarizing:
-
 - processed files
-
 - updated canonical notes
-
 - new notes, only if absolutely necessary
-
 - archive actions
-
 - manual review items
 ```
 
@@ -75,49 +54,27 @@ Finally generate a short Ingest Report summarizing:
 
 ```text
 Execute the workflow defined in .codex/ingest.md for every file under:
-
 00_Inbox/incoming/
-
 Mode: Balanced Ingest.
-
 Follow .codex/AGENTS.md and all mandatory rules.
-
 For every source:
-
 - classify the topic
-
 - identify the existing canonical note
-
 - merge high-value reusable knowledge into the canonical note
-
 - never create a duplicate note if a canonical note already exists
-
 - extract important formulas into Markdown LaTeX
-
 - expand omitted derivations when valuable
-
 - add concise engineering insights
-
 - write durable note updates as paragraph-level Chinese-English bilingual pairs
-
 - update Obsidian links
-
 - update indexes and MOCs when needed
-
 - preserve source provenance
-
 - archive the original source after successful ingestion
-
 Finally generate a normal Ingest Report summarizing:
-
 - processed files
-
 - updated canonical notes
-
 - new notes (if absolutely necessary)
-
 - archive actions
-
 - manual review items
 ```
 
@@ -125,57 +82,31 @@ Finally generate a normal Ingest Report summarizing:
 
 ```text
 Execute the workflow defined in .codex/ingest.md for every file under:
-
 00_Inbox/incoming/
-
 Mode: Deep Ingest.
-
 Follow .codex/AGENTS.md and all mandatory rules.
-
 Use Deep Ingest only because this request explicitly asks for it.
-
 For every source:
-
 - classify the topic
-
 - identify every affected existing canonical note
-
 - merge reusable knowledge into the correct canonical notes
-
 - never create a duplicate note if a canonical note already exists
-
 - perform full technical extraction
-
 - extract and explain formulas carefully in Markdown LaTeX
-
 - expand important derivations
-
 - add engineering tradeoffs, common mistakes, examples, interview questions, and implementation notes
-
 - write durable note updates as paragraph-level Chinese-English bilingual pairs
-
 - update Obsidian links
-
 - update indexes and MOCs when useful knowledge graph structure changes
-
 - preserve source provenance
-
 - archive the original source after successful ingestion
-
 Finally generate a detailed Ingest Report summarizing:
-
 - processed files
-
 - updated canonical notes
-
 - new notes, only if absolutely necessary
-
 - formulas and derivations promoted
-
 - index and MOC updates
-
 - archive actions
-
 - manual review items
 ```
 

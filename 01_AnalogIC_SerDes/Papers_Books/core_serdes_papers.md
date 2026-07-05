@@ -12,7 +12,7 @@ tags:
   - CDR
   - ADC
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-05
 source: "ChatGPT technical notes and reading plan"
 status: "active"
 ---
@@ -301,6 +301,80 @@ This section records source-backed material that has been ingested into the vaul
 
 ---
 
+### B2. Rhee & Yu - Phase-Locked Loops
+
+- **Citation:** W. Rhee and Z. Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024. 383 pp.
+- **One-sentence value:** A system-to-circuit PLL textbook that connects linear loop dynamics, transient response, spectral purity, PFD/CP/VCO/divider circuit design, fractional-N PLLs, digital-intensive PLLs, and CDR PLLs.
+- **Reading status:** Deep Ingest completed 2026-07-05. The ingest prioritized Ch. 2 loop dynamics, Ch. 4 spectral purity, Ch. 6 PFD/charge pump, Ch. 9 fractional-N PLL, Ch. 10 digital-intensive PLL, and Ch. 11 CDR PLL; remaining chapters were reviewed at source-routing level.
+- **Chapter map:** Ch. 2 linear model and loop dynamics; Ch. 3 transient response; Ch. 4 frequency and spectral purity; Ch. 5 application aspects; Ch. 6 phase detector and charge pump; Ch. 7 VCO; Ch. 8 divider; Ch. 9 fractional-N PLL; Ch. 10 digital-intensive PLL; Ch. 11 CDR PLL.
+- **Promoted into:** [[pll_fundamentals]] (loop dynamics and CPPLL sizing), [[pll_phase_noise_jitter]] (spur, jitter, spectral purity), [[pfd_charge_pump_notes]] (PFD/CP canonical note), [[pll_fractional_n_digital]] (fractional-N, DSM, DPLL, BBPLL, HPLL canonical note), [[cdr_fundamentals]] (JGEN/JTRAN/JTOL and CDR detectors).
+- **Archived source:** `../../90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/`.
+- **Verification note:** formulas were promoted as engineering models, not PCIe compliance requirements. Project signoff still requires PVT-aware circuit simulation, behavioral PLL/CDR modeling, and applicable internal/spec-level jitter masks.
+
+---
+
+## 14. Ingested PLL / Oscillator Sources
+
+This section records source-backed PLL and oscillator material promoted into canonical clocking notes.
+
+### P1. Hanumolu et al. - Analysis of Charge-Pump Phase-Locked Loops
+
+- **Citation:** P. K. Hanumolu, M. Brownlee, K. Mayaram, and U.-K. Moon, "Analysis of Charge-Pump Phase-Locked Loops," IEEE Transactions on Circuits and Systems I: Regular Papers, Vol. 51, No. 9, pp. 1665-1674, September 2004.
+- **One-sentence value:** A state-space and sampled-data treatment of third-order CPPLLs that clarifies lock acquisition, small-signal tracking, noise transfer, and update-rate stability limits.
+- **Promoted into:** [[pll_fundamentals]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/`.
+
+### P2. Razavi - Jitter-Power Trade-Offs in PLLs
+
+- **Citation:** B. Razavi, "Jitter-Power Trade-Offs in PLLs," IEEE Transactions on Circuits and Systems I: Regular Papers, Vol. 68, No. 4, pp. 1381-1387, April 2021.
+- **One-sentence value:** A first-order lower-bound analysis showing why low-femtosecond PLL jitter becomes power-expensive, especially when reference and charge-pump noise are included.
+- **Promoted into:** [[pll_phase_noise_jitter]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/`.
+
+### P3. Razavi - The Ring Oscillator
+
+- **Citation:** B. Razavi, "The Ring Oscillator," IEEE Solid-State Circuits Magazine, Fall 2019.
+- **One-sentence value:** A practical tutorial on inverter and differential ring oscillators, including delay, power, supply sensitivity, multiphase generation, FOM, and LDO-noise implications.
+- **Promoted into:** [[pll_phase_noise_jitter]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/`.
+
+### P4. PLL Architecture Review Sources
+
+- **Sources:** Nguyen and Pham, "An Overview of Phase-Locked Loop: From Fundamentals to the Frontier," Sensors, 2025; Dutta et al., "Exploring the Landscape of Phase-Locked Loop Architectures: A Comprehensive Review."
+- **One-sentence value:** Broad taxonomy and vocabulary support for PLL architecture routing; not used as primary formula authority.
+- **Promoted into:** [[pll_fundamentals]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/pll_oscillator_sources_2026-07-05/`.
+
+### P5. Hajimiri and Lee - A General Theory of Phase Noise in Electrical Oscillators
+
+- **Citation:** A. Hajimiri and T. H. Lee, "A General Theory of Phase Noise in Electrical Oscillators," IEEE Journal of Solid-State Circuits, Vol. 33, No. 2, pp. 179-194, February 1998.
+- **One-sentence value:** The classic impulse-sensitivity-function treatment of oscillator phase noise, including periodically time-varying noise conversion, flicker upconversion, cyclostationary noise, and waveform-symmetry design rules.
+- **Promoted into:** [[pll_phase_noise_jitter]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/`.
+
+### P6. Gao et al. - Low-Noise Sub-Sampling PLL
+
+- **Citation:** X. Gao, E. A. M. Klumperink, M. Bohsali, and B. Nauta, "A Low Noise Sub-Sampling PLL in Which Divider Noise is Eliminated and PD/CP Noise is Not Multiplied by $N^2$," IEEE Journal of Solid-State Circuits, Vol. 44, No. 12, pp. 3253-3263, December 2009.
+- **One-sentence value:** A source-backed explanation of why sub-sampling PLLs can remove divider noise in lock and avoid the conventional $N^2$ PD/CP noise penalty, while shifting attention to reference-buffer noise, acquisition, and spur control.
+- **Promoted into:** [[pll_phase_noise_jitter]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/`.
+
+### P7. Da Dalt - Digital Bang-Bang Frequency Synthesizers
+
+- **Citation:** N. Da Dalt, *Theory and Implementation of Digital Bang-Bang Frequency Synthesizers for High Speed Serial Data Communications*, Ph.D. dissertation, RWTH Aachen University, 2007.
+- **One-sentence value:** A design-oriented nonlinear treatment of digital bang-bang PLLs, including phase-plane orbits, loop-latency-driven limit-cycle jitter, BPD gain dependence on untracked jitter, and a 130 nm CMOS high-bandwidth synthesizer case study.
+- **Promoted into:** [[pll_fractional_n_digital]] and [[cdr_fundamentals]].
+- **Archived source:** `../../90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007/`.
+
+### P8. Chen et al. - 529-uW Fractional-N ADPLL
+
+- **Citation:** P. Chen, X. Meng, J. Yin, P.-I. Mak, R. P. Martins, and R. B. Staszewski, "A 529-uW Fractional-N All-Digital PLL Using TDC Gain Auto-Calibration and an Inverse-Class-F DCO in 65-nm CMOS," IEEE Transactions on Circuits and Systems I: Regular Papers, Vol. 69, No. 1, pp. 51-62, January 2022, DOI 10.1109/TCSI.2021.3094094.
+- **One-sentence value:** A low-power DTC-assisted fractional-N ADPLL case study showing hybrid TDC range extension, background TDC gain calibration, DTC mismatch/spur tradeoffs, snapshot timing, and PVT-robust inverse-class-F DCO design.
+- **Promoted into:** [[pll_fractional_n_digital]] and [[pll_phase_noise_jitter]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022/`.
+
+---
+
 ## Last Updated
 
-2026-07-04
+2026-07-05
