@@ -614,12 +614,23 @@ English: On the DTC side, a buffer-cascaded DTC simplifies implementation, but i
 - TDC/DTC formulas depend on the paper's architecture and symbol definitions; future project notes should restate local conventions before reuse.
 - BBPLL stochastic gain modeling is deeper than this Balanced update; mark it for future Deep Ingest if BB-CDR design becomes a near-term focus.
 
+### 20.8 Da Dalt 2005 Paper - Condensed Design-Oriented Source
+
+中文：Da Dalt 2005 TCAS-I paper 是 dissertation 内容的更短 design-oriented form。它再次确认：digital bang-bang PLL 的 locked state 不是线性 PLL 意义上的固定 operating point，而是 phase plane 中的 orbit；loop delay、proportional/integral update 和 BPD hard nonlinearity 共同决定 orbit 是否存在以及 timing jitter 多大。因此这篇 paper 应作为 BBPLL/BB-CDR 设计 review 的快速入口，而 dissertation 仍作为深度来源。
+
+English: The Da Dalt 2005 TCAS-I paper is a shorter design-oriented form of the dissertation material. It confirms that the locked state of a digital bang-bang PLL is not a fixed operating point in the linear-PLL sense, but an orbit in phase plane; loop delay, proportional/integral update, and BPD hard nonlinearity jointly determine whether an orbit exists and how large the timing jitter becomes. Therefore the paper should serve as a fast entry point for BBPLL/BB-CDR design review, while the dissertation remains the deeper source.
+
+中文：这篇 paper 的新增价值不是替换已经收进本 note 的 Da Dalt formulas，而是给 source provenance 增加一个 peer-reviewed IEEE anchor。若未来需要为 SerDes BB-CDR 面试、architecture review 或 behavioral model review 快速引用 nonlinear BBPLL 规则，应优先引用 2005 paper；若需要完整 Markov-chain linearization、silicon prototype 和 dissertation 级 derivation，再回到 2007 dissertation。
+
+English: The added value of this paper is not to replace the Da Dalt formulas already captured in this note, but to add a peer-reviewed IEEE anchor to source provenance. For quick citation in SerDes BB-CDR interviews, architecture reviews, or behavioral-model reviews, prefer the 2005 paper; for full Markov-chain linearization, silicon-prototype discussion, and dissertation-level derivation, return to the 2007 dissertation.
+
 ## 21. Source Provenance
 
 | Source | Type | Status | Reusable knowledge promoted |
 |---|---|---|---|
 | Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived under `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | Fractional-N divider problem, DSM quantization-noise shaping, spur-control options, DTC/DAC compensation, fractional-N nonidealities, TDC/DCO DPLL modeling, BBPLL limit-cycle and random-linearized behavior, hybrid PLL architecture |
 | Nicola Da Dalt, *Theory and Implementation of Digital Bang-Bang Frequency Synthesizers for High Speed Serial Data Communications*, Ph.D. dissertation, RWTH Aachen, 2007 | Dissertation PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007/` | BBPLL nonlinear orbit/limit-cycle framing, latency-driven jitter formulas, BPD gain dependence on loop-generated untracked jitter, nonlinear versus linearized model selection, digital loop-gain monitoring concept |
+| Nicola Da Dalt, "A Design-Oriented Study of the Nonlinear Dynamics of Digital Bang-Bang PLLs," IEEE TCAS-I, 2005 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005/` | Peer-reviewed design-oriented BBPLL nonlinear dynamics anchor, orbit/limit-cycle interpretation, loop-delay jitter and stability framing |
 | Peng Chen et al., "A 529-uW Fractional-N All-Digital PLL Using TDC Gain Auto-Calibration and an Inverse-Class-F DCO in 65-nm CMOS," IEEE TCAS-I, Vol. 69, No. 1, January 2022 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022/` | DTC-assisted fractional-N ADPLL case study, hybrid TDC range extension, background TDC gain calibration, out-of-range TDC stability caution, DTC mismatch/power/spur scaling, snapshot offset timing |
 
 ## 22. Future Evolution

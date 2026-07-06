@@ -313,6 +313,18 @@ This section records source-backed material that has been ingested into the vaul
 
 ---
 
+### B3. Staszewski & Balsara - All-Digital Frequency Synthesizer
+
+- **Citation:** R. B. Staszewski and P. T. Balsara, *All-Digital Frequency Synthesizer in Deep-Submicron CMOS*, Wiley, 2006.
+- **One-sentence value:** A cornerstone ADPLL book that explains phase-domain ADPLL architecture, DCO/TDC normalization, digitally controlled oscillators, fractional DCO dithering, direct frequency modulation, frequency synthesis, and built-in self-test in deep-submicron CMOS.
+- **Reading status:** Balanced Ingest completed 2026-07-05. The ingest promoted architecture-level ADPLL/DCO/TDC knowledge only; a future Deep Ingest is appropriate if ADPLL becomes a primary design or interview focus.
+- **Chapter map:** Ch. 2 DCO; Ch. 3 normalized DCO; Ch. 4 ADPLL; Ch. 5 phase-domain modeling; Ch. 6 digital direct frequency modulation; Ch. 7 frequency synthesis; Ch. 8 system integration; Ch. 9 built-in self-test.
+- **Promoted into:** [[adpll_notes]].
+- **Archived source:** `../../90_Archive/processed/2026/books/all_digital_frequency_synthesizer_staszewski_balsara_2006/`.
+- **Verification note:** Bluetooth/RF implementation details are reusable for ADPLL architecture intuition, not direct PCIe/SerDes jitter targets.
+
+---
+
 ## 14. Ingested PLL / Oscillator Sources
 
 This section records source-backed PLL and oscillator material promoted into canonical clocking notes.
@@ -372,6 +384,42 @@ This section records source-backed PLL and oscillator material promoted into can
 - **One-sentence value:** A low-power DTC-assisted fractional-N ADPLL case study showing hybrid TDC range extension, background TDC gain calibration, DTC mismatch/spur tradeoffs, snapshot timing, and PVT-robust inverse-class-F DCO design.
 - **Promoted into:** [[pll_fractional_n_digital]] and [[pll_phase_noise_jitter]].
 - **Archived source:** `../../90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022/`.
+
+### P9. Staszewski et al. - All-Digital TX Frequency Synthesizer and Discrete-Time Receiver
+
+- **Citation:** R. B. Staszewski et al., "All-Digital TX Frequency Synthesizer and Discrete-Time Receiver for Bluetooth Radio in 130-nm CMOS," IEEE Journal of Solid-State Circuits, 2004, DOI 10.1109/JSSC.2004.836345.
+- **One-sentence value:** A silicon case study replacing conventional VCO/PFD/CP synthesis with DCO/TDC-based phase-domain ADPLL operation, including DCO fractional dithering, retimed reference operation, TDC normalization, and digital frequency modulation.
+- **Promoted into:** [[adpll_notes]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/staszewski_all_digital_tx_synthesizer_bluetooth_2004/`.
+
+### P10. Da Dalt - Nonlinear Dynamics of Digital Bang-Bang PLLs
+
+- **Citation:** N. Da Dalt, "A Design-Oriented Study of the Nonlinear Dynamics of Digital Bang-Bang PLLs," IEEE Transactions on Circuits and Systems I: Regular Papers, Vol. 52, No. 1, January 2005, DOI 10.1109/TCSI.2004.840089.
+- **One-sentence value:** A concise peer-reviewed nonlinear BBPLL source explaining why locked bang-bang loops form phase-plane orbits/limit cycles and how loop delay changes jitter and stability.
+- **Promoted into:** [[pll_fractional_n_digital]] and [[cdr_fundamentals]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005/`.
+
+### P11. Designing Bang-Bang PLLs for Clock and Data Recovery
+
+- **Citation:** "Designing Bang-Bang PLLs for Clock and Data Recovery in Serial Data Transmission."
+- **One-sentence value:** A CDR-oriented bang-bang PLL source with first-order phase-step equations, lock range, hunting jitter, duty-cycle/frequency-offset relation, slope-overload intuition, and second-order stability-factor framing.
+- **Promoted into:** [[cdr_fundamentals]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission/`.
+- **Verification note:** Author metadata was not confidently extracted during Balanced Ingest; cite by title until the PDF front matter is manually verified.
+
+### P12. Zhang - CMOS Analog and Mixed-Signal PLL Overview
+
+- **Citation:** Z. Zhang, "CMOS analog and mixed-signal phase-locked loops: An overview," *Journal of Semiconductors*, Vol. 41, No. 11, 111402, 2020, DOI 10.1088/1674-4926/41/11/111402.
+- **One-sentence value:** A compact AMS/CPPLL review that reinforces recurring CPPLL architecture issues, including CP mismatch, loop-filter ripple, fractional-N PFD/CP nonlinearity, bandwidth/settling tradeoff, divider noise, and AMS versus ADPLL selection.
+- **Promoted into:** [[pfd_charge_pump_notes]].
+- **Archived source:** `../../90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020/`.
+
+### P13. Dutta et al. - PLL Architecture Review Duplicate Source
+
+- **Citation:** Dutta et al., "Exploring the Landscape of Phase-Locked Loop Architectures: A Comprehensive Review," IEEE Access, 2024, DOI 10.1109/ACCESS.2024.3446393.
+- **One-sentence value:** Duplicate incoming copy of a broad PLL architecture taxonomy source already represented in P4; no new durable note update was needed.
+- **Promoted into:** No additional promotion in this batch.
+- **Archived source:** `../../90_Archive/processed/2026/papers/duplicate_dutta_pll_architecture_review_2024/`.
 
 ---
 

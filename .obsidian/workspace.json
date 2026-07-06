@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ingest_report_2026-07-05_balanced_digital_pll_batch"
+              "title": "dll_notes"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for ingest_report_2026-07-05_balanced_digital_pll_batch"
+              "title": "Backlinks for dll_notes"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of ingest_report_2026-07-05_balanced_digital_pll_batch"
+              "title": "Outline of dll_notes"
             }
           },
           {
@@ -171,10 +171,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md"
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md"
               },
               "icon": "lucide-info",
-              "title": "File properties for ingest_report_2026-07-05_balanced_digital_pll_batch"
+              "title": "File properties for dll_notes"
             }
           }
         ],
@@ -197,43 +197,44 @@
   },
   "active": "89e85f331d4bc304",
   "lastOpenFiles": [
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
+    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_adpll_bbpll_batch.md",
+    "90_Archive/processed/2026/papers/duplicate_dutta_pll_architecture_review_2024/Exploring_the_Landscape_of_Phase-Locked_Loop_Architectures A Comprehensive Review.pdf",
+    "90_Archive/processed/2026/papers/duplicate_dutta_pll_architecture_review_2024",
+    "90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020/eetop.cn_CMOS analog and mixed-signal phase-locked loops_ An overview.pdf",
+    "90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020",
+    "90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission/Designing Bang-Bang PLLs for Clock and Data Recovery in Serial Data Transmission.pdf",
+    "90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission",
+    "90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005/A design-oriented study of the nonlinear dynamics of digital bang-bang PLLs.pdf",
+    "90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005",
+    "90_Archive/processed/2026/papers/staszewski_all_digital_tx_synthesizer_bluetooth_2004/2278stas All-Digital TX Frequency Synthesizer and.pdf",
+    "90_Archive/processed/2026/papers/staszewski_all_digital_tx_synthesizer_bluetooth_2004",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_loop_bandwidth.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fractional_n_digital.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_interpolator.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pfd_charge_pump_notes.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/clock_distribution_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pfd_charge_pump_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_to_jitter.md",
+    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
     "Untitled 2.canvas",
     "2026-07-05.md",
     "Untitled 1.canvas",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_to_jitter.md",
-    "00_Inbox/incoming/books/All-Digital Frequency Synthesizer in Deep-Submicron CMOS-Wiley2006.pdf",
-    "00_Inbox/incoming/books/All-Digital Frequency Synthesizer in Deep-Submicron CMOS-Wiley2006 推荐教材.pdf",
-    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
-    "90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007/eetop.cn_Theory and Implementation of Digital Bang-Bang Frequency Synthesizers for High S.pdf",
-    "90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022/A 529-uW Fractional-N All-Digital PLL.pdf",
-    "90_Archive/processed/2026/papers/chen_529uw_fractional_n_adpll_2022",
-    "90_Archive/processed/2026/articles/digital_bang_bang_frequency_synthesizers_da_dalt_2007",
-    "90_Archive/processed/2026/articles",
-    "tmp_ingest_extract_A_529-uW_Fractional-N_All-Digital_PLL.txt",
-    "tmp_ingest_extract_eetop_cn_Theory_and_Implementation_of_Di.txt",
-    "00_Inbox/incoming/papers/A 529-uW Fractional-N All-Digital PLL.pdf",
     "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-20__Marvell_高速光模块职位.md",
     "Untitled.canvas",
     "2026-07-04.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
     "90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/ingest_report_2026-07-05.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/clock_distribution_jitter.md",
     "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md",
     "90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/ingest_report_2026-07-05.md",
     "01_AnalogIC_SerDes/SerDes/ctle_ffe_dfe_notes.md",
     "01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md",
-    "01_AnalogIC_SerDes/SerDes/serdes_verification_methodology.md",
-    "01_AnalogIC_SerDes/SerDes/pcie7_gtps_vs_gbaud_ui.md",
-    "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md"
+    "01_AnalogIC_SerDes/SerDes/serdes_verification_methodology.md"
   ]
 }

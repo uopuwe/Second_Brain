@@ -365,13 +365,33 @@ English: Q3: Why is a fractional-N PLL especially sensitive to CP nonlinearity? 
 - Spur is translated to time jitter or UI when it matters for SerDes.
 - The final conclusion separates first-pass formulas from signoff simulation.
 
-## 17. Source Provenance
+## 17. Balanced Ingest 2026-07-05 - AMS CPPLL Review Checklist
+
+Source update:
+
+- Zhao Zhang, "CMOS analog and mixed-signal phase-locked loops: An overview," *Journal of Semiconductors*, 2020.
+- Ingest level: Balanced Ingest. This review source reinforces existing CPPLL/PFD rules rather than replacing primary textbook or circuit-paper sources.
+
+中文：Zhang 的 AMS PLL overview 对本 note 的主要价值是提供一个 compact CPPLL issue checklist。它再次强调 charge-pump current mismatch、loop-filter ripple、large passive capacitor pressure、fractional-N PFD/CP nonlinearity、divider noise 和 settling/bandwidth tradeoff 是 CPPLL 架构选择中的 recurring issues。因为这些内容已由 [[pll_fundamentals]]、[[pll_phase_noise_jitter]] 和本 note 详细承接，这里只把它作为 review-level confirmation source。
+
+English: Zhang's AMS PLL overview is most useful here as a compact CPPLL issue checklist. It reinforces that charge-pump current mismatch, loop-filter ripple, large passive-capacitor pressure, fractional-N PFD/CP nonlinearity, divider noise, and settling/bandwidth tradeoff are recurring issues in CPPLL architecture selection. Because these topics are already captured in [[pll_fundamentals]], [[pll_phase_noise_jitter]], and this note, it is used here only as a review-level confirmation source.
+
+中文：该综述中一个值得保留的 caution 是：narrow bandwidth 可以降低 reference spur 和 fractional DSM quantization residue，但会拉长 lock time，并降低对 VCO noise 的 suppression；large charge-pump current 可以降低某些 in-band noise contribution，但增加功耗、switching transient 和 layout/coupling 压力。换句话说，CPPLL 的 low-jitter 不是单旋钮优化，而是 bandwidth、settling、spur、power、area、noise source partition 和 implementation nonlinearity 的联合 tradeoff。
+
+English: One useful caution from the review is that narrow bandwidth can reduce reference spur and fractional DSM quantization residue, but lengthens lock time and weakens VCO-noise suppression; large charge-pump current can reduce some in-band noise contributions, but increases power, switching transients, and layout/coupling pressure. In other words, low-jitter CPPLL design is not a one-knob optimization; it is a joint tradeoff among bandwidth, settling, spur, power, area, noise-source partitioning, and implementation nonlinearity.
+
+中文：对 fractional-N CPPLL，最危险的路径仍然是 shaped DSM quantization residue 被 PFD/CP nonlinearity 折回 in-band，或转换为 fractional spur。review 时不要只看 ideal DSM noise transfer；必须检查 PFD reset、CP pulse settling、UP/DOWN mismatch、loop-filter ripple、DTC/DAC compensation residue 和 supply/substrate coupling。
+
+English: For fractional-N CPPLLs, the most dangerous path remains shaped DSM quantization residue being folded in-band by PFD/CP nonlinearity or converted into fractional spur. In review, do not look only at the ideal DSM noise transfer; check PFD reset, CP pulse settling, UP/DOWN mismatch, loop-filter ripple, DTC/DAC compensation residue, and supply/substrate coupling.
+
+## 18. Source Provenance
 
 | Source | Type | Status | Reusable knowledge promoted |
 |---|---|---|---|
 | Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived under `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | Phase detector taxonomy, PFD behavior, dead-zone and reset-delay tradeoff, CP gain equations, loop-filter ripple and higher-order CPPLL pole intuition, single-ended/differential CP tradeoffs, reference-spur and leakage scaling |
+| Zhao Zhang, "CMOS analog and mixed-signal phase-locked loops: An overview," *Journal of Semiconductors*, 2020 | Review paper PDF | Balanced Ingest 2026-07-05; archived under `90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020/` | Review-level CPPLL issue checklist: CP mismatch, loop-filter ripple, bandwidth/settling tradeoff, fractional-N PFD/CP nonlinearity, divider noise, AMS versus ADPLL architecture caution |
 
-## 18. Future Evolution
+## 19. Future Evolution
 
 中文：未来扩展这篇 note 时，应优先加入 transistor-level CP design examples、layout coupling case studies、PSS/PNoise/PXF simulation recipes、fractional-N CP linearization methods、sub-sampling PD/DTC compensation detail，以及 PCIe/SerDes lab spur debug workflow。不要把 full PLL architecture 或 VCO phase-noise theory 重复复制到这里；那些内容应继续保留在相关 canonical notes 中。
 

@@ -1403,6 +1403,124 @@ English: Here $D$ is normalized loop latency. For a CDR, this equation should no
 
 ---
 
+## 35. Balanced Ingest 2026-07-05 - Bang-Bang CDR Design Equations
+
+Source update:
+
+- "Designing Bang-Bang PLLs for Clock and Data Recovery in Serial Data Transmission."
+- Nicola Da Dalt, "A Design-Oriented Study of the Nonlinear Dynamics of Digital Bang-Bang PLLs," IEEE TCAS-I, 2005.
+- Ingest level: Balanced Ingest. Equations below are promoted as design-intuition models, not as PCIe compliance formulas.
+
+### 35.1 Why Flip-Flop Bang-Bang Detectors Matter
+
+中文：bang-bang CDR 常用 flip-flop/sampler 结构同时完成 retiming 和 phase detection。它的优势不是“线性精确”，而是 sampling phase 可以天然与数据 decision point 对齐，PVT tracking 较好，并且 detector 的最窄脉冲通常由 flip-flop 输出决定，适合非常高速的 serial data path。对多相采样 CDR，这种结构也容易扩展为 edge/data sample 比较。
+
+English: A bang-bang CDR often uses flip-flop/sampler structures for both retiming and phase detection. Its strength is not linear precision; it is that the sampling phase can naturally align with the data decision point, PVT tracking is good, and the detector's narrowest pulse is usually set by flip-flop output behavior, making it suitable for very high-speed serial data paths. For multiphase CDRs, the structure also extends naturally to edge/data sample comparison.
+
+中文：代价是 detector 只输出 early/late sign，不输出 phase-error magnitude。因此 loop gain、jitter generation、jitter tolerance 和 acquisition behavior 都依赖输入 jitter statistics、transition density、frequency offset、latency 和 actuator step size。面试或 design review 中说“这是一个 bang-bang CDR”还不够，必须继续问它处于 low-noise limit-cycle regime 还是 high-noise statistical linearized regime。
+
+English: The cost is that the detector outputs only the early/late sign, not phase-error magnitude. Therefore loop gain, jitter generation, jitter tolerance, and acquisition behavior depend on input-jitter statistics, transition density, frequency offset, latency, and actuator step size. In an interview or design review, saying "this is a bang-bang CDR" is not enough; the next question is whether it operates in a low-noise limit-cycle regime or a high-noise statistically linearized regime.
+
+### 35.2 First-Order Bang-Bang Loop Model
+
+中文：一个简化 first-order bang-bang CDR/PLL 可以写成 data phase 与 oscillator phase 的离散更新关系：
+
+English: A simplified first-order bang-bang CDR/PLL can be written as discrete updates of data phase and oscillator phase:
+
+$$
+\theta_d(t_n)=\theta_d(0)+2\pi\delta f\,t_n+\phi(t_n)
+$$
+
+$$
+\theta_v(t_{n+1})=\theta_v(t_n)+\epsilon_n\theta_{bb}
+$$
+
+$$
+\epsilon_n=\operatorname{sgn}\left[\theta_d(t_n)-\theta_v(t_n)\right]
+$$
+
+$$
+\theta_{bb}=2\pi\frac{f_{bb}}{f_{nom}}
+$$
+
+中文：这里 $\delta f$ 是 input/oscillator 频率误差，$\phi(t)$ 是输入相位抖动，$\theta_{bb}$ 是每次 bang-bang correction 的 phase step。锁定需要 phase step 能 bracket frequency error，简化条件为：
+
+English: Here $\delta f$ is the input/oscillator frequency error, $\phi(t)$ is input phase jitter, and $\theta_{bb}$ is the phase step per bang-bang correction. Lock requires the phase step to bracket the frequency error, giving the simplified condition:
+
+$$
+|\delta f|<f_{bb}
+$$
+
+中文：在低噪声 hunting limit-cycle 条件下，简化 peak-to-peak jitter 可以估为：
+
+English: Under low-noise hunting-limit-cycle conditions, simplified peak-to-peak jitter can be estimated as:
+
+$$
+J_{pp}=4\pi\frac{f_{bb}}{f_{nom}}
+$$
+
+中文：这条公式把 tradeoff 说得很直接：增大 $f_{bb}$ 可以提高 frequency tracking 和 slope-overload tolerance，但也会增加 deterministic hunting jitter。减小 $f_{bb}$ 可以降低 generated jitter，但会降低可跟踪频偏和低频相位斜率的能力。
+
+English: This equation makes the tradeoff explicit: increasing $f_{bb}$ improves frequency tracking and slope-overload tolerance, but increases deterministic hunting jitter. Decreasing $f_{bb}$ reduces generated jitter, but lowers the ability to track frequency offset and low-frequency phase slope.
+
+### 35.3 Duty Cycle, Frequency Offset, and Slope Overload
+
+中文：在有静态 frequency offset 时，early/late decision 的平均占空比会偏离 50%。一个常用一阶关系是：
+
+English: With static frequency offset, the average duty cycle of early/late decisions moves away from 50%. A useful first-order relation is:
+
+$$
+C=\frac{1}{2}+\frac{\delta f}{2f_{bb}}
+$$
+
+中文：当 $\delta f$ 接近 $f_{bb}$ 时，detector 输出会接近单边饱和，loop 失去对额外频偏或 jitter slope 的余量。对 sinusoidal input phase jitter $\phi(t)=A\sin(2\pi f_{mod}t)$ 且 $\delta f\approx0$ 的情况，slope-overload 前的近似幅度尺度为：
+
+English: As $\delta f$ approaches $f_{bb}$, the detector output becomes nearly one-sided and the loop loses margin for additional frequency offset or jitter slope. For sinusoidal input phase jitter $\phi(t)=A\sin(2\pi f_{mod}t)$ with $\delta f\approx0$, the approximate amplitude scale before slope overload is:
+
+$$
+A_{\max}\approx\frac{f_{bb}}{f_{mod}}
+$$
+
+中文：这不是完整 JTOL mask，但它解释了为什么 bang-bang CDR 的 jitter tolerance 与 actuator step、loop update rate 和 jitter frequency 紧密相连。高频 jitter 更容易超过 phase actuator 的最大追踪斜率；低频 jitter 更容易被 loop 跟踪，但可能带来 recovered clock wander 或 jitter-transfer peaking。
+
+English: This is not a complete JTOL mask, but it explains why bang-bang CDR jitter tolerance is tightly tied to actuator step, loop update rate, and jitter frequency. High-frequency jitter more easily exceeds the maximum trackable phase-actuator slope; low-frequency jitter is easier to track but can create recovered-clock wander or jitter-transfer peaking.
+
+### 35.4 Second-Order Bang-Bang Loop Review
+
+中文：second-order bang-bang CDR 加入 integrator 后，可以扩大 frequency tracking range，而不必只靠增大 $f_{bb}$。一个实用 review 变量是 proportional correction 与 integral correction 的比值：
+
+English: A second-order bang-bang CDR adds an integrator, increasing frequency tracking range without relying only on a larger $f_{bb}$. A useful review variable is the ratio of proportional correction to integral correction:
+
+$$
+\xi\equiv
+\frac{\Delta\theta_{\mathrm{proportional}}}
+{\Delta\theta_{\mathrm{integral}}}
+$$
+
+中文：$\xi$ 不应被随意等同于 linear PLL damping factor。它是 bang-bang loop 中 proportional step、integrator update、latency 和 nonlinear orbit 共同作用下的稳定性尺度。设计上，$f_{bb}$ 更直接影响 jitter generation/tolerance 的 phase-step tradeoff，而 integrator path 更直接影响 frequency offset acquisition 和 long-term tracking。
+
+English: $\xi$ should not be casually equated with the damping factor of a linear PLL. It is a stability scale shaped by proportional step, integrator update, latency, and nonlinear orbits in a bang-bang loop. In design terms, $f_{bb}$ more directly controls the phase-step tradeoff for jitter generation/tolerance, while the integrator path more directly controls frequency-offset acquisition and long-term tracking.
+
+### 35.5 Review Checklist Added
+
+| Review item | Question |
+|---|---|
+| Phase step | What physical PI/DCO/DLL step corresponds to $\theta_{bb}$? |
+| Tracking range | Is $|\delta f|<f_{bb}$ satisfied with margin across SSC, ppm offset, and clock tolerance? |
+| Hunting jitter | Is $J_{pp}$ from bang-bang hunting included in the timing budget? |
+| Slope overload | Is sinusoidal jitter tolerance limited by actuator slew before slicer margin is exhausted? |
+| Second-order path | Is the integrator range separated from proportional jitter-generation tradeoff? |
+| Latency | Does sampler, retimer, DSP, loop filter, PI/DCO update, and clock-tree delay change the nonlinear orbit? |
+
+### 35.6 Source Provenance Added
+
+| Source | Type | Status | Reusable knowledge promoted |
+|---|---|---|---|
+| "Designing Bang-Bang PLLs for Clock and Data Recovery in Serial Data Transmission" | Paper PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission/` | Flip-flop bang-bang CDR motivation, first-order bang-bang phase-step equations, lock range, hunting jitter, duty-cycle/frequency-offset relation, slope-overload intuition, second-order stability-factor framing |
+| Nicola Da Dalt, "A Design-Oriented Study of the Nonlinear Dynamics of Digital Bang-Bang PLLs," IEEE TCAS-I, 2005 | IEEE paper PDF | Balanced Ingest 2026-07-05; archived in `90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005/` | Condensed nonlinear BBPLL orbit/limit-cycle model, loop-delay effect on timing jitter, design-oriented validation of low-noise versus linearized analysis |
+
+---
+
 ## Last Updated
 
 2026-07-05

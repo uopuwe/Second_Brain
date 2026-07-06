@@ -168,9 +168,11 @@ Important future files:
 * `pcie7_clocking_notes.md`
 * `pfd_charge_pump_notes.md`
 * `pll_fractional_n_digital.md`
+* `adpll_notes.md`
+* `dll_notes.md`
 * `clocking_interview_qa.md`
 
-Source-backed PLL updates ingested 2026-07-05: CPPLL sampled-data/state-space analysis, oscillator ISF phase-noise theory, jitter-power lower bounds, ring-oscillator supply-sensitivity tradeoffs, sub-sampling PLL in-band noise scaling, PFD/charge-pump design rules, fractional-N/DSM/DPLL models, and CDR JGEN/JTRAN/JTOL framing were promoted into `PLL_CDR_Clocking/pll_fundamentals.md`, `PLL_CDR_Clocking/pll_phase_noise_jitter.md`, `PLL_CDR_Clocking/pfd_charge_pump_notes.md`, `PLL_CDR_Clocking/pll_fractional_n_digital.md`, and `PLL_CDR_Clocking/cdr_fundamentals.md`; see `Papers_Books/core_serdes_papers.md` Sections 14 and 15.
+Source-backed PLL updates ingested 2026-07-05: CPPLL sampled-data/state-space analysis, oscillator ISF phase-noise theory, jitter-power lower bounds, ring-oscillator supply-sensitivity tradeoffs, sub-sampling PLL in-band noise scaling, PFD/charge-pump design rules, fractional-N/DSM/DPLL models, phase-domain ADPLL/DCO/TDC architecture, bang-bang PLL/CDR nonlinear dynamics, and CDR JGEN/JTRAN/JTOL framing were promoted into `PLL_CDR_Clocking/pll_fundamentals.md`, `PLL_CDR_Clocking/pll_phase_noise_jitter.md`, `PLL_CDR_Clocking/pfd_charge_pump_notes.md`, `PLL_CDR_Clocking/pll_fractional_n_digital.md`, `PLL_CDR_Clocking/adpll_notes.md`, and `PLL_CDR_Clocking/cdr_fundamentals.md`; see `Papers_Books/core_serdes_papers.md` Sections 13 and 14.
 
 Key questions:
 
@@ -460,6 +462,8 @@ Focus:
 - `PLL_CDR_Clocking/pcie7_clocking_notes.md`
 - `PLL_CDR_Clocking/pfd_charge_pump_notes.md`
 - `PLL_CDR_Clocking/pll_fractional_n_digital.md`
+- `PLL_CDR_Clocking/adpll_notes.md`
+- `PLL_CDR_Clocking/dll_notes.md`
 
 ## Active ADC / ADC-Based Receiver Notes
 
