@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "dll_notes"
+              "title": "adpll_notes"
             }
           }
         ]
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 432.5
+    "width": 449.5
   },
   "right": {
     "id": "1191bca06a9da7e7",
@@ -171,10 +171,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md"
+                "file": "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md"
               },
               "icon": "lucide-info",
-              "title": "File properties for dll_notes"
+              "title": "File properties for adpll_notes"
             }
           }
         ],
@@ -182,7 +182,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 297.5
+    "width": 368.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -197,44 +197,44 @@
   },
   "active": "89e85f331d4bc304",
   "lastOpenFiles": [
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md",
+    "00_Inbox/obsync_test.md",
+    "00_Inbox/README - Copy.md",
+    "01_AnalogIC_SerDes/analog_ic_serdes_master_index.md",
+    "export_data/index.md",
+    "00_Inbox/conversation_inventory/serdes_conversation_inventory_2026-07-01.md",
+    "00_Inbox/conversation_inventory/raw_conversation_list.md",
+    "00_Inbox/conversation_inventory/conversion_report_2026-07-01.md",
+    "00_Inbox/conversation_inventory/conversation_inventory_2026-07-01.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/Razavi_PLL_第8.9-8.10节_Spur与相位噪声传递函数_四问整理.md",
+    "01_AnalogIC_SerDes/ADC_TI_SAR/ti_sar_mismatch_calibration.md",
+    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
+    "01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
+    "02_Synopsys_Work/benefits_dental.md",
+    "02_Synopsys_Work/synopsys_master_note.md",
+    "02_Synopsys_Work/onboarding_plan.md",
+    "03_Investing/investing_master_note.md",
+    "06_Other_Affairs/other_affairs_master_note.md",
+    "05_Health_Medical/health_master_note.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_fundamentals.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fundamentals.md",
-    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_adpll_bbpll_batch.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md",
+    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_interpolator.md",
+    "01_AnalogIC_SerDes/Design_Methodology/BER_to_Transistor_Translation.md",
+    "01_AnalogIC_SerDes/Design_Methodology/224G_SerDes_PLL_Spec_Matrix_and_Example.md",
+    "01_AnalogIC_SerDes/Design_Methodology/Ring_vs_LC_相位噪声对比.md",
+    "01_AnalogIC_SerDes/Design_Methodology/Razavi PLL 阅读进度.md",
+    "01_AnalogIC_SerDes/Design_Methodology/~$4G_SerDes_PLL_Spec_Matrix_and_Example.docx",
+    "01_AnalogIC_SerDes/Design_Methodology/224G_SerDes_PLL_Spec_Matrix_and_Example.docx",
+    "01_AnalogIC_SerDes/Design_Methodology/224G_SerDes_PLL_Spec_Matrix_and_Example_Portrait(1)(1).docx",
+    "01_AnalogIC_SerDes/Design_Methodology/224G_SerDes_PLL_Spec_Matrix_and_Example_Portrait(1).docx",
+    "01_AnalogIC_SerDes/Design_Methodology/BER_to_Transistor_Translation.md.backup_20260718_193518",
     "90_Archive/processed/2026/papers/duplicate_dutta_pll_architecture_review_2024/Exploring_the_Landscape_of_Phase-Locked_Loop_Architectures A Comprehensive Review.pdf",
     "90_Archive/processed/2026/papers/duplicate_dutta_pll_architecture_review_2024",
     "90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020/eetop.cn_CMOS analog and mixed-signal phase-locked loops_ An overview.pdf",
     "90_Archive/processed/2026/papers/zhang_cmos_ams_pll_overview_2020",
     "90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission/Designing Bang-Bang PLLs for Clock and Data Recovery in Serial Data Transmission.pdf",
-    "90_Archive/processed/2026/papers/bang_bang_plls_cdr_serial_data_transmission",
-    "90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005/A design-oriented study of the nonlinear dynamics of digital bang-bang PLLs.pdf",
-    "90_Archive/processed/2026/papers/da_dalt_nonlinear_dynamics_bbpll_2005",
-    "90_Archive/processed/2026/papers/staszewski_all_digital_tx_synthesizer_bluetooth_2004/2278stas All-Digital TX Frequency Synthesizer and.pdf",
-    "90_Archive/processed/2026/papers/staszewski_all_digital_tx_synthesizer_bluetooth_2004",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_loop_bandwidth.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/serdes_channel_equalization.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_fractional_n_digital.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_interpolator.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pcie7_clocking_notes.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/clock_distribution_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pfd_charge_pump_notes.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/dll_notes.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/cdr_jitter_tolerance.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/phase_noise_jitter.md",
-    "01_AnalogIC_SerDes/PLL_CDR_Clocking/pll_phase_noise_to_jitter.md",
-    "90_Archive/processed/2026/ingest_report_2026-07-05_balanced_digital_pll_batch.md",
     "Untitled 2.canvas",
-    "2026-07-05.md",
     "Untitled 1.canvas",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-02-20__Marvell_高速光模块职位.md",
-    "Untitled.canvas",
-    "2026-07-04.md",
-    "90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/ingest_report_2026-07-05.md",
-    "00_Inbox/raw_chat_exports/chatgpt_export_2026-07-01/md_by_conversation/2026-05-13__SerDes_PLL_CDR_带宽.md",
-    "90_Archive/processed/2026/papers/hajimiri_gao_pll_sources_2026-07-05/ingest_report_2026-07-05.md",
-    "01_AnalogIC_SerDes/SerDes/ctle_ffe_dfe_notes.md",
-    "01_AnalogIC_SerDes/Papers_Books/core_serdes_papers.md",
-    "01_AnalogIC_SerDes/SerDes/serdes_verification_methodology.md"
+    "Untitled.canvas"
   ]
 }

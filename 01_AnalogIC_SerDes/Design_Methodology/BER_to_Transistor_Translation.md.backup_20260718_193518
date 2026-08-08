@@ -1,0 +1,2189 @@
+# 从 BER 到晶体管参数的完整翻译链
+
+先把最容易被管理层和某些“系统专家”故意模糊的事实说清楚：
+
+[
+\boxed{\mathrm{BER}\ \not\Rightarrow\ W/L}
+]
+
+BER 与晶体管尺寸之间不存在一步到位的公式。真正的翻译过程是：
+
+[
+\boxed{
+\begin{aligned}
+&\text{Post-FEC BER}\
+&\Downarrow\
+&\text{Pre-FEC BER}\
+&\Downarrow\
+&Q\text{-factor / SNR}\
+&\Downarrow\
+&\text{垂直眼高与水平眼宽}\
+&\Downarrow\
+&\text{噪声、抖动、ISI、失调预算}\
+&\Downarrow\
+&\text{AFE、ADC/Slicer、CDR、DFE、TX Spec}\
+&\Downarrow\
+&g_m,\ r_o,\ C,\ V_{\mathrm{ov}},\ I_D,\ f_T\
+&\Downarrow\
+&L,\ W,\ \text{finger 数、偏置、电流密度}
+\end{aligned}}
+]
+
+下面用一个**通用 224 Gb/s PAM4 接收机**作为完整算例。对应符号率为：
+
+[
+R_s=\frac{224\ \mathrm{Gb/s}}{2}=112\ \mathrm{GBaud}
+]
+
+[
+UI=\frac{1}{112\ \mathrm{GHz}}=8.929\ \mathrm{ps}
+]
+
+这个速率属于 OIF CEI-224G 所覆盖的速率等级，但下面是设计方法示例，不代表某一标准的合规参数。([OIForum][1])
+
+---
+
+## 一、系统 BER 如何翻译成电路 BER
+
+### 1. Post-FEC BER 不能直接拿来设计模拟前端
+
+假设系统要求：
+
+[
+BER_{\mathrm{post-FEC}}\leq 10^{-15}
+]
+
+不能因此要求模拟接收机直接做到：
+
+[
+BER_{\mathrm{analog}}\leq 10^{-15}
+]
+
+否则你会设计出一台耗电像暖炉、面积像停车场、最终仍然过不了 PVT 的怪物。
+
+正确关系是：
+
+[
+BER_{\mathrm{post}}
+===================
+
+\mathcal{F}*{\mathrm{FEC}}
+\left(
+BER*{\mathrm{pre}},
+\text{burst distribution},
+\text{error correlation},
+\text{LLR quality}
+\right)
+]
+
+其中 (\mathcal{F}_{\mathrm{FEC}}) 是 FEC waterfall 曲线。
+
+因此必须从系统团队取得：
+
+* FEC 类型和码率；
+* hard-decision 还是 soft-decision；
+* 可容忍的 pre-FEC BER；
+* burst error 限制；
+* decoder latency；
+* 是否要求 error floor；
+* 实际 waterfall curve，而不是某人 PPT 上一个充满信心的数字。
+
+假设根据 FEC 仿真和设计裕量，确定：
+
+[
+\boxed{BER_{\mathrm{pre,target}}=10^{-6}}
+]
+
+这个 (10^{-6}) 才是后面模拟链路需要翻译的目标。
+
+---
+
+# 二、BER 翻译成 PAM4 的 Q-factor
+
+## 2.1 通用不对称 PAM4 BER
+
+设 PAM4 四个电平为：
+
+[
+\mu_0<\mu_1<\mu_2<\mu_3
+]
+
+三个判决门限为：
+
+[
+\theta_1,\theta_2,\theta_3
+]
+
+每个电平噪声标准差分别为：
+
+[
+\sigma_0,\sigma_1,\sigma_2,\sigma_3
+]
+
+在高 SNR、主要发生相邻电平误判、Gray coding 条件下：
+
+[
+\begin{aligned}
+BER \approx \frac{1}{8}\bigg[
+&Q\left(\frac{\theta_1-\mu_0}{\sigma_0}\right)\
++&Q\left(\frac{\mu_1-\theta_1}{\sigma_1}\right)
++Q\left(\frac{\theta_2-\mu_1}{\sigma_1}\right)\
++&Q\left(\frac{\mu_2-\theta_2}{\sigma_2}\right)
++Q\left(\frac{\theta_3-\mu_2}{\sigma_2}\right)\
++&Q\left(\frac{\mu_3-\theta_3}{\sigma_3}\right)
+\bigg]
+\end{aligned}
+]
+
+这里：
+
+[
+Q(x)=\frac{1}{\sqrt{2\pi}}\int_x^\infty e^{-u^2/2},du
+]
+
+前面的 (1/8) 来自：
+
+* 四种 PAM4 symbol 等概率；
+* 每个 symbol 携带两比特；
+* Gray coding 下相邻误判通常只错一个比特。
+
+统计 BER 模型必须考虑不同电平、门限、噪声和非二进制符号，而不能只看一张“眼图挺漂亮”的截图。([IEEE Xplore][2])
+
+---
+
+## 2.2 理想对称 PAM4
+
+理想 PAM4 电平：
+
+[
+-3A,\ -A,\ +A,\ +3A
+]
+
+门限：
+
+[
+-2A,\ 0,\ +2A
+]
+
+相邻电平距离：
+
+[
+\Delta V=2A
+]
+
+每个电平到最近门限的距离：
+
+[
+d=\frac{\Delta V}{2}=A
+]
+
+若所有电平噪声相同，则：
+
+[
+\boxed{BER_{\mathrm{PAM4}}\approx \frac{3}{4}Q\left(\frac{A}{\sigma}\right)}
+]
+
+定义：
+
+[
+q=\frac{A}{\sigma}
+=\frac{\Delta V}{2\sigma}
+]
+
+因此：
+
+[
+\boxed{
+q=Q^{-1}\left(\frac{4}{3}BER\right)
+}
+]
+
+常用值如下：
+
+| Pre-FEC BER | 所需 (q) |
+| ----------: | -----: |
+|   (10^{-4}) |  3.646 |
+|   (10^{-5}) |  4.200 |
+|   (10^{-6}) |  4.695 |
+|   (10^{-9}) |  5.951 |
+|  (10^{-12}) |  6.994 |
+
+所以对于：
+
+[
+BER=10^{-6}
+]
+
+有：
+
+[
+\boxed{q=4.695}
+]
+
+这意味着接收机最小半眼高必须至少是总随机噪声 RMS 的 4.695 倍。
+
+---
+
+# 三、Q-factor 翻译成 SNR
+
+理想 PAM4 平均信号功率为：
+
+[
+E[x^2]
+======
+
+\frac{1}{4}
+\left[
+(-3A)^2+(-A)^2+A^2+(3A)^2
+\right]
+=5A^2
+]
+
+若采样点噪声方差为 (\sigma^2)，定义离散采样 SNR：
+
+[
+SNR_{\mathrm{sample}}
+=====================
+
+\frac{5A^2}{\sigma^2}
+=5q^2
+]
+
+因此：
+
+[
+\boxed{
+SNR_{\mathrm{sample,dB}}
+========================
+
+10\log_{10}(5q^2)
+}
+]
+
+对于 (BER=10^{-6})：
+
+[
+SNR_{\mathrm{sample}}
+=5(4.695)^2
+=110.2
+]
+
+[
+\boxed{
+SNR_{\mathrm{sample,dB}}=20.42\ \mathrm{dB}
+}
+]
+
+这只是**理想 AWGN、无 ISI、无抖动、无失调、无非线性**条件下的采样 SNR。
+
+真实 SerDes 不能把 20.42 dB 直接填进 ADC spec，然后宣布设计完成。那种做法通常只在项目延期后的事故复盘会上显得特别有创造力。
+
+---
+
+# 四、BER 翻译成垂直眼高
+
+对于第 (i) 个 PAM4 子眼，定义理想的门限距离：
+
+[
+d_{i,0}
+]
+
+确定性闭合包括：
+
+[
+V_{\mathrm{det},i}
+==================
+
+V_{\mathrm{ISI},i}
++
+V_{\mathrm{offset},i}
++
+V_{\mathrm{nonlin},i}
++
+V_{\mathrm{xtalk},i}
++
+V_{\mathrm{supply},i}
++
+V_{\mathrm{DJ\rightarrow V},i}
+]
+
+有效门限距离为：
+
+[
+\boxed{
+d_{i,\mathrm{eff}}
+==================
+
+d_{i,0}-V_{\mathrm{det},i}
+}
+]
+
+随机噪声总 RMS 为：
+
+[
+\boxed{
+\begin{aligned}
+\sigma_{v,i}^2
+={}&
+\sigma_{\mathrm{AFE}}^2
++\sigma_{\mathrm{slicer}}^2
++\sigma_{\mathrm{quant}}^2\
+&+\sigma_{\mathrm{supply,rnd}}^2
++\sigma_{\mathrm{xtalk,rnd}}^2
++\sigma_{\mathrm{ISI,rnd}}^2\
+&+S_i^2\sigma_t^2
+\end{aligned}}
+]
+
+其中：
+
+[
+S_i=\left|\frac{dv}{dt}\right|_{\text{threshold }i}
+]
+
+是数据在门限附近的电压斜率。
+
+BER 要求变成：
+
+[
+\boxed{
+d_{i,\mathrm{eff}}
+\geq q_i\sigma_{v,i}
+}
+]
+
+或者：
+
+[
+\boxed{
+\sigma_{v,i,\max}
+=================
+
+\frac{d_{i,0}-V_{\mathrm{det},i}}{q_i}
+}
+]
+
+这是整个翻译链最重要的方程之一。
+
+---
+
+## 随机误差与确定性误差必须分开
+
+确定性闭合通常线性相加：
+
+[
+V_{\mathrm{det,total}}
+======================
+
+\sum_j V_{\mathrm{det},j}
+]
+
+互不相关的随机噪声按 RSS：
+
+[
+\sigma_{\mathrm{rnd,total}}
+===========================
+
+\sqrt{\sum_j\sigma_j^2}
+]
+
+不能把 offset、ISI peak、热噪声 RMS、DJ peak-to-peak 全塞进一个平方根。那不是统计学，只是 Excel 对工程师人格的腐蚀。
+
+---
+
+# 五、BER 翻译成水平眼宽和抖动
+
+定义：
+
+* (T_{\mathrm{DJ,pp}})：确定性抖动；
+* (T_{\mathrm{ISI,pp}})：数据相关抖动；
+* (T_{\mathrm{DCD,pp}})：占空比失真；
+* (t_{\mathrm{aperture}})：采样器建立保持、孔径和静态相位误差预算。
+
+单边剩余时间裕量：
+
+[
+T_{\mathrm{margin}}
+===================
+
+\frac{
+UI
+-T_{\mathrm{DJ,pp}}
+-T_{\mathrm{ISI,pp}}
+-T_{\mathrm{DCD,pp}}
+}{2}
+-t_{\mathrm{aperture}}
+]
+
+要求：
+
+[
+\boxed{
+T_{\mathrm{margin}}
+\geq q_t\sigma_{t,\mathrm{RJ}}
+}
+]
+
+因此：
+
+[
+\boxed{
+\sigma_{t,\mathrm{RJ,max}}
+==========================
+
+\frac{T_{\mathrm{margin}}}{q_t}
+}
+]
+
+若采用与垂直 BER 相同的保守 (q_t=4.695)，就可以得到时钟、CDR、采样器和数据路径的总随机抖动预算。
+
+---
+
+## 时间抖动如何变成电压噪声
+
+小信号近似：
+
+[
+\delta v
+\approx
+\frac{dv}{dt}\delta t
+]
+
+因此：
+
+[
+\boxed{
+\sigma_{v,\mathrm{jitter}}
+==========================
+
+S_{\mathrm{threshold}}\sigma_t
+}
+]
+
+这说明同样的时钟 jitter，在不同位置的危害不同：
+
+* 眼中心平坦处，斜率小，垂直误差小；
+* crossing 附近斜率大，水平误差最严重；
+* CTLE 高频 boost 增加 slew rate，但同时放大高频噪声；
+* 更陡的边沿未必总是免费午餐，因为自然界不经营慈善机构。
+
+---
+
+# 六、ISI 如何翻译成均衡器 Spec
+
+设 TX、channel、CTLE、RX FFE 合并后的离散脉冲响应为：
+
+[
+h[k]
+]
+
+主游标：
+
+[
+h[0]
+]
+
+残余前后游标：
+
+[
+r[k],\qquad k\neq0
+]
+
+对于归一化 PAM4 符号：
+
+[
+x[k]\in{-3,-1,+1,+3}A
+]
+
+最坏情况确定性 ISI：
+
+[
+\boxed{
+V_{\mathrm{ISI,pk}}
+\leq
+3A\sum_{k\neq0}|r[k]|
+}
+]
+
+随机数据下：
+
+[
+E[x^2]=5A^2
+]
+
+所以残余 ISI RMS 近似：
+
+[
+\boxed{
+\sigma_{\mathrm{ISI}}
+=====================
+
+\sqrt{5}A
+\sqrt{
+\sum_{k\neq0}r[k]^2
+}
+}
+]
+
+因此 BER 预算可以直接翻译成：
+
+[
+\sum |r[k]|
+\leq
+\frac{V_{\mathrm{ISI,det,budget}}}{3A}
+]
+
+以及：
+
+[
+\sum r[k]^2
+\leq
+\frac{\sigma_{\mathrm{ISI,budget}}^2}{5A^2}
+]
+
+这两条进一步决定：
+
+* TX FFE tap 数量；
+* CTLE boost；
+* RX FFE tap 数量；
+* DFE tap 数量；
+* 每个 tap 的量化精度；
+* 自适应算法收敛精度；
+* coefficient DAC 的 mismatch。
+
+---
+
+# 七、系统预算翻译成 AFE 晶体管参数
+
+## 7.1 增益要求
+
+假设 RX 输入最小相邻电平距离为：
+
+[
+\Delta V_{\mathrm{in}}
+]
+
+采样器需要的内部相邻电平距离为：
+
+[
+\Delta V_{\mathrm{samp}}
+]
+
+则 AFE 增益至少为：
+
+[
+\boxed{
+A_v
+\geq
+\frac{\Delta V_{\mathrm{samp}}}
+{\Delta V_{\mathrm{in}}}
+}
+]
+
+但还必须检查 PAM4 外层电平：
+
+[
+V_{\mathrm{outer,pk}}
+=====================
+
+\frac{3}{2}\Delta V_{\mathrm{samp}}
+]
+
+AFE 在该幅度下不能明显压缩，否则三个子眼高度不等，最小子眼先死，另外两个子眼则负责在眼图上制造虚假的乐观。
+
+---
+
+## 7.2 增益、带宽与 (g_m)
+
+对于一个近似单极点跨导级：
+
+[
+A_v=g_mR_{\mathrm{out}}
+]
+
+[
+f_p=\frac{1}{2\pi R_{\mathrm{out}}C_L}
+]
+
+消去 (R_{\mathrm{out}})：
+
+[
+\boxed{
+g_m
+===
+
+2\pi A_v f_p C_L
+}
+]
+
+这是 BER 到晶体管 (g_m) 最直接、最实用的翻译公式之一。
+
+同时：
+
+[
+\boxed{
+R_{\mathrm{out}}
+================
+
+\frac{A_v}{g_m}
+}
+]
+
+[
+g_{ds,\mathrm{total}}
+\leq
+\frac{1}{R_{\mathrm{out}}}
+]
+
+于是可以确定晶体管需要的 intrinsic gain：
+
+[
+\frac{g_m}{g_{ds}}
+]
+
+---
+
+## 7.3 噪声要求翻译成 (g_m)
+
+AFE 输入参考白噪声近似：
+
+[
+\overline{v_n^2}
+================
+
+F_n
+\frac{4kT\gamma}{g_m}
+B_{\mathrm{eq}}
+]
+
+其中：
+
+* (F_n)：拓扑噪声因子；
+* (\gamma)：沟道热噪声系数；
+* (B_{\mathrm{eq}})：等效噪声带宽。
+
+因此：
+
+[
+\boxed{
+g_{m,\mathrm{noise}}
+\geq
+F_n
+\frac{4kT\gamma B_{\mathrm{eq}}}
+{\sigma_{v,\mathrm{AFE}}^2}
+}
+]
+
+最终：
+
+[
+\boxed{
+g_m
+\geq
+\max
+\left(
+g_{m,\mathrm{noise}},
+g_{m,\mathrm{gain-BW}},
+g_{m,\mathrm{linearity}}
+\right)
+}
+]
+
+在高速 SerDes 里，常见结果是：
+
+[
+g_{m,\mathrm{gain-BW}}
+
+>
+
+g_{m,\mathrm{noise}}
+]
+
+也就是说，电路不是噪声不够好，而是寄生太大、带宽太高、负载太贪婪。
+
+---
+
+## 7.4 (g_m) 翻译成电流
+
+使用 (g_m/I_D) 方法：
+
+[
+\boxed{
+I_D
+===
+
+\frac{g_m}{g_m/I_D}
+}
+]
+
+例如选择：
+
+[
+\frac{g_m}{I_D}=14\ \mathrm{V^{-1}}
+]
+
+要求：
+
+[
+g_m=20\ \mathrm{mS}
+]
+
+则：
+
+[
+I_D
+===
+
+# \frac{20\ \mathrm{mS}}{14\ \mathrm{V^{-1}}}
+
+1.43\ \mathrm{mA}
+]
+
+这里的 (I_D) 是产生该 (g_m) 的器件支路电流。尾电流还取决于差分对结构和 (g_m) 的定义。
+
+---
+
+## 7.5 电流翻译成 W/L
+
+先进工艺不要迷信平方律：
+
+[
+I_D
+===
+
+\frac{1}{2}\mu C_{\mathrm{ox}}
+\frac WL V_{\mathrm{ov}}^2
+]
+
+这个式子可用于初始直觉，但不能用于最终 tapeout sizing。
+
+实际流程应当是：
+
+1. 根据速度、(r_o)、mismatch 和可靠性选择 (L)；
+2. 在 PDK LUT 中选定 (g_m/I_D)；
+3. 查询对应电流密度 (J_D=I_D/W)；
+4. 计算：
+
+[
+\boxed{
+W=\frac{I_D}{J_D}
+}
+]
+
+5. 从 PDK 提取实际：
+
+[
+g_m,\ g_{ds},\ C_{gs},\ C_{gd},\ C_{db},\ f_T
+]
+
+6. 重新检查增益、极点、噪声和线性；
+7. 加入 extracted parasitic 后再次迭代。
+
+因为增加 (W) 会同时带来：
+
+* 更大 (g_m)；
+* 更低 mismatch；
+* 更大输入电容；
+* 更大输出寄生；
+* 更重的前级负载；
+* 更高动态功耗。
+
+所以“晶体管大一点更保险”是模拟设计里流传最广的自我欺骗之一。
+
+---
+
+# 八、CTLE Spec 到 R、C、(g_m)
+
+对于带源退化 (R_s\parallel C_s) 的 CTLE，近似：
+
+[
+H(s)
+\propto
+\frac{1+sR_sC_s}
+{1+g_mR_s+sR_sC_s}
+]
+
+低频跨导：
+
+[
+g_{m,\mathrm{LF}}
+=================
+
+\frac{g_m}{1+g_mR_s}
+]
+
+高频跨导：
+
+[
+g_{m,\mathrm{HF}}
+\approx g_m
+]
+
+高低频 boost：
+
+[
+\boxed{
+G_{\mathrm{boost}}
+==================
+
+1+g_mR_s
+}
+]
+
+因此：
+
+[
+\boxed{
+R_s
+===
+
+\frac{G_{\mathrm{boost}}-1}{g_m}
+}
+]
+
+零点：
+
+[
+\boxed{
+f_z
+===
+
+\frac{1}{2\pi R_sC_s}
+}
+]
+
+极点：
+
+[
+\boxed{
+f_p
+===
+
+# \frac{1+g_mR_s}{2\pi R_sC_s}
+
+G_{\mathrm{boost}}f_z
+}
+]
+
+因此，channel loss spec 可以翻译为 CTLE boost，进一步翻译为：
+
+[
+g_m,\ R_s,\ C_s
+]
+
+然后再翻译成器件尺寸、电阻尺寸和电容面积。
+
+---
+
+# 九、Comparator/Slicer Spec 到晶体管参数
+
+Comparator 需要从 BER 得到以下指标：
+
+* 输入参考噪声；
+* residual offset；
+* decision time；
+* metastability probability；
+* kickback；
+* input capacitance；
+* threshold DAC 精度。
+
+## 9.1 Comparator 噪声与电容
+
+动态比较器噪声通常可写为：
+
+[
+\sigma_{\mathrm{comp}}^2
+\approx
+F_{\mathrm{comp}}
+\frac{kT}{C_{\mathrm{eff}}}
+]
+
+因此：
+
+[
+\boxed{
+C_{\mathrm{eff}}
+\geq
+F_{\mathrm{comp}}
+\frac{kT}
+{\sigma_{\mathrm{comp}}^2}
+}
+]
+
+注意这个 (C_{\mathrm{eff}}) 不是简单某一个节点电容，而是与输入对、再生节点和噪声传递函数有关的等效值。
+
+---
+
+## 9.2 Offset 到器件面积
+
+Pelgrom 模型：
+
+[
+\sigma_{V_{\mathrm{os}}}
+\approx
+K_{\mathrm{top}}
+\frac{A_{V_T}}{\sqrt{WL}}
+]
+
+因此：
+
+[
+\boxed{
+WL
+\geq
+\left(
+\frac{K_{\mathrm{top}}A_{V_T}}
+{\sigma_{V_{\mathrm{os,target}}}}
+\right)^2
+}
+]
+
+若带 offset calibration：
+
+[
+V_{\mathrm{cal,range}}
+\geq
+V_{\mathrm{systematic,max}}
++n\sigma_{V_{\mathrm{os}}}
+]
+
+DAC 量化残差：
+
+[
+\frac{LSB_{\mathrm{cal}}}{2}
+\leq
+V_{\mathrm{offset,residual,budget}}
+]
+
+---
+
+## 9.3 再生时间到 (g_m)
+
+Latch 再生时间常数：
+
+[
+\boxed{
+\tau
+\approx
+\frac{C_L}{g_{m,\mathrm{reg}}}
+}
+]
+
+输出随时间增长：
+
+[
+V_{\mathrm{out}}(t)
+===================
+
+A_{\mathrm{pre}}V_{\mathrm{od}}
+e^{t/\tau}
+]
+
+要求在可用时间 (t_{\mathrm{avail}}) 内达到逻辑摆幅 (V_L)：
+
+[
+t_{\mathrm{avail}}
+\geq
+\tau
+\ln
+\left(
+\frac{V_L}
+{A_{\mathrm{pre}}V_{\mathrm{od,min}}}
+\right)
+]
+
+所以：
+
+[
+\boxed{
+g_{m,\mathrm{reg}}
+\geq
+\frac{C_L}{t_{\mathrm{avail}}}
+\ln
+\left(
+\frac{V_L}
+{A_{\mathrm{pre}}V_{\mathrm{od,min}}}
+\right)
+}
+]
+
+其中 (V_{\mathrm{od,min}}) 不能随便取 1 mV 或 10 mV，而应当来自 BER 条件下最小剩余 overdrive。
+
+---
+
+# 十、ADC-based RX 的附加翻译链
+
+## 10.1 Quantization noise
+
+ADC 量化噪声：
+
+[
+\sigma_q
+========
+
+# \frac{LSB}{\sqrt{12}}
+
+\frac{V_{\mathrm{FS}}}
+{2^N\sqrt{12}}
+]
+
+要求：
+
+[
+\sigma_q
+\leq
+\sigma_{\mathrm{quant,budget}}
+]
+
+因此：
+
+[
+\boxed{
+N
+\geq
+\log_2
+\left(
+\frac{V_{\mathrm{FS}}}
+{\sqrt{12}\sigma_{\mathrm{quant,budget}}}
+\right)
+}
+]
+
+这给出的是最低量化位数。实际还要考虑：
+
+* comparator noise；
+* reference noise；
+* capacitor mismatch；
+* residue settling；
+* clock jitter；
+* TI offset/gain/skew；
+* DSP coefficient quantization。
+
+---
+
+## 10.2 Sampling capacitor
+
+采样热噪声：
+
+[
+\sigma_{\mathrm{samp}}^2
+========================
+
+\frac{kT}{C_s}
+]
+
+因此：
+
+[
+\boxed{
+C_s
+\geq
+\frac{kT}
+{\sigma_{\mathrm{samp}}^2}
+}
+]
+
+实际通常乘上 topology、差分、charge redistribution 和 margin 因子。
+
+---
+
+## 10.3 Sampling switch (R_{\mathrm{on}})
+
+采样网络 settling error：
+
+[
+\epsilon_{\mathrm{settle}}
+==========================
+
+e^{-t_{\mathrm{acq}}/(R_{\mathrm{on}}C_s)}
+]
+
+所以：
+
+[
+\boxed{
+R_{\mathrm{on}}
+\leq
+\frac{t_{\mathrm{acq}}}
+{C_s\ln(1/\epsilon_{\mathrm{settle}})}
+}
+]
+
+MOS switch 粗略：
+
+[
+R_{\mathrm{on}}
+\approx
+\frac{1}
+{\mu C_{\mathrm{ox}}(W/L)(V_{GS}-V_T)}
+]
+
+由此得到最低 (W/L)，然后再检查：
+
+* input-dependent (R_{\mathrm{on}})；
+* clock feedthrough；
+* charge injection；
+* bootstrapped gate reliability；
+* (C_{gd}) 与输入带宽。
+
+---
+
+## 10.4 TI-ADC timing skew
+
+第 (m) 个通道 skew 为 (\Delta t_m)，产生：
+
+[
+e_m(t)
+\approx
+\Delta t_m\frac{dv}{dt}
+]
+
+RMS：
+
+[
+\boxed{
+\sigma_{v,\mathrm{skew}}^2
+==========================
+
+\sigma_{t,\mathrm{skew}}^2
+E\left[
+\left(\frac{dv}{dt}\right)^2
+\right]
+}
+]
+
+因此：
+
+[
+\boxed{
+\sigma_{t,\mathrm{skew,max}}
+============================
+
+\frac{
+\sigma_{v,\mathrm{skew,budget}}
+}{
+\sqrt{E[(dv/dt)^2]}
+}
+}
+]
+
+这进一步决定：
+
+* delay cell LSB；
+* skew calibration resolution；
+* phase interpolator resolution；
+* clock buffer mismatch；
+* layout matching。
+
+---
+
+# 十一、CDR/PLL 抖动到晶体管参数
+
+## 11.1 Phase noise 到 RMS jitter
+
+若时钟频率为 (f_{\mathrm{clk}})，相位噪声 PSD 为 (S_\phi(f))：
+
+[
+\boxed{
+\sigma_t^2
+==========
+
+\frac{1}
+{(2\pi f_{\mathrm{clk}})^2}
+\int_{f_1}^{f_2}S_\phi(f),df
+}
+]
+
+若输入是单边带 phase noise (L(f))，常用近似：
+
+[
+S_\phi(f)
+\approx
+2\times10^{L(f)/10}
+]
+
+因此 BER 给出的 (\sigma_t) 可以反推出允许的 integrated phase noise。
+
+PLL/CDR 各噪声源：
+
+[
+\begin{aligned}
+S_{\phi,\mathrm{out}}(f)
+={}&
+|H_{\mathrm{ref}}(f)|^2S_{\phi,\mathrm{ref}}(f)\
+&+
+|H_{\mathrm{VCO}}(f)|^2S_{\phi,\mathrm{VCO}}(f)\
+&+
+|H_{\mathrm{CP}}(f)|^2S_{\mathrm{CP}}(f)\
+&+
+|H_{\mathrm{divider}}(f)|^2S_{\mathrm{divider}}(f)
+\end{aligned}
+]
+
+积分后：
+
+[
+\sigma_{t,\mathrm{clock}}^2
+===========================
+
+\sum_j\sigma_{t,j}^2
+]
+
+---
+
+## 11.2 Clock buffer 到 (g_m) 与电流
+
+若 clock buffer 负载为 (C_L)，要求 transition time：
+
+[
+t_r
+]
+
+一阶估算：
+
+[
+I_{\mathrm{drive}}
+\geq
+C_L\frac{\Delta V}{t_r}
+]
+
+或：
+
+[
+g_m
+\gtrsim
+\frac{C_L}{t_r}
+]
+
+时钟路径还要满足：
+
+[
+\sigma_{t,\mathrm{buffer}}
+==========================
+
+\frac{\sigma_{v,\mathrm{noise}}}
+{dV/dt}
+]
+
+所以增大 slew rate 可降低电压噪声引起的 timing jitter，但需要更大电流，并会增加：
+
+* supply noise；
+* substrate coupling；
+* duty-cycle distortion；
+* simultaneous switching noise。
+
+---
+
+# 十二、DFE tap Spec 到 DAC 和晶体管 mismatch
+
+设真实 postcursor 为 (c_k)，DFE coefficient 为 (\hat c_k)：
+
+[
+\delta c_k=c_k-\hat c_k
+]
+
+残余 DFE ISI：
+
+[
+e_{\mathrm{DFE}}[n]
+===================
+
+\sum_k\delta c_k\hat x[n-k]
+]
+
+对于 PAM4：
+
+[
+\sigma_{\mathrm{DFE}}^2
+=======================
+
+5A^2\sum_k\sigma_{\delta c_k}^2
+]
+
+因此：
+
+[
+\boxed{
+\sum_k\sigma_{\delta c_k}^2
+\leq
+\frac{
+\sigma_{\mathrm{DFE,budget}}^2
+}{
+5A^2
+}
+}
+]
+
+若 tap DAC 范围为 (C_{\mathrm{range}})，量化误差要求为 (\delta c_{\max})：
+
+[
+\boxed{
+N_{\mathrm{tap}}
+\geq
+\log_2
+\left(
+\frac{C_{\mathrm{range}}}
+{2\delta c_{\max}}
+\right)
+}
+]
+
+电流 DAC tap：
+
+[
+V_{\mathrm{tap}}
+================
+
+I_{\mathrm{tap}}R_{\mathrm{load}}
+]
+
+所以：
+
+[
+I_{\mathrm{tap}}
+================
+
+\frac{V_{\mathrm{tap}}}
+{R_{\mathrm{load}}}
+]
+
+电流单元 mismatch：
+
+[
+\frac{\sigma_I}{I}
+\approx
+\sqrt{
+\left(\frac{A_\beta}{\sqrt{WL}}\right)^2
++
+\left(
+\frac{g_m}{I}
+\frac{A_{V_T}}{\sqrt{WL}}
+\right)^2
+}
+]
+
+由 coefficient 精度得到电流匹配要求，再得到最小器件面积。
+
+---
+
+# 十三、TX 摆幅到 Driver 晶体管
+
+若接收机要求相邻电平距离：
+
+[
+\Delta V_{\mathrm{RX}}
+]
+
+TX、channel 和 equalizer 的有效主游标增益为：
+
+[
+|h_{\mathrm{main,eff}}|
+]
+
+则：
+
+[
+\boxed{
+\Delta V_{\mathrm{TX}}
+\geq
+\frac{
+\Delta V_{\mathrm{RX}}
+}{
+|h_{\mathrm{main,eff}}|
+}
+}
+]
+
+PAM4 outer peak-to-peak：
+
+[
+\boxed{
+V_{\mathrm{pp,diff,TX}}
+=======================
+
+3\Delta V_{\mathrm{TX}}
+}
+]
+
+对于差分电阻 (R_{\mathrm{diff}})，若输出电平为 (\pm I_{\mathrm{pk}}R_{\mathrm{diff}})：
+
+[
+\boxed{
+I_{\mathrm{pk}}
+===============
+
+\frac{
+V_{\mathrm{pp,diff}}
+}{
+2R_{\mathrm{diff}}
+}
+}
+]
+
+再加上：
+
+* pre-cursor tap；
+* post-cursor tap；
+* termination current；
+* common-mode control；
+* process/current margin。
+
+输出带宽：
+
+[
+f_{\mathrm{out}}
+================
+
+\frac{1}
+{2\pi
+(R_{\mathrm{out}}\parallel R_{\mathrm{term}})
+(C_{\mathrm{pad}}+C_{\mathrm{ESD}}+C_{\mathrm{pkg}}+C_{\mathrm{drv}})}
+]
+
+这直接约束 driver 晶体管的宽度。宽度增大可以降低 (R_{\mathrm{on}})，但同时增加 (C_{\mathrm{drv}})，所以最终一定存在最优尺寸，而不是无限加宽。
+
+---
+
+# 十四、完整数值算例
+
+## 14.1 系统假设
+
+采用：
+
+[
+R_b=224\ \mathrm{Gb/s}
+]
+
+[
+R_s=112\ \mathrm{GBaud}
+]
+
+[
+UI=8.929\ \mathrm{ps}
+]
+
+目标：
+
+[
+BER_{\mathrm{pre}}=10^{-6}
+]
+
+因此：
+
+[
+q=4.695
+]
+
+假设 equalizer 后，采样器输入相邻 PAM4 电平距离：
+
+[
+\Delta V=120\ \mathrm{mV}
+]
+
+所以半眼高：
+
+[
+d_0=\frac{\Delta V}{2}=60\ \mathrm{mV}
+]
+
+假设确定性垂直闭合：
+
+[
+V_{\mathrm{det}}=12\ \mathrm{mV}
+]
+
+额外设计裕量：
+
+[
+V_{\mathrm{reserve}}=6\ \mathrm{mV}
+]
+
+则随机噪声预算：
+
+[
+\sigma_{v,\max}
+===============
+
+\frac{60-12-6}{4.695}
+]
+
+[
+\boxed{
+\sigma_{v,\max}=8.95\ \mathrm{mV_{rms}}
+}
+]
+
+---
+
+## 14.2 噪声分配
+
+分配如下：
+
+| 来源                  |    RMS |
+| ------------------- | -----: |
+| AFE                 | 4.0 mV |
+| Slicer/comparator   | 3.0 mV |
+| Clock jitter 等效电压   | 4.5 mV |
+| Residual random ISI | 3.0 mV |
+| Supply/crosstalk    | 2.5 mV |
+
+RSS：
+
+[
+\sigma_{\mathrm{total}}
+=======================
+
+\sqrt{
+4^2+3^2+4.5^2+3^2+2.5^2
+}
+]
+
+[
+\boxed{
+\sigma_{\mathrm{total}}=7.78\ \mathrm{mV}
+}
+]
+
+BER 所需半眼高：
+
+[
+q\sigma_{\mathrm{total}}
+========================
+
+# 4.695\times7.78
+
+36.52\ \mathrm{mV}
+]
+
+总需求：
+
+[
+36.52+12+6
+==========
+
+54.52\ \mathrm{mV}
+]
+
+小于可用的：
+
+[
+60\ \mathrm{mV}
+]
+
+剩余垂直裕量：
+
+[
+\boxed{
+5.48\ \mathrm{mV}
+}
+]
+
+---
+
+## 14.3 水平抖动预算
+
+假设总确定性抖动：
+
+[
+T_{\mathrm{DJ,pp}}=0.30UI
+]
+
+则：
+
+[
+T_{\mathrm{DJ,pp}}
+==================
+
+2.679\ \mathrm{ps}
+]
+
+剩余单边眼宽：
+
+[
+\frac{UI-T_{\mathrm{DJ,pp}}}{2}
+===============================
+
+3.125\ \mathrm{ps}
+]
+
+预留 sampler aperture、静态相位和 setup/hold：
+
+[
+t_{\mathrm{aperture}}=1.0\ \mathrm{ps}
+]
+
+所以：
+
+[
+T_{\mathrm{margin}}=2.125\ \mathrm{ps}
+]
+
+随机 jitter 最大值：
+
+[
+\sigma_{t,\max}
+===============
+
+\frac{2.125}{4.695}
+]
+
+[
+\boxed{
+\sigma_{t,\max}=0.453\ \mathrm{ps_{rms}}
+}
+]
+
+若 threshold 处 slew rate：
+
+[
+S=10\ \mathrm{mV/ps}
+]
+
+则 jitter 等效电压噪声：
+
+[
+\sigma_{v,\mathrm{jitter}}
+==========================
+
+10\times0.453
+]
+
+[
+\boxed{
+\sigma_{v,\mathrm{jitter}}=4.53\ \mathrm{mV}
+}
+]
+
+与前面的 4.5 mV 分配一致。
+
+---
+
+## 14.4 AFE (g_m)、(R_{\mathrm{out}}) 和电流
+
+假设：
+
+[
+A_v=4
+]
+
+[
+f_p=40\ \mathrm{GHz}
+]
+
+[
+C_L=20\ \mathrm{fF}
+]
+
+由：
+
+[
+g_m=2\pi A_vf_pC_L
+]
+
+得到：
+
+[
+g_m
+===
+
+2\pi\times4\times40\ \mathrm{GHz}\times20\ \mathrm{fF}
+]
+
+[
+\boxed{
+g_m=20.1\ \mathrm{mS}
+}
+]
+
+输出电阻：
+
+[
+R_{\mathrm{out}}
+================
+
+\frac{4}{20.1\ \mathrm{mS}}
+]
+
+[
+\boxed{
+R_{\mathrm{out}}=199\ \Omega
+}
+]
+
+选择：
+
+[
+g_m/I_D=14\ \mathrm{V^{-1}}
+]
+
+则：
+
+[
+I_D
+===
+
+\frac{20.1\ \mathrm{mS}}
+{14\ \mathrm{V^{-1}}}
+]
+
+[
+\boxed{
+I_D=1.44\ \mathrm{mA}
+}
+]
+
+假设：
+
+[
+T=350\ \mathrm{K},\quad
+F_n=2.5,\quad
+\gamma=\frac23,\quad
+B_{\mathrm{eq}}=40\ \mathrm{GHz}
+]
+
+AFE 输入参考噪声：
+
+[
+\sigma_{v,\mathrm{in}}
+======================
+
+\sqrt{
+F_n\frac{4kT\gamma B_{\mathrm{eq}}}{g_m}
+}
+]
+
+得到：
+
+[
+\boxed{
+\sigma_{v,\mathrm{in}}\approx0.253\ \mathrm{mV}
+}
+]
+
+乘以增益 4：
+
+[
+\sigma_{v,\mathrm{out}}\approx1.01\ \mathrm{mV}
+]
+
+小于 4 mV 的 AFE 输出噪声预算。
+
+因此这个例子中，AFE 尺寸由**增益带宽积**决定，而不是由热噪声决定。
+
+---
+
+## 14.5 CTLE 参数
+
+假设要求高低频 boost：
+
+[
+G_{\mathrm{boost,dB}}=8\ \mathrm{dB}
+]
+
+线性值：
+
+[
+G_{\mathrm{boost}}
+==================
+
+# 10^{8/20}
+
+2.512
+]
+
+使用前面的：
+
+[
+g_m=20.1\ \mathrm{mS}
+]
+
+则：
+
+[
+R_s
+===
+
+\frac{2.512-1}{20.1\ \mathrm{mS}}
+]
+
+[
+\boxed{
+R_s=75.2\ \Omega
+}
+]
+
+若选择：
+
+[
+f_z=8\ \mathrm{GHz}
+]
+
+则：
+
+[
+C_s
+===
+
+\frac{1}{2\pi R_sf_z}
+]
+
+[
+\boxed{
+C_s=265\ \mathrm{fF}
+}
+]
+
+CTLE 极点：
+
+[
+f_p=G_{\mathrm{boost}}f_z
+]
+
+[
+\boxed{
+f_p=20.1\ \mathrm{GHz}
+}
+]
+
+后续还必须加入：
+
+* transistor (C_{gs})；
+* source node parasitic；
+* resistor parasitic；
+* capacitor bottom-plate；
+* layout routing；
+* common-mode path。
+
+否则 schematic 里的 8 dB boost 到 PEX 后可能变成 5 dB，并顺便附赠一个完全没邀请过的 peaking。
+
+---
+
+## 14.6 Comparator 参数
+
+假设 comparator 输入参考噪声预算：
+
+[
+\sigma_{\mathrm{comp}}=3\ \mathrm{mV}
+]
+
+取：
+
+[
+F_{\mathrm{comp}}=8
+]
+
+则：
+
+[
+C_{\mathrm{eff}}
+\geq
+8\frac{kT}{(3\ \mathrm{mV})^2}
+]
+
+在 350 K：
+
+[
+\boxed{
+C_{\mathrm{eff}}\geq4.30\ \mathrm{fF}
+}
+]
+
+假设 quarter-rate 架构给 comparator：
+
+[
+t_{\mathrm{avail}}=12\ \mathrm{ps}
+]
+
+最小输入 overdrive：
+
+[
+V_{\mathrm{od,min}}=10\ \mathrm{mV}
+]
+
+要求输出达到：
+
+[
+V_L=300\ \mathrm{mV}
+]
+
+假设前置增益为 1，则：
+
+[
+\tau
+\leq
+\frac{12\ \mathrm{ps}}
+{\ln(300/10)}
+]
+
+[
+\boxed{
+\tau\leq3.53\ \mathrm{ps}
+}
+]
+
+若再生节点电容：
+
+[
+C_L=5\ \mathrm{fF}
+]
+
+则：
+
+[
+g_{m,\mathrm{reg}}
+\geq
+\frac{5\ \mathrm{fF}}{3.53\ \mathrm{ps}}
+]
+
+[
+\boxed{
+g_{m,\mathrm{reg}}\geq1.42\ \mathrm{mS}
+}
+]
+
+实际应至少加入约 2 倍动态、PVT 和 metastability margin，例如设计到：
+
+[
+g_{m,\mathrm{reg}}\approx3\ \mathrm{mS}
+]
+
+---
+
+## 14.7 Sampling switch 参数
+
+假设：
+
+[
+C_s=10\ \mathrm{fF}
+]
+
+[
+t_{\mathrm{acq}}=20\ \mathrm{ps}
+]
+
+允许 settling error：
+
+[
+\epsilon=10^{-3}
+]
+
+则：
+
+[
+R_{\mathrm{on}}
+\leq
+\frac{20\ \mathrm{ps}}
+{10\ \mathrm{fF}\ln(1000)}
+]
+
+[
+\boxed{
+R_{\mathrm{on}}\leq290\ \Omega
+}
+]
+
+接着使用 PDK switch characterization，找到在整个输入范围、PVT 和 common-mode 条件下都满足该 (R_{\mathrm{on}}) 的 (W/L)。
+
+---
+
+## 14.8 Clock phase noise 参数
+
+将总随机 jitter 0.453 ps 分配为：
+
+| 来源                 | RMS jitter |
+| ------------------ | ---------: |
+| PLL/CDR            |    0.30 ps |
+| Clock distribution |    0.20 ps |
+| Sampling aperture  |    0.20 ps |
+
+RSS：
+
+[
+\sigma_t
+========
+
+\sqrt{0.30^2+0.20^2+0.20^2}
+]
+
+[
+\boxed{
+\sigma_t=0.412\ \mathrm{ps}
+}
+]
+
+小于 0.453 ps 总预算。
+
+若采用 56 GHz half-rate clock，PLL/CDR 的 0.30 ps 对应 integrated phase RMS：
+
+[
+\sigma_\phi
+===========
+
+2\pi f_{\mathrm{clk}}\sigma_t
+]
+
+# [
+
+2\pi\times56\ \mathrm{GHz}\times0.30\ \mathrm{ps}
+]
+
+[
+\boxed{
+\sigma_\phi=0.106\ \mathrm{rad}=6.05^\circ
+}
+]
+
+这成为 PLL/CDR phase-noise integration 的顶层输入。
+
+---
+
+# 十五、最终 block-level spec 表
+
+| Block          | 从 BER 推出的核心 Spec                          | 晶体管级翻译                                           |
+| -------------- | ----------------------------------------- | ------------------------------------------------ |
+| Channel/TX FFE | main cursor、pre/postcursor                | tap current、driver swing、output (R)、DAC bits     |
+| CTLE           | boost、zero、pole、linearity                 | (g_m,R_s,C_s,I_D,W/L)                            |
+| VGA/AFE        | gain、BW、input noise、outer-level linearity | (g_m,r_o,C_L,g_m/I_D,W/L)                        |
+| Sampler        | aperture jitter、(kT/C)、settling           | (C_s,R_{\mathrm{on}},W/L)                        |
+| Comparator     | noise、offset、decision time                | input pair area、(g_{m,\mathrm{reg}},C_L)         |
+| ADC            | ENOB、quantization noise、TI mismatch       | capacitor size、comparator、switch、calibration DAC |
+| DFE            | residual ISI、tap range、tap precision      | current DAC units、matching area                  |
+| CDR/PLL        | integrated jitter、JTOL、JTRAN              | VCO power、buffer (g_m)、loop BW                   |
+| Clock tree     | skew、RJ、DCD、slew                          | buffer current、device ratio、load cap             |
+| Supply/LDO     | allowable supply-induced jitter/noise     | PSRR、output impedance、decap、pass-device (g_m)    |
+
+---
+
+# 十六、Tapeout 前必须闭合的四个层级
+
+## 1. 系统级
+
+验证：
+
+[
+BER_{\mathrm{post}}
+===================
+
+\mathcal F_{\mathrm{FEC}}
+(BER_{\mathrm{pre}})
+]
+
+覆盖：
+
+* random error；
+* burst error；
+* lane-to-lane correlation；
+* training failure；
+* error propagation。
+
+## 2. Link-level
+
+使用真实：
+
+* TX waveform；
+* channel S-parameter；
+* package；
+* crosstalk；
+* equalization；
+* clock jitter；
+* noise。
+
+生成统计 BER bathtub 和三个 PAM4 子眼 BER。
+
+## 3. Circuit-level
+
+每个 block 验证：
+
+* gain/BW；
+* input-referred noise；
+* offset；
+* linearity；
+* settling；
+* metastability；
+* kickback；
+* supply sensitivity；
+* common-mode range。
+
+## 4. Transistor-level signoff
+
+必须覆盖：
+
+* PVT；
+* local mismatch；
+* global process；
+* extracted RC；
+* EM/IR；
+* aging；
+* device reliability；
+* package parasitic；
+* temperature gradients；
+* clock/data coupling。
+
+---
+
+# 最核心的三条结论
+
+第一，BER 最终约束的是：
+
+[
+\boxed{
+d_{\mathrm{eff}}
+\geq
+Q^{-1}\left(\frac{4BER}{3}\right)
+\sigma_{\mathrm{total}}
+}
+]
+
+第二，系统随机误差到晶体管最关键的桥梁是：
+
+[
+\boxed{
+\sigma_{\mathrm{total}}^2
+=========================
+
+\sum\sigma_{\mathrm{noise}}^2
++
+\left(\frac{dv}{dt}\right)^2
+\sum\sigma_t^2
+}
+]
+
+第三，AFE 晶体管通常由下面三者的最大值决定：
+
+[
+\boxed{
+g_m
+===
+
+\max
+\left[
+\frac{4kT\gamma F_nB}{\sigma_v^2},
+\quad
+2\pi A_vf_pC_L,
+\quad
+g_{m,\mathrm{linearity}}
+\right]
+}
+]
+
+然后依次得到：
+
+[
+\boxed{
+g_m
+\rightarrow
+I_D
+\rightarrow
+W
+\rightarrow
+C_{\mathrm{parasitic}}
+\rightarrow
+\text{重新计算 }g_m
+}
+]
+
+这最后一个循环才是真实设计。任何把流程画成从左到右一条直线的人，要么没做过高速模拟电路，要么正准备让别人替他收拾 PEX 后的残局。
+
+[1]: https://www.oiforum.com/technical-work/hot-topics/common-electrical-i-o-cei-224g/?utm_source=chatgpt.com "Common Electrical I/O (CEI)-224G"
+[2]: https://ieeexplore.ieee.org/iel7/8919/8952842/08879603.pdf?utm_source=chatgpt.com "Statistical BER Analysis of Wireline Links With Non-Binary ..."
+
