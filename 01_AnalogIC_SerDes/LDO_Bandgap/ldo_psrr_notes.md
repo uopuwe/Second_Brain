@@ -12,7 +12,7 @@ tags:
   - SupplyNoise
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-08-08
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -390,6 +390,28 @@ PSRR must be checked across load current range,
 not only at a typical current.
 ```
 
+### 10.1 Load-Dependent PSRR Curve Interpretation
+
+中文：load sweep 改变 PSRR 时，不能默认整条曲线只做垂直平移。一个有用的小信号分解是把 input ripple 到 output 的 transfer 写成 reference path、error-amplifier/control path 与 pass-device direct-feedthrough path 的叠加：
+
+English: When a load sweep changes PSRR, the entire curve should not automatically be modeled as a vertical shift. A useful small-signal decomposition expresses input-ripple-to-output transfer as the sum of reference, error-amplifier or control, and pass-device direct-feedthrough paths:
+
+$$
+H_{v_i\rightarrow v_o}(s)\approx H_{ref}(s)+H_{EA}(s)+Y_{ft}(s)Z_{out,cl}(s),
+$$
+
+$$
+Z_{out,cl}(s)\approx\frac{Z_{out,ol}(s)}{1+T(s)}.
+$$
+
+中文：其中 $H_{v_i\rightarrow v_o}=v_o/v_i$ 为 dimensionless ripple transfer，$Y_{ft}$ 是 input 到 output 的等效 feedthrough admittance（S），$Z_{out,cl}$ 与 $Z_{out,ol}$ 分别是 closed/open-loop output impedance（$\Omega$），$T(s)$ 是 loop gain。只有当主导 feedthrough path 近似不变、load 主要按近似常数比例改变 $Z_{out,cl}$ 时，曲线才可能近似 vertical shift；pole/zero、pass-device operating point、dropout、mode switching 或 reference path 改变都会重塑曲线。
+
+English: Here $H_{v_i\rightarrow v_o}=v_o/v_i$ is dimensionless ripple transfer, $Y_{ft}$ is the equivalent input-to-output feedthrough admittance in siemens, $Z_{out,cl}$ and $Z_{out,ol}$ are closed- and open-loop output impedances in ohms, and $T(s)$ is loop gain. A near-vertical shift is plausible only when the dominant feedthrough path is approximately unchanged and load mainly scales $Z_{out,cl}$ by an approximately constant factor. Changes in poles and zeros, pass-device operating point, dropout, mode switching, or the reference path reshape the curve.
+
+中文：heavy load 对 PSRR 没有 universal monotonic direction。更小的 $R_L$ 可降低某些频段的 output impedance 并把 output pole 推高，但更大的 pass-device current、较低 $r_o$、较小 headroom、改变的 $g_m$、loop gain 和 dropout proximity 也会恶化另一些路径。因此每个“full load 更好/更差”的结论都必须绑定 topology、frequency band、operating point 和 measurement node。
+
+English: Heavy load has no universal monotonic effect on PSRR. A smaller $R_L$ can reduce output impedance in some bands and move the output pole upward, while higher pass-device current, lower $r_o$, reduced headroom, changed $g_m$, loop gain, and proximity to dropout can worsen other paths. Any claim that full-load PSRR is better or worse must therefore state topology, frequency band, operating point, and measurement node.
+
 ---
 
 ## 11. Output Capacitor and Decap Effect
@@ -422,6 +444,24 @@ Analyze supply impedance, resonance, loop stability, decap placement, and parasi
 ```
 
 Because blindly adding capacitance is how engineers turn silicon into expensive superstition.
+
+### 11.1 Capacitor-Dominant Versus Capless LDO Comparison
+
+中文：带大输出电容的 LDO 常由 output pole、capacitor ESR zero、pass-device feedthrough 与 package/decap resonance 共同决定 mid/high-frequency PSRR；capless LDO 则更依赖 internal dominant pole、output nondominant pole、load-dependent compensation 和 on-chip parasitics。两种架构不能用同一条“负载越大，PSRR 曲线平移多少 dB”的经验线比较。
+
+English: An LDO with a large output capacitor often has mid- and high-frequency PSRR set jointly by the output pole, capacitor ESR zero, pass-device feedthrough, and package or decap resonances. A capless LDO depends more strongly on an internal dominant pole, the output nondominant pole, load-dependent compensation, and on-chip parasitics. The two architectures cannot be compared using one empirical rule for how many decibels the PSRR curve shifts with load.
+
+一阶 output-pole estimate 为：
+
+A first-order output-pole estimate is:
+
+$$
+\omega_{p,out}\approx\frac{1}{(r_{o,pass}\parallel R_L\parallel r_{o,load})C_{out,eff}},
+$$
+
+中文：其中电阻单位为 $\Omega$、$C_{out,eff}$ 单位为 F、$\omega_{p,out}$ 单位为 rad/s。该式仅用于定位趋势；实际 pole 会被 loop gain、pass-device capacitance、ESR/ESL、package inductance、load dynamics 和 compensation network 改写。验证时应在 light/full load、dropout margin、PVT 和 extracted parasitic 下同时画 $T(s)$、$Z_{out}(s)$、各 feedthrough transfer 与总 PSRR，而不是只看一张总曲线。
+
+English: Resistances are in ohms, $C_{out,eff}$ is in farads, and $\omega_{p,out}$ is in radians per second. This equation only indicates a trend; actual pole location is modified by loop gain, pass-device capacitance, ESR and ESL, package inductance, load dynamics, and the compensation network. Verification should plot $T(s)$, $Z_{out}(s)$, individual feedthrough transfers, and total PSRR at light and full load, across dropout margin, PVT, and extracted parasitics, rather than relying on one total curve.
 
 ---
 
@@ -978,6 +1018,10 @@ My LDO experience is relevant to SerDes because LDO PSRR and output noise direct
 
 ---
 
+## Conversation Delta Provenance
+
+- `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a617bbd-d714-83ea-8fbb-463691f07371.md` - "LDO PSRR 高频对比"; promoted the load-dependent transfer decomposition and capacitor/capless comparison. Generated plots were not present as durable source artifacts, and topology-specific monotonic load claims remain unverified.
+
 ## Last Updated
 
-2026-07-01
+2026-08-08

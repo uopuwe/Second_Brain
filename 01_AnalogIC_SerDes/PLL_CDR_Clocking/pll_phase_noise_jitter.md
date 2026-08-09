@@ -18,7 +18,7 @@ aliases:
   - phase_noise_jitter
   - Phase Noise and Jitter
 created: 2026-07-01
-updated: 2026-07-05
+updated: 2026-08-08
 status: "active"
 ---
 
@@ -1709,6 +1709,50 @@ English: The core review question added by these sources is: does the low-jitter
 | Ring oscillator | Are $K_{VDD}$, intrinsic phase noise, LDO noise, and topology-dependent flicker/thermal regimes reviewed together? |
 | SerDes system | Is final sampler jitter budget separated from standalone PLL output jitter? |
 
+### 25.8 Driven Delay Chain Versus Free-Running Ring
+
+中文：driven delay chain 的 random edge displacement 与 free-running ring oscillator 的 phase noise 不是同一个对象。前者的 input phase 由外部 source 固定，单次传播产生的 delay error 不会在后续循环中无限积累；后者没有绝对 phase reference，每次绕环产生的 timing error 会叠加成 phase random walk。因此，不能把 open-loop delay-chain noise plot 直接当作 closed-loop oscillator phase-noise plot。
+
+English: Random edge displacement in a driven delay chain is not the same quantity as phase noise in a free-running ring oscillator. The driven chain has an externally fixed input phase, so the delay error from one traversal does not accumulate indefinitely. A free-running ring has no absolute phase reference; timing error from each traversal accumulates into a phase random walk. An open-loop delay-chain noise plot therefore cannot be used directly as the closed-loop oscillator phase-noise plot.
+
+对具有 $N$ 个反相 delay cells、每级 large-signal delay 为 $T_D$ 的理想 ring：
+
+For an ideal ring with $N$ inverting delay cells and large-signal delay $T_D$ per stage:
+
+$$
+T_{DL}=NT_D,\qquad T_0=2NT_D=2T_{DL}.
+$$
+
+中文：$T_{DL}=T_0/2$ 的物理原因是边沿绕环一次后极性翻转，只完成半个周期；第二次绕环才回到同一节点的同一极性。若把每圈 phase increment 记为 $\eta[k]$，则 $\phi[k]=\phi[k-1]+\eta[k]$，对应 discrete-time integrator $1/(1-z^{-1})$。低 offset 的 $1/f^2$ shaping 来自这个累积机制，但实际系数仍取决于 cyclostationary noise、waveform、stage correlation 和 nonlinear limiting。
+
+English: The physical reason for $T_{DL}=T_0/2$ is that one trip around the ring returns with inverted polarity and completes only half a cycle; a second trip is required to return to the same polarity at the same node. If the phase increment per traversal is $\eta[k]$, then $\phi[k]=\phi[k-1]+\eta[k]$, corresponding to the discrete-time integrator $1/(1-z^{-1})$. This accumulation gives the low-offset $1/f^2$ shaping, although the coefficient still depends on cyclostationary noise, waveform shape, stage correlation, and nonlinear limiting.
+
+### 25.9 Reference Design And Four-Lever Trade Study
+
+中文：ring oscillator 的第一轮设计不应直接把 schematic 强迫到目标频率，而应先建立一个带真实负载、明确 PVT 和可重复 testbench 的 reference cell。随后在相同 corner、输出负载和测量定义下，分别改变 stage count、node capacitance、effective drive current 或采用 post-divider。这样才能看清“把频率降下来”的代价落在 power、$K_{VDD}$、swing、phase noise、area 还是 divider noise 上。
+
+English: A first-pass ring-oscillator design should not force the schematic immediately to the target frequency. Start with a reference cell using realistic loading, explicit PVT, and a repeatable testbench. Then, under the same corner, output load, and measurement definition, vary stage count, node capacitance, effective drive current, or use a post-divider. This reveals whether the cost of lowering frequency appears in power, $K_{VDD}$, swing, phase noise, area, or divider noise.
+
+中文：一阶 delay/energy 模型为：
+
+English: A first-order delay and energy model is:
+
+$$
+f_0\approx\frac{I_{eff}}{2NC_{tot}V_{sw}},\qquad
+P_{dyn}\approx Nf_0C_{tot}V_{DD}^2,
+$$
+
+中文：其中 $I_{eff}$ 是 transition 期间的等效驱动电流，$C_{tot}$ 是每级被充放电的总负载电容，$V_{sw}$ 是有效电压摆幅，$N$ 是 stage count。该模型忽略 short-circuit current、leakage、slew-dependent current、internal-node activity、correlated loading 和 post-divider power，只适合作为 trade-study 坐标系。
+
+English: Here $I_{eff}$ is the effective drive current during a transition, $C_{tot}$ is the total switched load per stage, $V_{sw}$ is effective voltage swing, and $N$ is stage count. The model omits short-circuit current, leakage, slew-dependent current, internal-node activity, correlated loading, and post-divider power; it is only a coordinate system for a trade study.
+
+| Lever | Frequency mechanism | Required comparison |
+|---|---|---|
+| Increase $C_{tot}$ | increases delay | loading area, edge slew, dynamic power, noise conversion |
+| Increase $N$ | increases loop delay | multiphase utility, total device noise, area, power |
+| Reduce $I_{eff}$ | slows charging/discharging | swing, slew, supply sensitivity, startup/PVT margin |
+| Add divider | leaves oscillator core fast | divider power/noise, phase availability, output-referred phase versus time jitter |
+
 ## 26. ISF Theory and Sub-Sampling PLL In-Band Noise
 
 Source update:
@@ -1761,6 +1805,25 @@ $$
 中文：这个展开把 oscillator phase noise 的机制讲清楚了：低频噪声主要通过 $c_0$ 转换成 close-in phase noise；靠近 $n\omega_0$ 的噪声会通过 $c_n$ 折叠到 carrier 附近。也就是说，不同频率的 device noise 不是被同一个固定 transfer function 处理，而是被 ISF 的不同 Fourier coefficient 加权。
 
 English: This expansion makes the mechanism clear: low-frequency noise mainly converts to close-in phase noise through $c_0$, while noise near $n\omega_0$ folds near the carrier through $c_n$. Device noise at different frequencies is therefore not processed by one fixed transfer function; it is weighted by different Fourier coefficients of the ISF.
+
+### 26.2.1 LC-Tank Energy State And Phase Sensitivity
+
+中文：对理想并联 LC tank，若 $v(0)=V_{pk}$、$i_L(0)=0$，则 $v(t)=V_{pk}\cos(\omega_0t)$、$i_L(t)=V_{pk}\sin(\omega_0t)/(\omega_0L)$，且 $\omega_0=1/\sqrt{LC}$。电容与电感能量分别为 $E_C=Cv^2/2$ 与 $E_L=Li_L^2/2$，总能量在无损模型中保持 $E_{tot}=CV_{pk}^2/2$。电压峰值时能量在电容中；电压零交越时能量在电感中。
+
+English: For an ideal parallel LC tank with $v(0)=V_{pk}$ and $i_L(0)=0$, the solution is $v(t)=V_{pk}\cos(\omega_0t)$ and $i_L(t)=V_{pk}\sin(\omega_0t)/(\omega_0L)$, where $\omega_0=1/\sqrt{LC}$. Capacitor and inductor energies are $E_C=Cv^2/2$ and $E_L=Li_L^2/2$; in the lossless model their sum remains $E_{tot}=CV_{pk}^2/2$. Energy resides in the capacitor at voltage peaks and in the inductor at voltage zero crossings.
+
+中文：这条能量轨迹解释了 phase sensitivity。若在 voltage zero crossing 向 tank node 注入小电荷 $\Delta q$，电压立即变化 $\Delta v=\Delta q/C$；因为该时刻 $|dv/dt|=\omega_0V_{pk}$，一阶 timing/phase displacement 为
+
+English: This energy trajectory explains phase sensitivity. If a small charge $\Delta q$ is injected into the tank node at a voltage zero crossing, the immediate voltage step is $\Delta v=\Delta q/C$. Since $|dv/dt|=\omega_0V_{pk}$ at that instant, the first-order timing and phase displacement is
+
+$$
+|\Delta t|\approx\frac{|\Delta q|}{C\omega_0V_{pk}},\qquad
+|\Delta\phi|\approx\frac{|\Delta q|}{CV_{pk}}.
+$$
+
+中文：其中 $\Delta t$ 以秒为单位，$\Delta\phi$ 以弧度为单位。这个近似假设注入很小、tank 近似正弦、观察节点是 capacitor voltage 且 amplitude restoration 与 phase dynamics 可一阶分离。峰值附近的同方向小 voltage perturbation 更偏向 amplitude error；零交越附近更容易映射成 timing error。实际 cross-coupled LC VCO 还必须由 ISF、active-device conduction angle、tank loss 和 waveform distortion 修正。
+
+English: Here $\Delta t$ is in seconds and $\Delta\phi$ is in radians. The approximation assumes a small injection, a nearly sinusoidal tank, observation of capacitor voltage, and first-order separation of amplitude restoration from phase dynamics. Near a voltage peak, a small collinear voltage perturbation tends to create amplitude error; near a zero crossing it maps more readily into timing error. A real cross-coupled LC VCO requires correction through the ISF, active-device conduction angle, tank loss, and waveform distortion.
 
 ### 26.3 White Noise, Flicker Upconversion, and Symmetry
 
@@ -2175,6 +2238,12 @@ English: Here $k$ is the transformer coupling coefficient and $\xi=L_SC_S/(L_PC_
 English: The paper reports a 200 uW DCO, about 196 dB peak oscillator FoM, measured $1/f^3$ PN corner around 250 kHz to 300 kHz, and simulated FoM degradation below about 0.8 dB under ±30% capacitor variation. For SerDes/PCIe, these numbers should not be used directly as targets; the reusable design principle is that if a waveform-shaping oscillator requires complex harmonic tuning, lab robustness may matter more than ideal schematic FoM.
 
 ---
+
+### 27.10 Conversation Delta Provenance - 2026-08-08
+
+- `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a52a064-2a64-83ea-b37b-2bc58be2b460.md` - "深度解析3.1节内容"; promoted the driven-delay-chain versus free-running-ring distinction and half-period derivation.
+- `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a52c126-9540-83ea-8b0c-99d34b1c4b43.md` - "3.2节设计方法详解"; promoted the reference-design and four-lever comparison workflow, with technology-specific numerical examples excluded.
+- `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a5fb697-1d1c-83ea-93c7-1211019bba6d.md` - "LC Tank 能量交换详解"; promoted the ideal energy trajectory and small-injection phase intuition, with artifact-generation status excluded.
 
 ## 28. Source Provenance
 

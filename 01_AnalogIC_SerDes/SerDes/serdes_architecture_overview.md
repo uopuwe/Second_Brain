@@ -12,7 +12,7 @@ tags:
   - ADC
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-08-08
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -178,6 +178,46 @@ Timing information
 
 PAM4 makes amplitude recovery harder. High speed makes timing recovery harder.
 
+### 5.1 RX Termination And Bias Checkpoint
+
+中文：RX termination 的第一层任务是让负载阻抗接近 channel 特性阻抗，以降低反射。对给定频率处的等效负载 $Z_L$ 和特性阻抗 $Z_0$，反射系数为
+
+English: The first job of RX termination is to make the effective load impedance approach the channel characteristic impedance and thereby reduce reflections. For effective load $Z_L$ and characteristic impedance $Z_0$ at the frequency of interest, the reflection coefficient is
+
+$$
+\Gamma=\frac{Z_L-Z_0}{Z_L+Z_0}.
+$$
+
+中文：$\Gamma=0$ 只表示该模型和该频率点的匹配，不代表 package、ESD、T-coil、输入寄生和 frequency-dependent channel 在宽带内完全匹配。因此 termination 应与 return loss、eye、ringing、CTLE/ADC 输入范围和 PVT calibration 一起验证。
+
+English: $\Gamma=0$ proves matching only for that model and frequency point; it does not prove broadband matching once package, ESD, T-coil, input parasitics, and the frequency-dependent channel are included. Termination should therefore be verified together with return loss, eye opening, ringing, CTLE/ADC input range, and PVT calibration.
+
+中文：差分 RX 可使用跨 RXP/RXN 的约 $100\ \Omega$ 端接，也可使用两个约 $50\ \Omega$ 电阻接到 $V_{CM}$ 的 Thevenin 形式。后者同时提供 differential termination 和 RX common-mode bias，对 AC-coupled link 尤其重要；但 $V_{CM}$ 的噪声、阻抗和 decoupling 会直接影响输入。
+
+English: A differential RX can use an approximately $100\ \Omega$ resistor across RXP/RXN or a Thevenin form with two approximately $50\ \Omega$ resistors tied to $V_{CM}$. The latter provides both differential termination and RX common-mode bias, which is especially important for an AC-coupled link; however, the noise, impedance, and decoupling of $V_{CM}$ then directly affect the input.
+
+### 5.2 Termination-Bias Network Analysis Workflow
+
+中文：多电阻 termination/bias network 不应只凭电阻数量或模糊电路记忆猜测 $V_1$、$V_2$。第一步是在 TX 静态、AC coupling 已隔离 DC、RX input leakage 可忽略或已建模的条件下做 DC nodal analysis；第二步把同一网络分解成 differential-mode termination 与 common-mode bias；第三步再加入 ESD、pad、T-coil、receiver input conductance 和 calibration switch 的寄生，检查 broadband impedance 与 bias settling。
+
+English: A multi-resistor termination and bias network should not be solved by guessing $V_1$ and $V_2$ from the resistor count or from an uncertain memory of the schematic. First perform DC nodal analysis with explicit assumptions about the static transmitter, AC coupling, and receiver input leakage. Next decompose the same network into differential-mode termination and common-mode bias. Finally add ESD, pad, T-coil, receiver-input conductance, calibration-switch parasitics, and verify broadband impedance and bias settling.
+
+对连接到多个 Thevenin source 的线性节点 $V_x$，KCL 可写成：
+
+For a linear node $V_x$ connected to several Thevenin sources, KCL can be written as:
+
+$$
+V_x=\frac{\sum_k G_kV_k+I_{ext}}{\sum_kG_k+G_{in}},
+$$
+
+其中 $G_k=1/R_k$ 是第 $k$ 条支路的 conductance，$V_k$ 是该支路的 DC source voltage，$I_{ext}$ 是按流入节点为正定义的外部 DC current，$G_{in}$ 是 receiver input 的线性化 DC conductance。该式只适用于线性 DC network；若 ESD diode、inverter input、termination calibration MOS 或 protection clamp 导通，必须使用分段 operating-point analysis。
+
+where $G_k=1/R_k$ is the conductance of branch $k$, $V_k$ is its DC source voltage, $I_{ext}$ is external DC current defined positive into the node, and $G_{in}$ is the linearized DC conductance of the receiver input. This expression applies only to a linear DC network. Conducting ESD diodes, inverter inputs, termination-calibration MOS devices, or protection clamps require piecewise operating-point analysis.
+
+中文：求出两个输入节点后，应同时计算 $V_{CM,in}=(V_1+V_2)/2$ 与 $V_{DM}=V_1-V_2$。正常静态 bias 可能要求 $V_{DM}\approx0$，但这不证明 differential impedance 正确；相反，满足 $100\ \Omega$ differential termination 也不证明 common-mode 落在 CTLE、slicer 或 ADC input range 内。两种 mode 必须分别验证。
+
+English: After solving the two input nodes, compute both $V_{CM,in}=(V_1+V_2)/2$ and $V_{DM}=V_1-V_2$. A normal static bias may require $V_{DM}\approx0$, but that does not prove that the differential impedance is correct. Conversely, satisfying a $100\ \Omega$ differential termination does not prove that common mode lies within the CTLE, slicer, or ADC input range. The two modes must be verified separately.
+
 ---
 
 ## 6. Equalization
@@ -318,6 +358,8 @@ LDO noise and finite PSRR can disturb PLL, CDR, RX front-end, ADC, and reference
 ## Source Conversations / Source Packets
 
 * `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+* `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a49c746-0710-83ea-844a-c1c5cb24bcdf.md` - "SerDes 端接电阻讲解"; conversation-derived formulas and topology summary, not a standards or signoff source.
+* `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a4aa78a-beb0-83ea-874f-6d53a24afa40.md` - "SerDes 终端偏置网络"; only the general nodal-analysis workflow was promoted because the reconstructed interview schematic remained uncertain.
 
 ---
 
@@ -393,4 +435,4 @@ Safe framing for prior work:
 
 ## Last Updated
 
-2026-07-02
+2026-08-08

@@ -11,7 +11,7 @@ tags:
   - PCIe7
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-05
+updated: 2026-08-08
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -262,6 +262,28 @@ Important VCO parameters:
 * delay cell noise, if ring VCO
 
 VCO is often the dominant high-frequency phase noise contributor outside PLL bandwidth.
+
+### 6.1 LC-Tank $C_1$ And $R_p$ Interpretation
+
+中文：教材简化 LC tank 中的 $C_1$ 应解释为参与谐振的总等效电容，而不是默认等于电感自身寄生电容。实际值包括 varactor、switched-capacitor bank、电感和有源器件寄生、布线以及 buffer/divider loading。
+
+English: In a simplified LC-tank model, $C_1$ should be interpreted as the total effective capacitance participating in resonance, not automatically as the inductor's parasitic capacitance. The implemented value includes the varactor, switched-capacitor bank, inductor and active-device parasitics, routing, and buffer/divider loading.
+
+$$
+C_{tank}=C_{var}+C_{bank}+C_{L,par}+C_{MOS}+C_{wire}+C_{load}.
+$$
+
+中文：$R_p$ 通常是把整个 tank 损耗折算到谐振点的并联等效电阻，不是设计者主动并联的真实电阻。高 $Q$ 且以电感串联损耗 $R_s$ 起步时，谐振点附近可用
+
+English: $R_p$ normally represents the total tank loss transformed into an equivalent parallel resistance at resonance; it is not a physical resistor intentionally placed across the tank. Starting from inductor series loss $R_s$ and assuming high $Q$, the near-resonance approximation is
+
+$$
+R_p\approx\frac{\omega_0^2L^2}{R_s}=Q\omega_0L.
+$$
+
+中文：工程分析要区分仅电感的 $R_{p,L}$ 与包含 varactor、switch、active-device $r_o$ 和 loading 的 $R_{p,tank}$。$C_{tank}$ 主要决定振荡频率、调谐范围和 $K_{VCO}$；$R_{p,tank}$ 主要决定 $Q$、启动余量、摆幅、维持功耗和相噪。系数形式的启动条件依赖 single-ended/differential 定义，不应脱离 topology 死记 $g_mR_p$ 的常数。
+
+English: Engineering analysis should distinguish the inductor-only $R_{p,L}$ from $R_{p,tank}$ including varactor, switch, active-device $r_o$, and load loss. $C_{tank}$ mainly sets oscillation frequency, tuning range, and $K_{VCO}$; $R_{p,tank}$ mainly sets $Q$, startup margin, amplitude, sustaining power, and phase noise. The coefficient in a $g_mR_p$ startup rule depends on single-ended/differential and topology definitions and should not be memorized without that context.
 
 ---
 
@@ -747,6 +769,20 @@ Better passive components and decoupling may require more area.
 
 No free lunch. PLL design is mostly deciding which monster gets fed first.
 
+### 19.1 Five-Question Design Review Lens
+
+中文：一个简洁的 PLL design review 可以用五个问题防止讨论停留在单一 block 或单一数字：测量定义是什么；误差源从哪个注入点经哪个 transfer function 到输出；当前问题属于锁定后小信号、离散采样还是非线性捕获；优化代价转移到 jitter、spur、lock time、power、area 还是 yield；以及 silicon 上如何观测和证伪。
+
+English: A compact PLL design review can use five questions to avoid reducing the discussion to one block or one number: What is the measurement definition? Which error source enters at which injection point and reaches the output through which transfer function? Is the problem a locked small-signal, discrete-time sampling, or nonlinear acquisition problem? Where does the optimization cost move among jitter, spur, lock time, power, area, and yield? How will silicon make the hypothesis observable and falsifiable?
+
+Review shorthand:
+
+1. Define the metric, node, mode, PVT, load, filtering, and integration range.
+2. Map each error source to its injection point and transfer function.
+3. Select the correct linear, sampled-data, or nonlinear model.
+4. Close system budgets instead of optimizing one block in isolation.
+5. Plan calibration, DFT, observability, and lab/ATE evidence before tapeout.
+
 ---
 
 ## 20. Interview Explanation
@@ -859,6 +895,8 @@ My PLL and clocking experience is relevant to SerDes because high-speed links de
 ## Source Conversations / Source Packets
 
 * `../../00_Inbox/manual_batches/batch2_serdes_pcie_pll_cdr_adc_2026-07-01/source_packet.md`
+* `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a622892-1564-83ea-b248-fd61c8ac2c09.md` - "C1和Rp在VCO中的作用"; conversation-derived LC-tank interpretation, requiring textbook/PDK verification before signoff use.
+* `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a67f666-2a2c-83ea-a9f1-ae66ef8c79d0.md` - "PLL核心思维模式"; conversation-derived design-review checklist, not a primary technical source.
 
 ---
 
@@ -1205,6 +1243,41 @@ English: A useful rule from the book is that when loop bandwidth is below about 
 
 English: Another practical rule is that loop delay is often negligible if it is below about one-fiftieth of the loop time constant; otherwise it consumes phase margin. In high-speed SerDes PLLs, divider delay, PFD reset, digital calibration paths, DTC/TDC paths, and clock-distribution feedback can all introduce non-negligible delay.
 
+### 28.5.1 Open-Loop Phase And Nyquist Construction
+
+中文：求 open-loop phase 时，应把 transfer function 分解为 constant gain、integrator、real poles/zeros、complex pairs 和 explicit delay，再用相角相加；不能只看分母阶数猜 phase margin。对
+
+English: To compute open-loop phase, factor the transfer function into constant gain, integrators, real poles and zeros, complex pairs, and explicit delay, then add their phase contributions. Phase margin should not be guessed from denominator order alone. For
+
+$$
+L(s)=\frac{K}{s\left(1+s/\omega_p\right)},\qquad K>0,
+$$
+
+有
+
+we obtain
+
+$$
+\angle L(j\omega)=-90^\circ-\tan^{-1}\!\left(\frac{\omega}{\omega_p}\right).
+$$
+
+中文：其中 $\omega$、$\omega_p$ 的单位均为 rad/s。若 $\omega_u$ 是 $|L(j\omega_u)|=1$ 的 unity-gain frequency，标准负反馈且无额外符号反转时 $PM=180^\circ+\angle L(j\omega_u)$。实际计算应使用 `atan2` 或保持 quadrant 信息；单独相除后使用 principal-value `atan` 很容易丢失 $180^\circ$。
+
+English: Here $\omega$ and $\omega_p$ are in rad/s. If $\omega_u$ is the unity-gain frequency where $|L(j\omega_u)|=1$, then for the standard negative-feedback sign convention with no extra inversion, $PM=180^\circ+\angle L(j\omega_u)$. Practical calculations should use `atan2` or otherwise preserve quadrant information; applying a principal-value arctangent after algebraic division can lose $180^\circ$.
+
+中文：Nyquist trajectory 是把完整 Nyquist contour 上的每个 $s$ 映射为复数 $L(s)$，不是手绘一条“像 Bode 的曲线”。对正频率轴上的上述例子：
+
+English: A Nyquist trajectory maps every $s$ on the complete Nyquist contour into the complex number $L(s)$; it is not a hand-drawn curve resembling a Bode plot. For the positive-frequency axis of the example above:
+
+$$
+\Re\{L(j\omega)\}=-\frac{K\omega_p}{\omega^2+\omega_p^2},\qquad
+\Im\{L(j\omega)\}=-\frac{K\omega_p^2}{\omega(\omega^2+\omega_p^2)}.
+$$
+
+中文：以 $\omega>0$ 从低频扫到高频时，轨迹位于第三象限并趋向原点；real-coefficient system 的负频率分支是其共轭镜像。由于该例在原点有 open-loop pole，标准 Nyquist contour 必须绕开 $s=0$，不能把 positive-frequency branch 单独拿来数 $-1$ 绕行。最终应在明确 contour orientation 和 sign convention 后使用 argument principle，并把 open-loop 右半平面 poles、$-1$ encirclement 与 closed-loop 右半平面 poles 一起记录。
+
+English: As $\omega>0$ sweeps from low to high frequency, the trajectory lies in the third quadrant and approaches the origin; the negative-frequency branch of a real-coefficient system is its complex-conjugate mirror. Because this example has an open-loop pole at the origin, the standard Nyquist contour must indent around $s=0$; the positive-frequency branch alone cannot be used to count encirclements of $-1$. The final argument-principle count must state contour orientation and sign convention and record open-loop right-half-plane poles, encirclements of $-1$, and closed-loop right-half-plane poles together.
+
 ### 28.6 Design Review Additions
 
 中文：这本书把 PLL design review 的问题从“环路是否稳定”扩展成“哪些近似在这个设计中仍然成立”。review checklist 应明确列出 continuous-time approximation、sampled-data effects、loop delay、CP pulse shape、VCO gain range、divider ratio、loop-filter high-frequency poles 和 acquisition mode。
@@ -1226,9 +1299,10 @@ English: This book expands PLL design review from “is the loop stable” to �
 | Source | Type | Status | Reusable knowledge promoted |
 |---|---|---|---|
 | Woogeun Rhee and Zhiping Yu, *Phase-Locked Loops: System Perspectives and Circuit Design Aspects*, Wiley/IEEE Press, 2024 | Book PDF | Deep Ingest 2026-07-05; archived in `90_Archive/processed/2026/books/phase_locked_loops_rhee_yu_2024/` | Linear PLL transfer functions, Type-I and Type-II loop dynamics, CPPLL first-pass sizing equations, continuous-time approximation boundary, loop-delay caution, system-to-circuit review workflow |
+| ChatGPT delta `6a6e0313-043c-83ea-a96e-c98e23275cbc`, "开环传输函数相角" | Conversation-derived worked explanation | Deep Ingest 2026-08-08; source retained in the delta batch; verify sign/contour conventions against a control textbook before signoff use | Factor-by-factor open-loop phase, `atan2` caution, explicit Nyquist parameterization, pole-on-contour warning |
 
 ---
 
 ## Last Updated
 
-2026-07-05
+2026-08-08

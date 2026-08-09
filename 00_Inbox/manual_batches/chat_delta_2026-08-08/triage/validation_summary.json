@@ -1,0 +1,15 @@
+{
+  "classification_counts": {
+    "BALANCED": 30,
+    "DEEP_CANDIDATE": 15,
+    "FAST": 27,
+    "SKIP": 69
+  },
+  "delta_messages": 3016,
+  "manual_review_count": 42,
+  "records": 141,
+  "retained_messages": 1937,
+  "retention_ratio": 0.6422413793103449,
+  "source_sha256": "e9ca774017d302832bf608ca826ba1990a038400dc64163cd09a3d2142055d51",
+  "stage1_ambiguities": 2
+}

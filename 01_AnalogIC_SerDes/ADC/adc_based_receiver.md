@@ -12,7 +12,7 @@ tags:
   - PCIe7
   - Synopsys
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-08-08
 source: "ChatGPT technical notes and Synopsys role preparation"
 status: "active"
 ---
@@ -364,6 +364,36 @@ The public 224G Synopsys discussion is a useful architecture anchor:
 
 ---
 
+## 15. ADC Spec-To-Tapeout Project Gates
+
+中文：可 tapeout 的 ADC 不是单独的 quantizer core，而是一套 conversion system：input sampling、quantization、reference、clocking、bias/common-mode、calibration、digital control、output interface、DFT、layout/reliability、behavioral and transistor-level verification、post-layout signoff，以及 silicon/ATE observability 必须形成同一条 traceable chain。正确顺序是 system specification、test conditions、internal error budget、architecture、behavioral model、circuit allocation、transistor implementation、integration verification、layout/PEX、signoff 和 bring-up；不能从 bit count 直接跳到 CDAC sizing。
+
+English: A tapeout-ready ADC is not only a quantizer core. Input sampling, quantization, reference, clocking, bias and common mode, calibration, digital control, output interface, DFT, layout and reliability, behavioral and transistor-level verification, post-layout signoff, and silicon or ATE observability must form one traceable chain. The correct order is system specification, test conditions, internal error budget, architecture, behavioral model, circuit allocation, transistor implementation, integration verification, layout and PEX, signoff, and bring-up; a bit count cannot be translated directly into CDAC sizing.
+
+### 15.1 Specification Compliance Matrix
+
+中文：每条 external ADC requirement 必须绑定测量条件与证据。matrix 至少应记录 spec ID、DC/AC/clock/power/interface/reliability category、原始 requirement、sampling rate、input frequency and amplitude、mode、supply、temperature、load、calibration state、目标 margin、owner、verification level 和最终 evidence path。特别要分开 nominal resolution、ENOB、SNDR、SFDR、INL/DNL、input bandwidth 和 acquisition settling；“12 bit”本身不是晶体管级设计指标。
+
+English: Every external ADC requirement must be bound to measurement conditions and evidence. At minimum, the matrix should record a spec ID, DC/AC/clock/power/interface/reliability category, original requirement, sampling rate, input frequency and amplitude, mode, supply, temperature, load, calibration state, target margin, owner, verification level, and final evidence path. Nominal resolution, ENOB, SNDR, SFDR, INL/DNL, input bandwidth, and acquisition settling must be separated; “12 bit” alone is not a transistor-level design target.
+
+### 15.2 Budget Before Architecture Freeze
+
+中文：architecture review 前应把总误差分解为 sampling $kT/C$ noise、comparator noise/offset、reference settling and noise、quantization、linearity、clock jitter、interleaving mismatch、digital calibration residual 和 supply coupling，并明确哪些项可以 RSS、哪些相关或 deterministic 项必须 worst-case/co-simulate。每个 budget item 必须映射到可控 circuit knob 与 testbench；无法映射的 budget 只是表格装饰。
+
+English: Before architecture review, decompose total error into sampling $kT/C$ noise, comparator noise and offset, reference settling and noise, quantization, linearity, clock jitter, interleaving mismatch, digital-calibration residual, and supply coupling. State which independent random terms may be combined by RSS and which correlated or deterministic terms require worst-case analysis or co-simulation. Every budget item must map to a controllable circuit knob and a testbench; a budget that cannot be mapped is only decoration.
+
+### 15.3 Verification Ladder And Exit Evidence
+
+中文：验证应从 executable behavioral model 开始，依次关闭 block schematic、top-level electrical integration、PVT、Monte Carlo/mismatch、noise、transient/FFT/histogram、clock/reference/supply injection、AMS calibration interaction、extracted RC、EM/IR and reliability corners。进入 layout 前应证明 architecture and schematic margin；进入 tapeout 前则应提供 post-layout compliance matrix、waiver ownership、DFT/ATE mode、bring-up observables 和已版本化 testbench/configuration。单个 typical FFT 不能代表 signoff。
+
+English: Verification should start from an executable behavioral model and then close block schematic, top-level electrical integration, PVT, Monte Carlo and mismatch, noise, transient/FFT/histogram, clock/reference/supply injection, AMS calibration interaction, extracted RC, and EM/IR and reliability corners. Before layout, architecture and schematic margin should be demonstrated. Before tapeout, the evidence should include a post-layout compliance matrix, waiver ownership, DFT and ATE modes, bring-up observables, and versioned testbench configurations. One typical FFT is not signoff.
+
+### 15.4 Source And Verification Limit
+
+- `../../00_Inbox/manual_batches/chat_delta_2026-08-08/new_conversations/6a5695fc-6e04-83ea-9984-152017761ba2.md` - "ADC设计从Spec到Tapeout"; the extracted ADC answer is truncated during its compliance-matrix table, so only the durable project chain and explicitly present requirements were promoted. Detailed architecture numbers and company-specific process claims remain unresolved.
+
+---
+
 ## Last Updated
 
-2026-07-02
+2026-08-08
