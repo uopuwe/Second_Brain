@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/triage_summary.md",
+                "file": "01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "triage_summary"
+              "title": "ldo_psrr_notes"
             }
           }
         ]
@@ -171,10 +171,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/triage_summary.md"
+                "file": "01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md"
               },
               "icon": "lucide-info",
-              "title": "File properties for triage_summary"
+              "title": "File properties for ldo_psrr_notes"
             }
           }
         ],
@@ -197,42 +197,42 @@
   },
   "active": "89e85f331d4bc304",
   "lastOpenFiles": [
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/analog_ic_ingest_summary.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/analog_ic_ingest_inventory.jsonl",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/_build_analog_inventory.py",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/manual_review.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/deep_candidate_review.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/ingest_summary.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/ingest_inventory.jsonl",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest/_build_stage3_reports.py",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ingest",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/quality_review.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/triage_inventory_corrected.jsonl",
+    "01_AnalogIC_SerDes/LDO_Bandgap/bandgap_reference_notes.md",
+    "01_AnalogIC_SerDes/LDO_Bandgap/ldo_psrr_notes.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/merge_integrity_audit.md",
+    "01_AnalogIC_SerDes/Design_Methodology/Ring_vs_LC_相位噪声对比.md",
+    "01_AnalogIC_SerDes/ADC/sampling_jitter_adc.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/finalization_report.md",
+    "01_AnalogIC_SerDes/ADC/adc_based_receiver.md",
+    "01_AnalogIC_SerDes/Design_Methodology/224G_SerDes_PLL_Spec_Matrix_and_Example.md",
     "01_AnalogIC_SerDes/PLL_CDR_Clocking/adpll_notes.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/validation_summary.json",
     "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/triage_summary.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/manual_review/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/manual_review/stage1_ambiguous_items.json",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/manual_review/inventory.jsonl",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/deep_candidates/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/deep_candidates/inventory.jsonl",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/balanced/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/fast/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/triage/skip/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/historical_missing_from_latest/6a445cea-2638-83ea-a16e-61a2a0846d33.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/historical_missing_from_latest/6a443191-7c44-83ea-8d51-671348ec20c3.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/historical_missing_from_latest/6a43f680-18f8-83ea-a851-f70f692102ca.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/historical_missing_from_latest/6a3fab19-899c-83ea-871c-cc1a1a2932c2.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/ambiguous_items/README.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/comparison_report.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/delta_manifest.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/historical_missing_from_latest/6a36b905-a9a4-83ea-a92e-25ed56546a8b.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a45164a-c78c-83ea-b7f2-f7315c1a1bac.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a43f03b-54b8-83ea-aae9-f854f3f55fb3.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a3b034c-ccd8-83ea-8e36-07f3f4177ad4.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a2381cf-b478-83ea-827a-9ee7345bc527.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a1ee084-6940-83ea-aced-e528614d03e5.md",
-    "00_Inbox/manual_batches/chat_delta_2026-08-08/updated_conversations/6a19ddc7-a6e8-83ea-9ddd-79cf538aaf2a.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/skip/README.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/skip/inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/manual_review/stage1_ambiguous_items.json",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/manual_review/README.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/manual_review/inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/fast/README.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/fast/inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/deep_candidates/inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/deep_candidates/README.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/balanced/README.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/balanced/inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a45164a-c78c-83ea-b7f2-f7315c1a1bac.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a43f03b-54b8-83ea-aae9-f854f3f55fb3.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a3b034c-ccd8-83ea-8e36-07f3f4177ad4.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a2381cf-b478-83ea-827a-9ee7345bc527.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a1ee084-6940-83ea-aced-e528614d03e5.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a19ddc7-a6e8-83ea-9ddd-79cf538aaf2a.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/6a0716e1-3d48-83ea-a824-497317e3769c.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/updated_conversations/69e8b33c-11c4-83ea-a845-0bbaa46dc837.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/validation_summary.json",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/triage_summary.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/triage_inventory_corrected.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/skip",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/triage_inventory.jsonl",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/triage/quality_review.md",
+    "90_Archive/processed/2026/chatgpt_exports/chat_delta_2026-08-08/new_conversations/6a752175-0724-83ea-9307-efbdea0bc5cf.md",
     "Untitled 2.canvas",
     "Untitled 1.canvas",
     "Untitled.canvas"

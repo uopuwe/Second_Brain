@@ -451,6 +451,10 @@ Because blindly adding capacitance is how engineers turn silicon into expensive 
 
 English: An LDO with a large output capacitor often has mid- and high-frequency PSRR set jointly by the output pole, capacitor ESR zero, pass-device feedthrough, and package or decap resonances. A capless LDO depends more strongly on an internal dominant pole, the output nondominant pole, load-dependent compensation, and on-chip parasitics. The two architectures cannot be compared using one empirical rule for how many decibels the PSRR curve shifts with load.
 
+中文：还必须把 $C_{out}$ 看成带 ESR、ESL 和 self-resonant frequency（SRF）的网络，而不是全频段理想电容。低于 SRF 时，增大 $C_{out}$ 通常降低输出节点交流阻抗；接近 ESR zero 与 SRF 时，零极点和 resonance 会改变 PSRR 曲线形状；高于 SRF 后 ESL 使支路逐渐呈感性，原有的高频 shunting 优势会减弱或消失。因此，负载或电容变化只有在相关 pole/zero 与 SRF 基本不动时才可能表现为近似 vertical shift，否则应预期 frequency-shape change。
+
+English: The output capacitor must also be treated as a network with ESR, ESL, and a self-resonant frequency (SRF), not as an ideal capacitor at all frequencies. Below SRF, increasing $C_{out}$ usually lowers the output-node AC impedance. Near the ESR zero and SRF, the zeros, poles, and resonance reshape the PSRR curve. Above SRF, ESL makes the branch increasingly inductive, so its high-frequency shunting advantage weakens or disappears. A load or capacitance change can therefore resemble a vertical shift only while the relevant poles, zeros, and SRF remain nearly fixed; otherwise a frequency-shape change should be expected.
+
 一阶 output-pole estimate 为：
 
 A first-order output-pole estimate is:
